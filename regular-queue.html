@@ -25,7 +25,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="queue-app-container">
-            <h1 class="queue-app-title">Queue Visualization</h1>
+            <h1 class="queue-app-title">Regular Queue Visualization</h1>
             
             <!-- Queue Size Control -->
             <div class="queue-controls">
@@ -40,6 +40,7 @@
             
             <!-- Queue Operations -->
             <div class="queue-controls">
+                
                 <input id="queueInput" type="text" placeholder="Enter element">
                 <button id="enqueueBtn" aria-label="Enqueue Element">Enqueue</button>
                 <button id="dequeueBtn" aria-label="Dequeue Element">Dequeue</button>
@@ -48,7 +49,10 @@
                 <button id="isEmptyBtn" aria-label="Check If Queue is Empty">isEmpty</button>
                 <button id="isFullBtn" aria-label="Check If Queue is Full">isFull</button>
             </div>
-            
+            <div class="car">
+                <div class="number">1</div>
+                <div class="window"></div>
+            </div>
             <!-- Message Display -->
             <div id="queueMessage" class="queue-message"></div>
         </div>

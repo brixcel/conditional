@@ -186,23 +186,60 @@ button:hover {
 }
 
 .car {
-    width: 100px;
-    height: 50px;
-    background: #1877F2;
+    width: 120px;
+    height: 60px;
+    background: #1877F2; /* Car body color */
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 15px 15px 5px 5px; /* Rounded roof */
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative; /* For positioning wheels */
     animation: fadeIn 0.5s ease-in;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Car number */
 .car .number {
     font-size: 18px;
     font-weight: bold;
+    z-index: 2; /* Ensure the text is on top */
 }
+
+/* Wheels */
+.car::before,
+.car::after {
+    content: "";
+    position: absolute;
+    bottom: -10px; /* Position below the car body */
+    width: 30px;
+    height: 30px;
+    background: #333; /* Wheel color */
+    border-radius: 50%; /* Circular shape */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.car::before {
+    left: 15px; /* Position for front wheel */
+}
+
+.car::after {
+    right: 15px; /* Position for back wheel */
+}
+
+/* Window */
+.car .window {
+    position: absolute;
+    top: 10px; /* Position towards the top of the car */
+    left: 20%;
+    width: 60%;
+    height: 20px;
+    background: #FFFFFF; /* Window color */
+    border-radius: 5px; /* Slightly rounded window */
+    z-index: 1; /* Ensure window is behind the text */
+}
+
 
 .queue-message {
     margin-top: 10px;
@@ -211,6 +248,121 @@ button:hover {
     font-weight: bold;
     font-size: 16px;
 }
+/* General styles */
+
+
+/* Stack Section */
+.stackSection {
+    display: flex;
+    justify-content: space-between; /* Align container and buttons on opposite sides */
+    padding: 50px;
+    gap: 20px; /* Add spacing between container and buttons */
+}
+
+/* Stack container styling */
+.stackVisualContainer {
+    width: 300px;
+    height: 300px;
+    border: 2px solid #1877F2; /* Facebook blue border */
+    background-color: #FFFFFF; /* White for contrast */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse; /* Stack visually starts from the bottom */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin-right: auto; /* Align container to the left */
+}
+
+/* Stack Bars */
+.stackBar {
+    width: 100%;
+    margin: 5px 0;
+    background-color: #1877F2; /* Facebook blue */
+    color: #FFFFFF; /* White text */
+    text-align: center;
+    line-height: 30px;
+    height: 30px;
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.stackHighlight {
+    background-color: #42B72A; /* Facebook green for highlighting */
+    border: 2px solid #14532D; /* Slightly darker green for emphasis */
+}
+
+/* Control buttons and input styles */
+.stackControls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align buttons to the right */
+    gap: 15px;
+    margin-left: auto; /* Align controls to the right */
+}
+
+.capacityControls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stackInputControls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+button {
+    font-size: 1rem;
+    padding: 10px 15px;
+    width: 200px;
+    background-color: #1877F2; /* Facebook blue */
+    color: #FFFFFF; /* White text */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+button:hover {
+    background-color: #145DBF; /* Darker blue for hover effect */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+button:disabled {
+    background-color: #E4E6EB; /* Facebook's gray for disabled buttons */
+    color: #BCC0C4; /* Lighter gray for disabled text */
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+input[type="text"] {
+    font-size: 1rem;
+    padding: 10px;
+    width: 180px;
+    border: 1px solid #BCC0C4; /* Facebook's subtle input border */
+    border-radius: 6px;
+    background-color: #FFFFFF; /* White for inputs */
+    color: #1C1E21; /* Dark text for readability */
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+input[type="text"]::placeholder {
+    color: #BCC0C4; /* Subtle gray for placeholder text */
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #1877F2; /* Facebook blue for focus */
+    box-shadow: 0px 0px 5px rgba(24, 119, 242, 0.5); /* Blue glow */
+}
+
+
 
 /* Animations */
 @keyframes fadeIn {
