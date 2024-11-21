@@ -1,0 +1,248 @@
+/* General Reset */
+body, h1, h2, p, a, button {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, Arial, sans-serif;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+/* Body */
+body {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    background-color: #F0F2F5;
+    color: #1C1E21;
+}
+
+/* Side Navbar */
+.side-navbar {
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: -250px; /* Hidden initially */
+    background: #1877F2;
+    overflow-y: auto;
+    transition: 0.3s ease-in-out;
+    padding-top: 60px; /* Add padding to push content below the menu button */
+    z-index: 1000;
+    display: flex;
+    flex-direction: column; /* Stack menu items vertically */
+}
+
+.side-navbar.active {
+    left: 0; /* Show sidebar */
+}
+
+.side-navbar a {
+    padding: 12px 20px;
+    font-size: 18px;
+    color: #FFFFFF;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.side-navbar a:hover {
+    background-color: #145DBF;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.open-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: #1C1E21;
+    cursor: pointer;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+}
+
+/* Header */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1877F2;
+    color: #FFFFFF;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+}
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.header p {
+    font-size: 16px;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 0; /* Default margin when sidebar is hidden */
+    padding: 20px;
+    padding-top: 100px; /* Space for the fixed header */
+    transition: margin-left 0.3s ease-in-out; /* Smoothly shift content */
+}
+
+.main-content.shifted {
+    margin-left: 250px; /* Shift to align with the visible sidebar */
+}
+
+/* Intro Section */
+.intro h2 {
+    font-size: 24px;
+    color: #1877F2;
+    margin-bottom: 15px;
+}
+
+.intro p {
+    font-size: 16px;
+    color: #1C1E21;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Queue App */
+.queue-app-container {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 700px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.queue-app-title {
+    text-align: center;
+    color: #1C1E21;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.queue-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #DDD;
+    border-radius: 5px;
+    font-size: 16px;
+    width: calc(60% - 20px);
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #1877F2;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #145DBF;
+}
+
+/* Queue Display */
+.queue-display {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 20px;
+    border: 2px solid #DDD;
+    border-radius: 10px;
+    background-color: #F0F2F5;
+    min-height: 80px;
+    justify-content: center;
+    align-items: center;
+}
+
+.car {
+    width: 100px;
+    height: 50px;
+    background: #1877F2;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.5s ease-in;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.car .number {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.queue-message {
+    margin-top: 10px;
+    text-align: center;
+    color: #1C1E21;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .side-navbar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        left: 0; /* Sidebar is always visible on smaller screens */
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding-top: 100px;
+    }
+
+    .queue-app-container {
+        width: 95%;
+    }
+
+    input {
+        width: calc(100% - 20px);
+    }
+}

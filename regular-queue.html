@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Visualization</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <!-- Side Navbar -->
+    <div class="side-navbar" id="sideNavbar">
+        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
+        <a href="home.html">Home</a>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="queue-app-container">
+            <h1 class="queue-app-title">Queue Visualization</h1>
+            
+            <!-- Queue Size Control -->
+            <div class="queue-controls">
+                <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
+                <button id="setQueueSizeBtn" aria-label="Set Queue Size">Set Queue Size</button>
+            </div>
+            
+            <!-- Queue Display Area -->
+            <div class="queue-display-area">
+                <div id="queue" class="queue-display"></div>
+            </div>
+            
+            <!-- Queue Operations -->
+            <div class="queue-controls">
+                <input id="queueInput" type="text" placeholder="Enter element">
+                <button id="enqueueBtn" aria-label="Enqueue Element">Enqueue</button>
+                <button id="dequeueBtn" aria-label="Dequeue Element">Dequeue</button>
+                <button id="peekBtn" aria-label="Peek Front Element">Peek</button>
+                <button id="rearBtn" aria-label="View Rear Element">Rear</button>
+                <button id="isEmptyBtn" aria-label="Check If Queue is Empty">isEmpty</button>
+                <button id="isFullBtn" aria-label="Check If Queue is Full">isFull</button>
+            </div>
+            
+            <!-- Message Display -->
+            <div id="queueMessage" class="queue-message"></div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+</body>
+</html>
