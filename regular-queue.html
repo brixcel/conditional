@@ -27,6 +27,13 @@
         <div class="queue-app-container">
             <h1 class="queue-app-title">Regular Queue Visualization</h1>
             
+            <!-- Description of Regular Queue -->
+            <p class="queue-description">
+                A regular queue is a linear data structure that follows the First In, First Out (FIFO) principle. 
+                This means that the first element added to the queue will be the first one to be removed. 
+                Operations include enqueue, dequeue, peek, and checking if the queue is empty or full.
+            </p>
+
             <!-- Queue Size Control -->
             <div class="queue-controls">
                 <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
@@ -40,7 +47,6 @@
             
             <!-- Queue Operations -->
             <div class="queue-controls">
-                
                 <input id="queueInput" type="text" placeholder="Enter element">
                 <button id="enqueueBtn" aria-label="Enqueue Element">Enqueue</button>
                 <button id="dequeueBtn" aria-label="Dequeue Element">Dequeue</button>
@@ -61,3 +67,4 @@
     <script src="main.js"></script>
 </body>
 </html>
+

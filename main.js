@@ -1,7 +1,6 @@
 let queue = [];
 let maxQueueSize = 0;
-let stackMaxCapacity = 0;
-let stackCurrentSize = 0;
+
 
 // Side Navbar Elements
 const sideNavbar = document.getElementById("sideNavbar");
@@ -170,109 +169,5 @@ fetch("menu.html")
 // Variables for stack properties
 
 
-// Function to set stack capacity
-function configureStackMaxCapacity() {
-    const userInput = prompt("Enter the maximum capacity of the stack (positive whole number):");
 
-    if (userInput !== null) {
-        const trimmedInput = userInput.trim();
 
-        if (
-            trimmedInput &&
-            !isNaN(trimmedInput) &&
-            parseInt(trimmedInput) > 0 &&
-            Number.isInteger(Number(trimmedInput))
-        ) {
-            stackMaxCapacity = parseInt(trimmedInput, 10);
-            stackCurrentSize = 0;
-            alert(`Stack capacity set to ${stackMaxCapacity}`);
-
-            enableStackButtons();
-            document.getElementById('setStackCapacityBtn').disabled = true;
-        } else {
-            alert("Please enter a valid positive whole number.");
-        }
-    }
-}
-
-// Function to enable stack control buttons
-function enableStackButtons() {
-    document.getElementById('addElementBtn').disabled = false;
-    document.getElementById('removeElementBtn').disabled = false;
-    document.getElementById('viewTopElementBtn').disabled = false;
-    document.getElementById('checkStackEmptyBtn').disabled = false;
-    document.getElementById('checkStackFullBtn').disabled = false;
-}
-
-// Function to reset stack
-function resetStack() {
-    location.reload();
-}
-
-// Event listener for adding an element to the stack
-document.getElementById('addElementBtn').addEventListener('click', function() {
-    const elementValue = document.getElementById('stackElementInput').value.trim();
-
-    if (elementValue) {
-        if (stackCurrentSize < stackMaxCapacity) {
-            const newStackElement = document.createElement('div');
-            newStackElement.classList.add('stackBar');
-            newStackElement.textContent = elementValue;
-
-            const stackContainer = document.querySelector('.stackVisualContainer');
-            stackContainer.appendChild(newStackElement);
-
-            stackCurrentSize++;
-            stackContainer.scrollTop = stackContainer.scrollHeight;
-            document.getElementById('stackElementInput').value = '';
-        } else {
-            alert("The stack is full! Cannot add more items.");
-        }
-    } else {
-        alert("Please enter a value.");
-    }
-});
-
-// Event listener for removing an element from the stack
-document.getElementById('removeElementBtn').addEventListener('click', function() {
-    const stackContainer = document.querySelector('.stackVisualContainer');
-
-    if (stackCurrentSize > 0) {
-        stackContainer.removeChild(stackContainer.lastElementChild);
-        stackCurrentSize--;
-    } else {
-        alert("The stack is empty! Cannot remove any items.");
-    }
-});
-
-// Event listener for viewing the top element of the stack
-document.getElementById('viewTopElementBtn').addEventListener('click', function() {
-    const stackContainer = document.querySelector('.stackVisualContainer');
-
-    if (stackCurrentSize > 0) {
-        const topElement = stackContainer.lastElementChild;
-        topElement.classList.add('stackHighlight');
-
-        setTimeout(() => {
-            topElement.classList.remove('stackHighlight');
-        }, 1000);
-    } else {
-        alert("The stack is empty! Cannot view the top element.");
-    }
-});
-
-// Event listener for checking if the stack is empty
-document.getElementById('checkStackEmptyBtn').addEventListener('click', function() {
-    alert(stackCurrentSize === 0 ? "True: The stack is empty." : "False: The stack is not empty.");
-});
-
-// Event listener for checking if the stack is full
-document.getElementById('checkStackFullBtn').addEventListener('click', function() {
-    alert(stackCurrentSize === stackMaxCapacity ? "True: The stack is full." : "False: The stack is not full.");
-});
-
-// Set stack capacity button event listener
-document.getElementById('setStackCapacityBtn').addEventListener('click', configureStackMaxCapacity);
-
-// Reset stack button event listener
-document.getElementById('resetStackBtn').addEventListener('click', resetStack);
