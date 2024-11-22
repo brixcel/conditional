@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,29 +20,33 @@
         <a href="avl-tree.html">AVL Tree</a>
     </div>
     <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
+
     <section class="stackSection">
         <h1>Stack Data Structure</h1>
         <p class="stackDescription">A stack is a linear data structure that follows the Last In, First Out (LIFO) principle, meaning the last element added to the stack will be the first one to be removed.</p>
 
         <div class="stackVisualContainer"></div>
-      
-        <div class="stackControls">
-          <div class="capacityControls">
-            <button id="setStackCapacityBtn">Set Stack Capacity</button>
-            <button id="resetStackBtn">Reset Stack</button>
-          </div>
+        <div id="outputMessage" class="outputMessage"></div> <!-- Output Message Container -->
 
-          <div class="stackInputControls">
-            <button id="addElementBtn" disabled>Add to Stack</button>
-            <input type="text" id="stackElementInput" placeholder="Enter value" />
-          </div>
-          
-          <button id="removeElementBtn" disabled>Remove from Stack</button>
-          <button id="viewTopElementBtn" disabled>View Top Element</button>
-          <button id="checkStackEmptyBtn" disabled>Check if Empty</button>
-          <button id="checkStackFullBtn" disabled>Check if Full</button>
+        <div class="stackControls">
+            <div class="capacityControls">
+                <input type="text" id="stackCapacityInput" placeholder="Enter max capacity" />
+                <button id="setStackCapacityBtn">Set Stack Capacity</button>
+                <button id="resetStackBtn">Reset Stack</button>
+            </div>
+
+            <div class="stackInputControls">
+                <input type="text" id="stackElementInput" placeholder="Enter value" />
+                <button id="addElementBtn" disabled>Push</button>
+            </div>
+            
+            <button id="removeElementBtn" disabled>Pop</button>
+            <button id="viewTopElementBtn" disabled>peek</button>
+            <button id="checkStackEmptyBtn" disabled>isEmpty</button>
+            <button id="checkStackFullBtn" disabled>isFull</button>
+            <button id="viewRearElementBtn" disabled>Rear</button>
         </div>
     </section>
-    <script src="main.js"></script>
+    <script src="stack.js"></script>
 </body>
 </html>
