@@ -1,3 +1,265 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General Page Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5; /* Facebook-like light background color */
+    color: #1C1E21;
+}
+
+/* Header Styles */
+.cqv-header {
+    background-color: #333;
+    padding: 20px;
+    text-align: center;
+}
+
+.cqv-header-title {
+    color: #fff;
+    font-size: 2rem;
+}
+
+/* Side Navbar Styles */
+.cqv-side-navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #222;
+    padding-top: 20px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.cqv-side-navbar.open {
+    transform: translateX(0);
+}
+
+.cqv-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.cqv-nav-link {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 10px 20px;
+    transition: background 0.3s;
+}
+
+.cqv-nav-link:hover {
+    background-color: #575757;
+}
+
+/* Controls Section */
+.cqv-controls {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cqv-control-queue-size {
+    margin-bottom: 20px;
+}
+
+.cqv-control-enqueue-dequeue {
+    margin-bottom: 20px;
+}
+
+.cqv-input {
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cqv-button {
+    padding: 8px 16px;
+    background-color: #007bff; /* Blue for buttons */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cqv-button:hover {
+    background-color: #0056b3; /* Darker blue for hover effect */
+}
+
+/* Queue Container */
+.queue-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    border: 2px solid #1877F2; /* Facebook blue */
+    border-radius: 50%;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Queue Slots */
+.queue-slot {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    border-radius: 50%;
+    font-weight: bold;
+    color: #555;
+    background-color: white;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease-in-out;
+}
+
+.queue-slot.filled {
+    background-color: #1877F2; /* Facebook blue */
+    color: white;
+}
+
+/* Positioning Queue Slots in a Circular Layout */
+.queue-slot:nth-child(1) {
+    top: 10%;
+    left: 50%;
+}
+.queue-slot:nth-child(2) {
+    top: 30%;
+    left: 80%;
+}
+.queue-slot:nth-child(3) {
+    top: 70%;
+    left: 80%;
+}
+.queue-slot:nth-child(4) {
+    top: 90%;
+    left: 50%;
+}
+.queue-slot:nth-child(5) {
+    top: 70%;
+    left: 20%;
+}
+.queue-slot:nth-child(6) {
+    top: 30%;
+    left: 20%;
+}
+
+/* Front and Last Indicators */
+.front-last-indicator {
+    position: absolute;
+    font-weight: bold;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 14px;
+    transform: translate(-50%, -50%); /* Centers the label */
+    z-index: 2;
+}
+
+/* Status and Queue Container Styles */
+.cqv-status {
+    margin: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cqv-queue-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* Output Section */
+.cqv-output {
+    margin: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* Disabled Button */
+button:disabled {
+    background-color: #B0BEC5;
+    cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .cqv-side-navbar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .cqv-side-navbar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+
+    .cqv-side-navbar.open {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .cqv-header-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* General Improvements for Small Devices */
+@media (max-width: 360px) {
+    .cqv-controls {
+        padding: 10px;
+    }
+}
+
+/* Main CSS - Do Not Remove */
 /* General Reset */
 body, h1, h2, p, a, button {
     margin: 0;
@@ -13,7 +275,7 @@ body {
     flex-direction: column;
     margin: 0;
     padding: 0;
-    background-color: #F0F2F5; /* Facebook-like background color */
+    background-color: #F0F2F5;
     color: #1C1E21;
 }
 
@@ -23,7 +285,7 @@ body {
     height: 100%;
     position: fixed;
     top: 0;
-    left: -250px; /* Hidden initially */
+    left: -250px;
     background: #1877F2;
     overflow-y: auto;
     transition: 0.3s ease-in-out;
@@ -34,7 +296,7 @@ body {
     padding-bottom: 20px;
 }
 .side-navbar.active {
-    left: 0; /* Show sidebar */
+    left: 0;
 }
 
 .side-navbar a {
@@ -337,6 +599,133 @@ button:hover {
     font-size: 16px;
 }
 
+/* Unique CSS for Circular Queue Visualization */
+
+/* Header Styles */
+.cqv-header {
+    background-color: #333;
+    padding: 20px;
+    text-align: center;
+}
+
+.cqv-header-title {
+    color: #fff;
+    font-size: 2rem;
+}
+
+/* Side Navbar Styles */
+.cqv-side-navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #222;
+    padding-top: 20px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.cqv-side-navbar.open {
+    transform: translateX(0);
+}
+
+.cqv-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.cqv-nav-link {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 10px 20px;
+    transition: background 0.3s;
+}
+
+.cqv-nav-link:hover {
+    background-color: #575757;
+}
+
+/* Controls Styles */
+.cqv-controls {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cqv-control-queue-size {
+    margin-bottom: 20px;
+}
+
+.cqv-control-enqueue-dequeue {
+    margin-bottom: 20px;
+}
+
+.cqv-input {
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cqv-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cqv-button:hover {
+    background-color: #0056b3;
+}
+
+/* Status and Queue Container Styles */
+.cqv-status {
+    margin: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cqv-queue-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* Output Section */
+.cqv-output {
+    margin: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* Disabled Button */
+button:disabled {
+    background-color: #B0BEC5;
+    cursor: not-allowed;
+}
+
 /* Animations */
 @keyframes fadeIn {
     from {
@@ -349,115 +738,33 @@ button:hover {
     }
 }
 
-/* Tablet Adjustments */
+/* Responsive Adjustments */
 @media (max-width: 1024px) {
-    .side-navbar {
+    .cqv-side-navbar {
         width: 200px;
-        left: -200px; /* Ensure hidden by default */
-    }
-
-    .side-navbar.active {
-        left: 0;
-    }
-
-    .main-content.shifted {
-        margin-left: 200px; /* Adjust margin */
-    }
-
-    .queue-app-container, .stackSection {
-        width: 95%;
     }
 }
 
-/* Improved adjustments for very small screens */
 @media (max-width: 768px) {
-    .side-navbar {
-        width: 100%; /* Take full width */
-        left: -100%; /* Hidden by default */
-    }
-
-    .side-navbar.active {
-        left: 0;
-    }
-
-    .main-content {
-        padding-top: 80px;
-    }
-
-    .queue-controls {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .stackInputControls {
-        flex-direction: column;
-    }
-}
-
-/* Mobile Adjustments */
-@media (max-width: 480px) {
-    .header h1 {
-        font-size: 22px;
-    }
-
-    .queue-app-title {
-        font-size: 20px;
-    }
-
-    .car {
-        width: 60px;
-        height: 35px;
-    }
-
-    .car::before, .car::after {
-        width: 15px;
-        height: 15px;
-    }
-
-    .stackBar {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .open-btn {
-        font-size: 20px;
-        top: 8px;
-        left: 8px;
-    }
-
-    .close-btn {
-        top: 10px;
-        right: 10px;
-    }
-
-    .stackVisualContainer {
-        height: 250px;
-        padding: 5px;
-    }
-
-    .stackInputControls {
-        flex-direction: column;
-    }
-}
-
-/* General Improvements */
-@media (max-width: 360px) {
-    .header h1 {
-        font-size: 18px;
-    }
-
-    .queue-app-container, .stackSection {
+    .cqv-side-navbar {
         width: 100%;
-        padding: 15px;
+        transform: translateX(-100%);
     }
 
-    .queue-display {
-        gap: 10px;
-        padding: 15px;
+    .cqv-side-navbar.open {
+        transform: translateX(0);
     }
+}
 
-    .stackControls button {
-        font-size: 14px;
-        padding: 8px 12px;
+@media (max-width: 480px) {
+    .cqv-header-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* General Improvements for Small Devices */
+@media (max-width: 360px) {
+    .cqv-controls {
+        padding: 10px;
     }
 }
