@@ -1,12 +1,40 @@
-<div class="side-navbar" id="sideNavbar">
-    <button class="close-btn" id="closeBtn">&times;</button>
-    <a href="stack.html">Stack</a>
-    <a href="regular-queue.html">Regular Queue</a>
-    <a href="circular-queue.html">Circular Queue</a>
-    <a href="priority-queue.html">Priority Queue</a>
-    <a href="singly-linked-list.html">Singly Linked List</a>
-    <a href="doubly-linked-list.html">Doubly Linked List</a>
-    <a href="circular-linked-list.html">Circular Linked List</a>
-    <a href="avl-tree.html">AVL Tree</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Queue Visualization</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Circular Queue Visualization</h1>
+    </header>
 
+    <div class="controls">
+        <div>
+            <label for="queueSize">Choose Queue Size (3-10): </label>
+            <input type="number" id="queueSize" min="3" max="10" value="5" onchange="changeQueueSize()">
+        </div>
+        <div>
+            <input type="text" id="enqueueValue" placeholder="Enter a number" min="1" max="99">
+            <button onclick="handleEnqueue()">Enqueue</button>
+            <input type="text" id="dequeueValue" placeholder="Enter a value to dequeue">
+            <button onclick="handleDequeue()">Dequeue</button>
+        </div>
+        <div>
+            <button onclick="handlePeek()">Peek</button>
+            <button onclick="handleRear()">Rear</button>
+            <button onclick="handleSize()">Queue Size</button>
+            <button onclick="handleIsEmpty()">IsEmpty</button>
+            <button onclick="handleIsFull()">IsFull</button>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="queueContainer" class="queue-container"></div>
+    <div id="output" class="output"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
