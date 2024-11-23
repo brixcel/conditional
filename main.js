@@ -22,6 +22,12 @@ closeBtn.addEventListener("click", () => {
 // Initialize the queue
 function initializeQueue() {
     const sizeInput = document.getElementById("queueSize").value;
+
+    if (sizeInput.startsWith('0')) {
+        showMessage("Queue size cannot start with zero. Please enter a valid positive number.");
+        return;
+    }
+
     maxQueueSize = parseInt(sizeInput, 10);
 
     if (isNaN(maxQueueSize) || maxQueueSize <= 0) {
@@ -167,7 +173,13 @@ fetch("menu.html")
     })
     .catch((error) => console.error("Error loading menu:", error));
 // Variables for stack properties
-
+window.addEventListener('resize', () => {
+    // Check if the navbar is open and the window width is greater than a specific size (e.g., 768px)
+    if (window.innerWidth >= 768) {
+        sideNavbar.classList.remove('active');
+        mainContent.classList.remove('shifted');
+    }
+});
 
 
 

@@ -22,6 +22,12 @@ closeBtn.addEventListener("click", () => {
 function configureStackMaxCapacity() {
     const userInput = document.getElementById('stackCapacityInput').value.trim();
 
+    // Check if input starts with '0' or is not a valid number
+    if (userInput.startsWith('0')) {
+        displayMessage("Stack capacity cannot start with zero. Please enter a valid positive number.");
+        return;
+    }
+
     if (userInput && !isNaN(userInput) && parseInt(userInput) > 0 && Number.isInteger(Number(userInput))) {
         stackMaxCapacity = parseInt(userInput, 10);
         stackCurrentSize = 0;
@@ -141,4 +147,11 @@ document.getElementById('setStackCapacityBtn').addEventListener('click', configu
 // Event listener for resetting the stack
 document.getElementById('resetStackBtn').addEventListener('click', function() {
     location.reload();
+});
+window.addEventListener('resize', () => {
+    // Check if the navbar is open and the window width is greater than a specific size (e.g., 768px)
+    if (window.innerWidth >= 768) {
+        sideNavbar.classList.remove('active');
+        mainContent.classList.remove('shifted');
+    }
 });

@@ -132,11 +132,11 @@ body {
 /* Queue App */
 .queue-app-container {
     margin: 20px auto;
-    width: 80%;
+    width: 90%;
     max-width: 1200px;
     background: #FFFFFF;
     border-radius: 8px;
-    padding: 30px;
+    padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     height: calc(100vh - 140px);
     display: flex;
@@ -188,7 +188,7 @@ button:hover {
     flex-wrap: nowrap;
     gap: 20px;
     overflow-x: auto;
-    padding: 30px;
+    padding: 20px;
     border: 2px solid #DDD;
     border-radius: 10px;
     background-color: #F0F2F5;
@@ -198,8 +198,8 @@ button:hover {
 }
 
 .car {
-    width: 120px;
-    height: 60px;
+    width: 100px;
+    height: 50px;
     background: #1877F2;
     color: white;
     border: none;
@@ -223,19 +223,19 @@ button:hover {
     content: "";
     position: absolute;
     bottom: -10px;
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     background: #333;
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .car::before {
-    left: 15px;
+    left: 10px;
 }
 
 .car::after {
-    right: 15px;
+    right: 10px;
 }
 
 /* Stack Section Layout */
@@ -246,7 +246,7 @@ button:hover {
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     max-width: 800px;
-    align-items:center;
+    align-items: center;
 }
 
 .stackSection h1 {
@@ -349,29 +349,115 @@ button:hover {
     }
 }
 
-/* Responsive Design */
+/* Tablet Adjustments */
+@media (max-width: 1024px) {
+    .side-navbar {
+        width: 200px;
+        left: -200px; /* Ensure hidden by default */
+    }
+
+    .side-navbar.active {
+        left: 0;
+    }
+
+    .main-content.shifted {
+        margin-left: 200px; /* Adjust margin */
+    }
+
+    .queue-app-container, .stackSection {
+        width: 95%;
+    }
+}
+
+/* Improved adjustments for very small screens */
 @media (max-width: 768px) {
     .side-navbar {
-        width: 100%;
-        height: auto;
-        position: relative;
+        width: 100%; /* Take full width */
+        left: -100%; /* Hidden by default */
+    }
+
+    .side-navbar.active {
         left: 0;
     }
 
     .main-content {
-        margin-left: 0;
-        padding-top: 100px;
+        padding-top: 80px;
     }
 
-    .queue-app-container {
-        width: 95%;
+    .queue-controls {
+        flex-direction: column;
+        gap: 15px;
     }
 
-    input {
-        width: calc(100% - 20px);
+    .stackInputControls {
+        flex-direction: column;
+    }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 22px;
     }
 
-    .stackSection {
-        width: 95%;
+    .queue-app-title {
+        font-size: 20px;
+    }
+
+    .car {
+        width: 60px;
+        height: 35px;
+    }
+
+    .car::before, .car::after {
+        width: 15px;
+        height: 15px;
+    }
+
+    .stackBar {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .open-btn {
+        font-size: 20px;
+        top: 8px;
+        left: 8px;
+    }
+
+    .close-btn {
+        top: 10px;
+        right: 10px;
+    }
+
+    .stackVisualContainer {
+        height: 250px;
+        padding: 5px;
+    }
+
+    .stackInputControls {
+        flex-direction: column;
+    }
+}
+
+/* General Improvements */
+@media (max-width: 360px) {
+    .header h1 {
+        font-size: 18px;
+    }
+
+    .queue-app-container, .stackSection {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .queue-display {
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .stackControls button {
+        font-size: 14px;
+        padding: 8px 12px;
     }
 }
