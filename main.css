@@ -725,6 +725,187 @@ button:disabled {
     background-color: #B0BEC5;
     cursor: not-allowed;
 }
+.cqv-header {
+    background-color: #1877F2;
+    padding: 20px;
+    color: white;
+}
+
+.cqv-title {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Controls Section */
+.cqv-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Input & Button Styling */
+.cqv-input-number, .cqv-input-text {
+    padding: 10px;
+    font-size: 16px;
+    width: 250px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+}
+
+.cqv-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    background-color: #1877F2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.cqv-button:hover {
+    background-color: #165eab;
+}
+
+.cqv-button:focus {
+    outline: 2px solid #165eab;
+}
+
+/* Queue Container */
+.cqv-queue-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    border: 2px solid #1877F2;
+    border-radius: 50%;
+    background-color: #fff;
+}
+
+/* Queue Slots */
+.cqv-queue-slot {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    border-radius: 50%;
+    font-weight: bold;
+    color: #555;
+    background-color: white;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease-in-out;
+}
+
+.cqv-queue-slot-filled {
+    background-color: #1877F2;
+    color: white;
+}
+
+/* Front and Last Indicators */
+.cqv-front-last-indicator {
+    position: absolute;
+    font-weight: bold;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 14px;
+    transform: translate(-50%, -50%);
+}
+
+/* Status Display */
+.cqv-status {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Output Section */
+.cqv-output {
+    font-size: 18px;
+    margin-top: 20px;
+    color: #333;
+    font-style: italic;
+}
+
+/* Disabled Button */
+.cqv-button:disabled {
+    background-color: #B0BEC5;
+    cursor: not-allowed;
+}
+
+/* Make all links look consistent with Facebook's UI */
+.cqv-link {
+    color: #1877F2;
+    text-decoration: none;
+}
+
+.cqv-link:hover {
+    text-decoration: underline;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f5;
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #1877f2;
+    margin-bottom: 20px;
+}
+
+.controls {
+    margin-bottom: 20px;
+}
+
+input, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #1877f2;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #145dbf;
+}
+
+canvas {
+    display: block;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    background-color: white;
+}
+
+#treeInfo {
+    margin-top: 20px;
+    font-size: 18px;
+}
 
 /* Animations */
 @keyframes fadeIn {
