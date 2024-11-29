@@ -725,6 +725,65 @@ button:disabled {
     background-color: #B0BEC5;
     cursor: not-allowed;
 }
+/* styles.css */
+.fb-body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+}
+
+.fb-title {
+    color: #1877f2;
+    margin-top: 20px;
+}
+
+.fb-description {
+    font-size: 1.2em;
+    max-width: 800px;
+    margin: 10px auto;
+    color: #606770;
+}
+
+.fb-controls {
+    margin-top: 20px;
+}
+
+.fb-input {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccd0d5;
+    border-radius: 5px;
+    width: 150px;
+}
+
+.fb-button {
+    background-color: #1877f2;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.fb-button:hover {
+    background-color: #145dbf;
+}
+
+.fb-canvas {
+    border: 1px solid #000;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.fb-output {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #333;
+}
 
 /* Animations */
 @keyframes fadeIn {
