@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Priority Queue with Manual AVL Tree Balancing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1877f2;
+            text-align: center;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input {
+            flex-grow: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f2f5;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Priority Queue with Manual AVL Tree Balancing</h1>
+        <div class="input-group">
+            <input type="number" id="keyInput" placeholder="Enter a key">
+            <button onclick="enqueue()">Enqueue</button>
+            <button onclick="priorityEnqueue()">Priority Enqueue</button>
+            <button onclick="dequeue()">Dequeue</button>
+        </div>
+        <div class="input-group">
+            <button onclick="peek()">Peek</button>
+            <button onclick="getRear()">Rear</button>
+            <button onclick="getSize()">Size</button>
+            <button onclick="getLevel()">Tree Height</button>
+            <button onclick="getRoot()">Tree Root</button>
+        </div>
+        <div class="input-group">
+            <button onclick="balanceTree()">Balance Tree</button>
+            <button onclick="getLeafNodes()">Leaf Nodes</button>
+        </div>
+        <div class="input-group">
+            <input type="number" id="nodeInput" placeholder="Enter node key">
+            <button onclick="getSiblings()">Get Siblings</button>
+            <button onclick="getSubtrees()">Get Subtrees</button>
+            <button onclick="getParent()">Get Parent</button>
+            <button onclick="getChildren()">Get Children</button>
+        </div>
+        <div class="input-group">
+            <input type="number" id="oldKeyInput" placeholder="Old key">
+            <input type="number" id="newKeyInput" placeholder="New key">
+            <button onclick="updateKey()">Update Key</button>
+        </div>
+        <div id="output"></div>
+        <canvas id="treeCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+        class TreeNode {
+            constructor(key) {
+                this.key = key;
+                this.height = 1;
+                this.left = null;
+                this.right = null;
+                this.parent = null;
+            }
+        }
+
+        class Tree {
+            constructor() {
+                this.root = null;
+            }
+
+            getHeight(node) {
+                return node ? node.height : 0;
+            }
+
+            updateHeight(node) {
+                node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+            }
+
+            getBalance(node) {
+                return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
+            }
+
+            leftRotate(z) {
+                let y = z.right;
+                let T2 = y.left;
+                y.left = z;
+                z.right = T2;
+                if (T2) T2.parent = z;
+                y.parent = z.parent;
+                z.parent = y;
+                if (y.parent) {
+                    if (y.parent.left === z) {
+                        y.parent.left = y;
+                    } else {
+                        y.parent.right = y;
+                    }
+                } else {
+                    this.root = y;
+                }
+                this.updateHeight(z);
+                this.updateHeight(y);
+                return y;
+            }
+
+            rightRotate(z) {
+                let y = z.left;
+                let T3 = y.right;
+                y.right = z;
+                z.left = T3;
+                if (T3) T3.parent = z;
+                y.parent = z.parent;
+                z.parent = y;
+                if (y.parent) {
+                    if (y.parent.left === z) {
+                        y.parent.left = y;
+                    } else {
+                        y.parent.right = y;
+                    }
+                } else {
+                    this.root = y;
+                }
+                this.updateHeight(z);
+                this.updateHeight(y);
+                return y;
+            }
+
+            insert(node, key) {
+                if (!node) {
+                    let newNode = new TreeNode(key);
+                    if (!this.root) this.root = newNode;
+                    return newNode;
+                }
+                if (key < node.key) {
+                    node.left = this.insert(node.left, key);
+                    node.left.parent = node;
+                }
+                else if (key > node.key) {
+                    node.right = this.insert(node.right, key);
+                    node.right.parent = node;
+                }
+                else return node;
+
+                this.updateHeight(node);
+                return node;
+            }
+
+            remove(node, key) {
+                if (!node) return node;
+                if (key < node.key) node.left = this.remove(node.left, key);
+                else if (key > node.key) node.right = this.remove(node.right, key);
+                else {
+                    if (!node.left || !node.right) {
+                        let temp = node.left ? node.left : node.right;
+                        if (!temp) {
+                            temp = node;
+                            node = null;
+                        } else {
+                            temp.parent = node.parent;
+                            node = temp;
+                        }
+                    } else {
+                        let temp = this.minValueNode(node.right);
+                        node.key = temp.key;
+                        node.right = this.remove(node.right, temp.key);
+                    }
+                }
+
+                if (!node) return node;
+
+                this.updateHeight(node);
+                return node;
+            }
+
+            minValueNode(node) {
+                let current = node;
+                while (current.left) current = current.left;
+                return current;
+            }
+
+            balance(node) {
+                if (!node) return null;
+
+                this.updateHeight(node);
+                let balance = this.getBalance(node);
+
+                if (balance > 1) {
+                    if (this.getBalance(node.left) < 0) {
+                        node.left = this.leftRotate(node.left);
+                    }
+                    return this.rightRotate(node);
+                }
+                if (balance < -1) {
+                    if (this.getBalance(node.right) > 0) {
+                        node.right = this.rightRotate(node.right);
+                    }
+                    return this.leftRotate(node);
+                }
+
+                return node;
+            }
+
+            balanceTree() {
+                this.root = this.balanceNode(this.root);
+            }
+
+            balanceNode(node) {
+                if (!node) return null;
+
+                node.left = this.balanceNode(node.left);
+                node.right = this.balanceNode(node.right);
+
+                return this.balance(node);
+            }
+
+            findNode(key, node = this.root) {
+                if (!node) return null;
+                if (key === node.key) return node;
+                if (key < node.key) return this.findNode(key, node.left);
+                return this.findNode(key, node.right);
+            }
+
+            getSiblings(key) {
+                let node = this.findNode(key);
+                if (!node || !node.parent) return [];
+                let siblings = [];
+                if (node.parent.left && node.parent.left !== node) siblings.push(node.parent.left.key);
+                if (node.parent.right && node.parent.right !== node) siblings.push(node.parent.right.key);
+                return siblings;
+            }
+
+            getSubtrees(key) {
+                let node = this.findNode(key);
+                if (!node) return { left: [], right: [] };
+                return {
+                    left: this.inOrderTraversal(node.left),
+                    right: this.inOrderTraversal(node.right)
+                };
+            }
+
+            getParent(key) {
+                let node = this.findNode(key);
+                return node && node.parent ? node.parent.key : null;
+            }
+
+            getChildren(key) {
+                let node = this.findNode(key);
+                if (!node) return [];
+                let children = [];
+                if (node.left) children.push(node.left.key);
+                if (node.right) children.push(node.right.key);
+                return children;
+            }
+
+            inOrderTraversal(node, result = []) {
+                if (node) {
+                    this.inOrderTraversal(node.left, result);
+                    result.push(node.key);
+                    this.inOrderTraversal(node.right, result);
+                }
+                return result;
+            }
+        }
+
+        class PriorityQueue {
+            constructor() {
+                this.queue = [];
+                this.tree = new Tree();
+            }
+
+            enqueue(key) {
+                if (this.isValidInput(key)) {
+                    if (this.queue.includes(key)) return "This number already exists.";
+                    this.queue.push(key);
+                    this.tree.root = this.tree.insert(this.tree.root, key);
+                    return `Enqueued: ${key}`;
+                }
+                return "Invalid input. Please enter a positive integer that does not start with zero.";
+            }
+
+            priorityEnqueue(key) {
+                if (this.isValidInput(key)) {
+                    if (this.queue.includes(key)) return "This number already exists.";
+                    this.queue.push(key);
+                    this.queue.sort((a, b) => b - a);
+                    this.tree.root = this.tree.insert(this.tree.root, key);
+                    return `Priority Enqueued: ${key}`;
+                }
+                return "Invalid input. Please enter a positive integer that does not start with zero.";
+            }
+
+            dequeue() {
+                if (this.queue.length === 0) return "Queue is empty.";
+                const dequeued = this.queue.shift();
+                this.tree.root = this.tree.remove(this.tree.root, dequeued);
+                return `Dequeued: ${dequeued}`;
+            }
+
+            peek() {
+                return this.queue[0] ? `Front of the queue: ${this.queue[0]}` : "Queue is empty.";
+            }
+
+            getRear() {
+                return this.queue.length ? `Rear of the queue: ${this.queue[this.queue.length - 1]}` : "Queue is empty.";
+            }
+
+            getSize() {
+                return `Queue size: ${this.queue.length}`;
+            }
+
+            getLevel() {
+                return `Tree height: ${this.tree.getHeight(this.tree.root)}`;
+            }
+
+            getRoot() {
+                return `Tree root: ${this.tree.root ? this.tree.root.key : 'null'}`;
+            }
+
+            balanceTree() {
+                this.tree.balanceTree();
+                return "Tree balanced.";
+            }
+
+            getLeafNodes() {
+                const leafNodes = [];
+                this.getLeafNodesRecursive(this.tree.root, leafNodes);
+                return `Leaf nodes: ${leafNodes.join(', ')}`;
+            }
+
+            getLeafNodesRecursive(node, leafNodes) {
+                if (!node) return;
+                if (!node.left && !node.right) {
+                    leafNodes.push(node.key);
+                    return;
+                }
+                this.getLeafNodesRecursive(node.left, leafNodes);
+                this.getLeafNodesRecursive(node.right, leafNodes);
+            }
+
+            getSiblings(key) {
+                if (!this.isValidInput(key)) return "Invalid input. Please enter a positive integer.";
+                const siblings = this.tree.getSiblings(key);
+                return siblings.length ? `Siblings of ${key}: ${siblings.join(', ')}` : `${key} has no siblings or is not in the tree.`;
+            }
+
+            getSubtrees(key) {
+                if (!this.isValidInput(key)) return "Invalid input. Please enter a positive integer.";
+                const subtrees = this.tree.getSubtrees(key);
+                return `Subtrees of ${key}: Left [${subtrees.left.join(', ')}], Right [${subtrees.right.join(', ')}]`;
+            }
+
+            getParent(key) {
+                if (!this.isValidInput(key)) return "Invalid input. Please enter a positive integer.";
+                const parent = this.tree.getParent(key);
+                return parent !== null ? `Parent of ${key}: ${parent}` : `${key} has no parent (it might be the root or not in the tree).`;
+            }
+
+            getChildren(key) {
+                if (!this.isValidInput(key)) return "Invalid input. Please enter a positive integer.";
+                const children = this.tree.getChildren(key);
+                return children.length ? `Children of ${key}: ${children.join(', ')}` : `${key} has no children or is not in the tree.`;
+            }
+
+            isValidInput(key) {
+                let numStr = key.toString();
+                return !isNaN(key) && key > 0 && numStr[0] !== "0" && numStr.indexOf(".") === -1;
+            }
+
+            updateKey(oldKey, newKey) {
+                if (!this.isValidInput(newKey)) {
+                    return "Invalid new key. Please enter a positive integer that does not start with zero.";
+                }
+                if (this.queue.includes(newKey)) {
+                    return "New key already exists in the queue.";
+                }
+                const index = this.queue.indexOf(oldKey);
+                if (index === -1) {
+                    return "Old key not found in the queue.";
+                }
+                this.queue[index] = newKey;
+                this.tree.root = this.tree.remove(this.tree.root, oldKey);
+                this.tree.root = this.tree.insert(this.tree.root, newKey);
+                return `Updated key from ${oldKey} to ${newKey}`;
+            }
+        }
+
+        const pq = new PriorityQueue();
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawTree() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawNode(pq.tree.root, canvas.width / 2, 50, canvas.width / 4);
+        }
+
+        function drawNode(node, x, y, horizontalSpacing) {
+            if (!node) return;
+
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1877f2';
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.key.toString(), x, y);
+
+            if (node.left) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + 20);
+                ctx.lineTo(x - horizontalSpacing, y + 80);
+                ctx.stroke();
+                drawNode(node.left, x - horizontalSpacing, y + 80, horizontalSpacing / 2);
+            }
+
+            if (node.right) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + 20);
+                ctx.lineTo(x + horizontalSpacing, y + 80);
+                ctx.stroke();
+                drawNode(node.right, x + horizontalSpacing, y + 80, horizontalSpacing / 2);
+            }
+        }
+
+        function updateOutput(message) {
+            document.getElementById('output').textContent = message;
+            drawTree();
+        }
+
+        function enqueue() {
+            const key = parseInt(document.getElementById('keyInput').value);
+            updateOutput(pq.enqueue(key));
+        }
+
+        function priorityEnqueue() {
+            const key = parseInt(document.getElementById('keyInput').value);
+            updateOutput(pq.priorityEnqueue(key));
+        }
+
+        function dequeue() {
+            updateOutput(pq.dequeue());
+        }
+
+        function peek() {
+            updateOutput(pq.peek());
+        }
+
+        function getRear() {
+            updateOutput(pq.getRear());
+        }
+
+        function getSize() {
+            updateOutput(pq.getSize());
+        }
+
+        function getLevel() {
+            updateOutput(pq.getLevel());
+        }
+
+        function getRoot() {
+            updateOutput(pq.getRoot());
+        }
+
+        function balanceTree() {
+            updateOutput(pq.balanceTree());
+        }
+
+        function getLeafNodes() {
+            updateOutput(pq.getLeafNodes());
+        }
+
+        function getSiblings() {
+            const key = parseInt(document.getElementById('nodeInput').value);
+            updateOutput(pq.getSiblings(key));
+        }
+
+        function getSubtrees() {
+            const key = parseInt(document.getElementById('nodeInput').value);
+            updateOutput(pq.getSubtrees(key));
+        }
+
+        function getParent() {
+            const key = parseInt(document.getElementById('nodeInput').value);
+            updateOutput(pq.getParent(key));
+        }
+
+        function getChildren() {
+            const key = parseInt(document.getElementById('nodeInput').value);
+            updateOutput(pq.getChildren(key));
+        }
+
+        function updateKey() {
+            const oldKey = parseInt(document.getElementById('oldKeyInput').value);
+            const newKey = parseInt(document.getElementById('newKeyInput').value);
+            updateOutput(pq.updateKey(oldKey, newKey));
+        }
+    </script>
+</body>
+</html>
+
