@@ -4,13 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Circular Queue Visualization</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <header>
         <h1>Circular Queue Visualization</h1>
     </header>
+    <div class="side-navbar" id="sideNavbar">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+    <button class="open-btn" id="openBtn"> Menu</button>
+    <script>
+        const sideNavbar = document.getElementById("sideNavbar");
+        const openBtn = document.getElementById("openBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const mainContent = document.querySelector(".main-content");
 
+        // Open and close the side navbar
+        openBtn.addEventListener("click", () => {
+            sideNavbar.classList.add("active");
+            mainContent.classList.add("shifted");
+        });
+
+        closeBtn.addEventListener("click", () => {
+            sideNavbar.classList.remove("active");
+            mainContent.classList.remove("shifted");
+        });
+    </script>
     <div class="controls">
         <div>
             <label for="queueSize">Choose Queue Size (3-10): </label>
@@ -35,6 +63,6 @@
     <div id="queueContainer" class="queue-container"></div>
     <div id="output" class="output"></div>
 
-    <script src="script.js"></script>
+    <script src="circQ.js"></script>
 </body>
 </html>

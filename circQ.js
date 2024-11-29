@@ -1,4 +1,6 @@
+
 class CircularQueue {
+
     constructor(capacity) {
         this.queue = new Array(capacity).fill(null);
         this.maxCap = capacity;
@@ -283,5 +285,19 @@ function addFrontLastIndicator(position, label) {
     indicator.style.top = `${y}px`;
     queueContainer.appendChild(indicator);
 }
+const sideNavbar = document.getElementById("sideNavbar");
+const openBtn = document.getElementById("openBtn");
+const closeBtn = document.getElementById("closeBtn");
+const mainContent = document.querySelector(".main-content");
 
+// Open and close the side navbar
+openBtn.addEventListener("click", () => {
+    sideNavbar.classList.add("active");
+    mainContent.classList.add("shifted");
+});
+
+closeBtn.addEventListener("click", () => {
+    sideNavbar.classList.remove("active");
+    mainContent.classList.remove("shifted");
+});
 changeQueueSize();
