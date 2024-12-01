@@ -1,12 +1,123 @@
-<div class="side-navbar" id="sideNavbar">
-    <button class="close-btn" id="closeBtn">&times;</button>
-    <a href="stack.html">Stack</a>
-    <a href="regular-queue.html">Regular Queue</a>
-    <a href="circular-queue.html">Circular Queue</a>
-    <a href="priority-queue.html">Priority Queue</a>
-    <a href="singly-linked-list.html">Singly Linked List</a>
-    <a href="doubly-linked-list.html">Doubly Linked List</a>
-    <a href="circular-linked-list.html">Circular Linked List</a>
-    <a href="avl-tree.html">AVL Tree</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List Visualization</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
 
+    <div class="side-navbar" id="sideNavbar">
+        <button class="cLL-close-btn" id="closeBtn">&times;</button>
+        <a href="home.html">Home</a>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+
+    <!-- Open Navbar Button -->
+    <button class="open-btn" id="openBtn">☰ Menu</button>
+    <div class="cLL-container">
+        <h2 class="cLL-title">Circular Linked List</h2>
+        <div class="cLL-current-list-section">
+            <div class="cLL-visualization-container">
+                <div class="cLL-visualization" id="currentList">
+                    <!-- Linked list nodes will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="cLL-max-size-section">
+            <label for="maxSizeInput">Enter Maximum Size:</label>
+            <input type="number" id="maxSizeInput" class="cLL-max-size-input" placeholder="Enter Max Size">
+            <button id="setMaxSizeButton" class="cLL-btn" onclick="setMaxSize()">Set Max Size</button>
+            <div id="sizeReminder" class="cLL-success-message">Please set the maximum size first!</div>
+        </div>
+
+        <div class="cLL-operations-section">
+            <div class="cLL-input-group">
+                <input type="number" id="valueInput" class="cLL-input-field" placeholder="Enter value">
+                <input type="number" id="indexInput" class="cLL-input-field" placeholder="Enter Index (for Insert/Delete)">
+            </div>
+
+            <div id="addressInputContainer" style="display:none;">
+                <label for="nodeAddress">Enter Address to Update:</label>
+                <input type="text" id="nodeAddress" class="cLL-input-field" placeholder="Enter address to update">
+                <button class="cLL-btn" onclick="submitAddressUpdate()">Submit Update</button>
+                <button class="cLL-btn" onclick="closeAddressInput()">Close</button>
+            </div>
+
+            <div id="operationsLogContainer" class="cLL-operations-log-container">
+                <h4>Operation Log</h4>
+                <div id="operationsLog" class="cLL-operations-log">No operations yet.</div>
+            </div>
+            
+            <h3 id="operations" class="cLL-title">Perform Operations</h3>
+            <div class="cLL-grid-btn">
+                <button class="cLL-tooltip-btn" onclick="append()">
+                    Append
+                    <span class="cLL-tooltip-text">Add Element at the tail</span>
+                </button>
+                
+                <button class="cLL-tooltip-btn" onclick="prepend()">
+                    Prepend
+                    <span class="cLL-tooltip-text">Add Element at the head</span>
+                </button>
+                
+                <button class="cLL-tooltip-btn" onclick="insertAtIndex()">Insert at Index
+                    <span class="cLL-tooltip-text">Insert a new element at the specified index</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="deleteHead()">Delete Head
+                    <span class="cLL-tooltip-text">Remove the first element (head)</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="deleteTail()">Delete Tail
+                    <span class="cLL-tooltip-text">Remove the last element (tail)</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="deleteByIndex()">Delete by Index
+                    <span class="cLL-tooltip-text">Remove an element at the specified index</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="clearList()">Clear List
+                    <span class="cLL-tooltip-text">Clear all elements in the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="size()">Size
+                    <span class="cLL-tooltip-text">Get the current size of the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="reverseList()">Reverse
+                    <span class="cLL-tooltip-text">Reverse the order of elements in the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="find()">Find
+                    <span class="cLL-tooltip-text">Find an element in the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="showHead()">Head
+                    <span class="cLL-tooltip-text">Show the first element (head) of the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="showTail()">Tail
+                    <span class="cLL-tooltip-text">Show the last element (tail) of the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="checkIfEmpty()">Is Empty
+                    <span class="cLL-tooltip-text">Check if the list is empty</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="checkIfFull()">Is Full
+                    <span class="cLL-tooltip-text">Check if the list is full</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="sortList()">Sort
+                    <span class="cLL-tooltip-text">Sort the elements in the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="update()">Update
+                    <span class="cLL-tooltip-text">Update an existing element in the list</span>
+                </button>
+                <button class="cLL-tooltip-btn" onclick="replace()">Replace
+                    <span class="cLL-tooltip-text">Replace an element at the specified index</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="circLL.js"></script>
+</body>
+</html>

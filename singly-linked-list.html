@@ -1,12 +1,345 @@
-<div class="side-navbar" id="sideNavbar">
-    <button class="close-btn" id="closeBtn">&times;</button>
-    <a href="stack.html">Stack</a>
-    <a href="regular-queue.html">Regular Queue</a>
-    <a href="circular-queue.html">Circular Queue</a>
-    <a href="priority-queue.html">Priority Queue</a>
-    <a href="singly-linked-list.html">Singly Linked List</a>
-    <a href="doubly-linked-list.html">Doubly Linked List</a>
-    <a href="circular-linked-list.html">Circular Linked List</a>
-    <a href="avl-tree.html">AVL Tree</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singly Linked List Operations</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General Page Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #1C1E21;
+        }
+
+        /* Side Navbar Styles */
+        .side-navbar {
+            width: 250px;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: -250px;
+            background: #1877F2;
+            overflow-y: auto;
+            transition: 0.3s ease-in-out;
+            padding-top: 60px;
+            z-index: 1000;
+        }
+
+        .side-navbar a {
+            padding: 12px 20px;
+            font-size: 18px;
+            color: #FFFFFF;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+
+        .side-navbar a:hover {
+            background-color: #145DBF;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 18px;
+            padding: 5px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .open-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: #1C1E21;
+            cursor: pointer;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #1877F2;
+            color: #FFFFFF;
+            padding: 15px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        /* Container Styles */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Input and Button Styles */
+        input[type="number"] {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #1877F2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #145DBF;
+        }
+
+        /* Message Styles */
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* List Display Styles */
+        .list-display {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #F0F2F5;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            input[type="number"] {
+                max-width: 100%;
+            }
+
+            .buttons-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+        .highlight {
+            background-color: #FFFF00;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .button-description {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="side-navbar" id="sideNavbar">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+
+    <header>
+        <h1>Singly Linked List Operations</h1>
+    </header>
+    <div class="container">
+        <div class="description" style="text-align: left; margin: 20px auto; max-width: 600px; line-height: 1.6; padding: 20px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <h2 style="margin-bottom: 15px;">What is Singly Linked List</h2>
+            <p style="margin-bottom: 15px;">
+                A <span class="highlight">singly linked list</span> is a foundational data structure used to organize 
+                and manipulate data efficiently. Each element, known as a <strong>node</strong>, has two key components:
+            </p>
+            <ul style="margin-left: 20px; margin-bottom: 15px;">
+                <li><strong>Data</strong>: The actual value or information contained in the node.</li>
+                <li><strong>Next</strong>: A pointer or reference to the next node in the sequence.</li>
+            </ul>
+            <p style="margin-bottom: 15px;">
+                The chain ends with a node whose <strong>Next</strong> reference points to <em>NULL</em>, 
+                signaling the termination of the list.
+            </p>
+            
+            <h3 style="margin-bottom: 10px;">Real-Life Example:</h3>
+            <p style="margin-bottom: 15px;">
+                Imagine a line of people passing a note down the row. Each person (node) holds the note (data) 
+                and knows only who to pass it to (next node). When the last person receives the note and there's 
+                no one else to pass it to, the process ends (NULL).
+            </p>
+
+            <h3 style="margin-bottom: 10px;">Why Use a Singly Linked List?</h3>
+            <p style="margin-bottom: 0;">
+                This data structure is highly flexible and efficient for operations like insertion and deletion, 
+                especially compared to arrays. It's commonly used in scenarios where memory is dynamically allocated 
+                or where fast data access is required.
+            </p>
+        </div>
+
+        <h3 style="margin-bottom: 10px;">Visualization Example</h3>
+        <div style="margin: 20px 0; text-align: center;">
+            <div style="display: inline-flex; align-items: center;">
+                <!-- Node 1 -->
+                <div style="border: 2px solid #1877F2; background-color: #EAF3FF; padding: 10px 20px; border-radius: 8px; margin-right: 10px;">
+                    <span style="font-weight: bold;">10</span>
+                </div>
+                <span style="font-size: 24px; margin-right: 10px;">→</span>
+                <!-- Node 2 -->
+                <div style="border: 2px solid #1877F2; background-color: #EAF3FF; padding: 10px 20px; border-radius: 8px; margin-right: 10px;">
+                    <span style="font-weight: bold;">20</span>
+                </div>
+                <span style="font-size: 24px; margin-right: 10px;">→</span>
+                <!-- Node 3 -->
+                <div style="border: 2px solid #1877F2; background-color: #EAF3FF; padding: 10px 20px; border-radius: 8px; margin-right: 10px;">
+                    <span style="font-weight: bold;">30</span>
+                </div>
+                <span style="font-size: 24px; margin-right: 10px;">→</span>
+                <!-- Null -->
+                <div style="border: 2px dashed #888; padding: 10px 20px; border-radius: 8px; background-color: #f9f9f9; color: #888;">
+                    NULL
+                </div>
+            </div>
+        </div>
+
+        <div class="max-size-container">
+            <h2>Set Linked List Max Size</h2>
+            <input type="number" id="maxSizeInput" placeholder="Enter Max Size (1-20)" min="1" max="20">
+            <div style="text-align: center;">
+                <button onclick="setMaxSize()">Set Max Size</button>
+            </div>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="operations-container">
+            <h2>Perform Operations</h2>
+            <input type="number" id="operationValue" placeholder="Enter Value (for Append/Prepend)" min="1" disabled>
+            <input type="number" id="operationIndex" placeholder="Enter Index (for Insert/Delete)" min="0" disabled>
+
+            <div class="buttons-container">
+                <div>
+                    <button onclick="append()">Append</button>
+                    <p class="button-description">Add Element at the tail (last)</p>
+                </div>
+                <div>
+                    <button onclick="prepend()">Prepend</button>
+                    <p class="button-description">Add Element at the head (top)</p>
+                </div>
+                <div>
+                    <button onclick="insertAt()">Insert at Index</button>
+                    <p class="button-description">Insert Element on specific Index</p>
+                </div>
+                <div>
+                    <button onclick="deleteHead()">Delete Head</button>
+                    <p class="button-description">Delete the top element</p>
+                </div>
+                <div>
+                    <button onclick="deleteTail()">Delete Tail</button>
+                    <p class="button-description">Delete the last element</p>
+                </div>
+                <div>
+                    <button onclick="deleteIndex()">Delete by Index</button>
+                    <p class="button-description">Delete the element by index #</p>
+                </div>
+                <div>
+                    <button onclick="clearList()">Clear List</button>
+                    <p class="button-description">Delete entire linked list</p>
+                </div>
+                <div>
+                    <button onclick="getSize()">Size</button>
+                    <p class="button-description">Display the linked list size</p>
+                </div>
+                <div>
+                    <button onclick="reverseList()">Reverse</button>
+                    <p class="button-description">Reverse the order of Linked list</p>
+                </div>
+                <div>
+                    <button onclick="findElement()">Find</button>
+                    <p class="button-description">Search the address using the element and return the value</p>
+                </div>
+                <div>
+                    <button onclick="sortList()">Sort</button>
+                    <p class="button-description">Sort the linked list from lowest to highest or from A-Z</p>
+                </div>
+                <div>
+                    <button onclick="isEmpty()">Is Empty</button>
+                    <p class="button-description">Return True/False</p>
+                </div>
+                <div>
+                    <button onclick="isFull()">Is Full</button>
+                    <p class="button-description">Return True/False</p>
+                </div>
+                <div>
+                    <button onclick="showHead()">Head</button>
+                    <p class="button-description">Return the head element</p>
+                </div>
+                <div>
+                    <button onclick="showTail()">Tail</button>
+                    <p class="button-description">Return the tail element</p>
+                </div>
+                <div>
+                    <button onclick="updateAddress()">Update Address</button>
+                    <p class="button-description">Update the element value using the address</p>
+                </div>
+                <div>
+                    <button onclick="replaceAddress()">Replace Address</button>
+                    <p class="button-description">Update the element value and address</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-display">
+            <h3>Current Linked List:</h3>
+            <div id="linkedListDisplay"></div>
+        </div>
+    </div>
+    <script src="singly-linked-list.js"></script>
+</body>
+</html>
+
+
+
 

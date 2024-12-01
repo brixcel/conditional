@@ -1,12 +1,667 @@
-<div class="side-navbar" id="sideNavbar">
-    <button class="close-btn" id="closeBtn">&times;</button>
-    <a href="stack.html">Stack</a>
-    <a href="regular-queue.html">Regular Queue</a>
-    <a href="circular-queue.html">Circular Queue</a>
-    <a href="priority-queue.html">Priority Queue</a>
-    <a href="singly-linked-list.html">Singly Linked List</a>
-    <a href="doubly-linked-list.html">Doubly Linked List</a>
-    <a href="circular-linked-list.html">Circular Linked List</a>
-    <a href="avl-tree.html">AVL Tree</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubly Linked List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            text-align: center;
+            background-color: #316FF6;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .node {
+            display: inline-block;
+            text-align: center;
+            margin: 10px;
+            padding: 10px;
+            border: 2px solid #316FF6;
+            border-radius: 5px;
+            width: 150px;
+            background-color: #ffffff;
+        }
+        .controls {
+            margin: 20px auto;
+            text-align: center;
+        }
+        .controls input,
+        .controls button {
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #316FF6;
+            border-radius: 5px;
+            background-color: #316FF6;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .controls input {
+            background-color: white;
+            color: black;
+        }
+        .controls button:hover {
+            background-color: #316FF6;
+        }
+        .list-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .node-container {
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        .node-box {
+            display: inline-block;
+            padding: 0px;
+            border: 2px solid #3079ff;
+            border-radius: 5px;
+            margin: 5px;
+            width: 70px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+        .arrow {
+            font-size: 24px;
+            padding: 10px;
+            color: #316FF6;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .scroll-box {
+            width: 98%;
+            height: 200px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #ffffff;
+            display: inline-block;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .col {
+            padding: 15px;
+            border: 1px solid #4267B2;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+        h5 {
+            color: #333;
+        }
+        h1 {
+          color: #f0f2f5;  
+        }
+        p {
+            color: #333;
+        }
+        .side-navbar {
+            width: 250px;
+            height: 100%;
+            background-color:#316FF6 ;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            transition: all 0.3s ease;
+            z-index: 900;
+            padding-top: 60px;
+        }
+        .side-navbar.active {
+            left: 0;
+        }
+        .side-navbar a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+        .side-navbar a:hover {
+            background-color: #145DBF;
+        }
+        .side-navbar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+        }
+        .side-navbar.active .close-btn {
+            display: block;
+        }
+        .menu-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #316FF6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1100;
+        }
+        .main-content {
+            transition: margin-left 0.3s;
+        }
+        .main-content.shifted {
+            margin-left: 250px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .main-content.shifted {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-btn" id="menuBtn">☰ Menu</button>
+    <div class="side-navbar" id="sideNavbar">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <a href="home.html">Home</a>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Doubly Linked List</h1>
+            <p>A doubly linked list is a data structure that
+                consists of a set of nodes, each of which contains a value
+                and two pointers, one pointing to the previous node in the
+                list and one pointing to the next node in the list.</p>
+        </header>
+        
+        <section class="controls">
+            <label for="list-limit">Set Limit: </label>
+            <input type="number" id="list-limit" placeholder="Limit" min="1">
+            <button onclick="setLimit()">Set Limit</button><br>
+            <input type="text" id="value" placeholder="Value" class="disabled">
+            <input type="number" id="index" placeholder="Index" class="disabled">
+            <input type="text" id="address" placeholder="Address" class="disabled"><br>
+            <input type="text" id="new-address" placeholder="New Address" class="disabled"><br>
+            <button onclick="prepend()" class="disabled">Prepend</button>
+            <button onclick="append()" class="disabled">Append</button>
+            <button onclick="insert()" class="disabled">Insert</button>
+            <button onclick="deleteHead()" class="disabled">Delete Head</button>
+            <button onclick="deleteTail()" class="disabled">Delete Tail</button>
+            <button onclick="deleteIndex()" class="disabled">Delete Index</button>
+            <button onclick="update()" class="disabled">Update</button>
+            <button onclick="replace()" class="disabled">Replace</button>
+            <button onclick="clearList()" class="disabled">Clear</button>
+            <button onclick="reverseList()" class="disabled">Reverse</button>
+            <button onclick="sortList()" class="disabled">Sort</button>
+            <button onclick="getSize()" class="disabled">Size</button>
+            <button onclick="isEmpty()" class="disabled">Is Empty</button>
+            <button onclick="isFull()" class="disabled">Is Full</button>
+            <button onclick="getHead()" class="disabled">Head</button>
+            <button onclick="getTail()" class="disabled">Tail</button>
+            <button onclick="find()" class="disabled">Find</button>
+        </section>
+        <div class="scroll-box">
+            <div class="content">
+                <section class="list-container" id="list-container">
+                </section>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col">
+                <h5>Linked List Operations</h5>
+                <p>
+                    1. Append - Add Element at the tail (last)<br>
+                    2. Prepend - Add Element at the head (top)<br>
+                    3. Insert - Insert Element on specific Index<br>
+                    4. Head - Return the head element<br>
+                    5. Tail - Return the tail element<br>
+                    6. Delete Tail - Delete the last element<br>
+                    7. Delete Head - Delete the top element<br>
+                    8. Delete Index - Delete the element by index #<br> 
+                    9. Update - Update the element value using the address<br>
+                    10. Replace - Update the element value and address<br>
+                    11. Clear - Delete entire linked list<br>
+                    12. Display - Return the linked list<br>
+                    13. Size - Display the linked list size<br>
+                    14. Reverse - Reverse the order of Linked List<br>
+                    15. Find - Search the element using the address and return the value<br>
+                    16. Sort - Sort the linked list from lowest to highest (or from A-B)<br>
+                    17. isEmpty - Return True / False<br>
+                    18. isFull - Return True / False<br>
+                </p>
+            </div>
+            <div class="col">
+                <h5>Necessary Data to Input</h5>
+                <p>
+                    1. Append input: (Value)<br>
+                    2. Prepend input: (Value)<br>
+                    3. Insert input: (Value, Index)<br>
+                    4. Head input: None<br>
+                    5. Tail input: None<br>
+                    6. Delete Tail input: None<br>
+                    7. Delete Head input: None<br>
+                    8. Delete Index input: (Index)<br>
+                    9. Update input: (Value, Address)<br>
+                    10. Replace input: (Address, Value, New Address)<br>
+                    11. Clear input: None<br>
+                    12. Display input: None<br>
+                    13. Size input: None<br>
+                    14. Reverse input: None<br>
+                    15. Find input: (Address)<br>
+                    16. Sort input: None<br>
+                    17. isEmpty input: None<br>
+                    18. isFull input: None<br>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let limit = 0;
+        let size = 0;
+        let head = null;
+        let tail = null;
+        let addressCounter = 1;
+
+        // Side Navbar Elements
+        const sideNavbar = document.getElementById("sideNavbar");
+        const menuBtn = document.getElementById("menuBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const mainContent = document.querySelector(".main-content");
+
+        // Open and close the side navbar
+        menuBtn.addEventListener("click", () => {
+            sideNavbar.classList.add("active");
+            mainContent.classList.add("shifted");
+        });
+
+        closeBtn.addEventListener("click", () => {
+            sideNavbar.classList.remove("active");
+            mainContent.classList.remove("shifted");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!sideNavbar.contains(e.target) && e.target !== menuBtn) {
+                sideNavbar.classList.remove("active");
+                mainContent.classList.remove("shifted");
+            }
+        });
+
+
+        class Node {
+            constructor(value) {
+                this.value = value;
+                this.address = `DLL${addressCounter.toString().padStart(2, "0")}`;
+                this.next = null;
+                this.prev = null;
+                addressCounter++;
+            }
+        }
+
+        function setLimit() {
+            const limitInput = document.getElementById("list-limit").value;
+            if (limitInput > 0) {
+                limit = parseInt(limitInput);
+                alert(`List limit set to ${limit}`);
+                enableControls();
+                document.getElementById("list-limit").disabled = true;
+                document.querySelector('button[onclick="setLimit()"]').disabled = true;
+            } else {
+                alert("Please enter a valid limit.");
+            }
+        }
+
+        function enableControls() {
+            const controls = document.querySelectorAll(".controls input, .controls button");
+            controls.forEach(control => {
+                control.classList.remove('disabled');
+            });
+        }
+
+        function update() {
+            const address = document.getElementById("address").value;
+            const newValue = document.getElementById("value").value;
+            if (!address || !newValue) {
+                alert("Please provide both address and new value.");
+                return;
+            }
+            let current = head;
+            while (current) {
+                if (current.address === address) {
+                    current.value = newValue;
+                    updateDisplay();
+                    resetInputs();
+                    return;
+                }
+                current = current.next;
+            }
+            alert("Address not found.");
+        }
+
+        function replace() {
+            const address = document.getElementById("address").value;
+            const newValue = document.getElementById("value").value;
+            const newAddress = document.getElementById("new-address").value;
+            if (!address || !newValue || !newAddress) {
+                alert("Please provide valid data.");
+                return;
+            }
+            let current = head;
+            while (current) {
+                if (current.address === address) {
+                    current.value = newValue;
+                    current.address = newAddress;
+                    updateDisplay();
+                    resetInputs();
+                    return;
+                }
+                current = current.next;
+            }
+            alert("Address not found.");
+        }
+
+        function updateDisplay() {
+            const container = document.getElementById("list-container");
+            container.innerHTML = "";
+            let current = head;
+            const nodes = [];
+
+            while (current) {
+                const nodeBox = `
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="address node-box"><h5>Address:<br>${current.address}</h5></div> 
+                        </div>
+                        <div class="col-12">
+                            <div class="node-box">
+                                <div><h5>Prev:<br> ${current.prev ? current.prev.address : 'NULL'}<br></h5></div>
+                            </div>
+                            <div class="node-box">
+                                <div><h5>Value: <br>${current.value}<br></h5></div>
+                            </div>  
+                            <div class="node-box">
+                                <div><h5>Next: <br>${current.next ? current.next.address : 'NULL'}<h5></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                nodes.push(nodeBox);
+                current = current.next;
+            }
+
+            container.innerHTML = `
+                <div class="node-container">
+                    ${nodes.join('<span class="arrow">⇔</span>')}
+                </div>
+            `;
+        }
+
+        function append() {
+            const value = document.getElementById("value").value;
+            if (!value || valueExists(value)) {
+                alert("Enter a valid value, or the value already exists.");
+                return;
+            }
+            if (size >= limit) {
+                alert("List is full.");
+                return;
+            }
+            const newNode = new Node(value);
+            if (!tail) {
+                head = tail = newNode;
+            } else {
+                tail.next = newNode;
+                newNode.prev = tail;
+                tail = newNode;
+            }
+            size++;
+            updateDisplay();
+            resetInputs();
+        }
+
+        function prepend() {
+            const value = document.getElementById("value").value;
+            if (!value || valueExists(value)) {
+                alert("Enter a valid value, or the value already exists.");
+                return;
+            }
+            if (size >= limit) {
+                alert("List is full.");
+                return;
+            }
+            const newNode = new Node(value);
+            if (!head) {
+                head = tail = newNode;
+            } else {
+                newNode.next = head;
+                head.prev = newNode;
+                head = newNode;
+            }
+            size++;
+            updateDisplay();
+            resetInputs();
+        }
+
+        function valueExists(value) {
+            let current = head;
+            while (current) {
+                if (current.value === value) return true;
+                current = current.next;
+            }
+            return false;
+        }
+
+        function insert() {
+            const index = parseInt(document.getElementById("index").value);
+            const value = document.getElementById("value").value;
+            if (!value || valueExists(value) || isNaN(index) || index < 0 || index > size) {
+                alert("Invalid index or value.");
+                return;
+            }
+            if (size >= limit) {
+                alert("List is full.");
+                return;
+            }
+            const newNode = new Node(value);
+            if (index === 0) {
+                prepend();
+                return;
+            }
+            if (index === size) {
+                append();
+                return;
+            }
+            let current = head;
+            for (let i = 0; i < index - 1; i++) {
+                current = current.next;
+            }
+            newNode.next = current.next;
+            newNode.prev = current;
+            if (current.next) current.next.prev = newNode;
+            current.next = newNode;
+            size++;
+            updateDisplay();
+            resetInputs();
+        }
+
+        function deleteHead() {
+            if (!head) {
+                alert("List is empty.");
+                return;
+            }
+            head = head.next;
+            if (head) head.prev = null;
+            else tail = null;
+            size--;
+            updateDisplay();
+        }
+
+        function deleteTail() {
+            if (!tail) {
+                alert("List is empty.");
+                return;
+            }
+            tail = tail.prev;
+            if (tail) tail.next = null;
+            else head = null;
+            size--;
+            updateDisplay();
+        }
+
+        function deleteIndex() {
+            const index = parseInt(document.getElementById("index").value);
+            if (isNaN(index) || index < 0 || index >= size) {
+                alert("Invalid index.");
+                return;
+            }
+            if (index === 0) {
+                deleteHead();
+                return;
+            }
+            if (index === size - 1) {
+                deleteTail();
+                return;
+            }
+            let current = head;
+            for (let i = 0; i < index; i++) {
+                current = current.next;
+            }
+            if (current.prev) current.prev.next = current.next;
+            if (current.next) current.next.prev = current.prev;
+            size--;
+            updateDisplay();
+        }
+
+        function resetInputs() {
+            document.getElementById("value").value = "";
+            document.getElementById("index").value = "";
+            document.getElementById("address").value = "";
+            document.getElementById("new-address").value = "";
+        }
+
+        function clearList() {
+            head = tail = null;
+            size = 0;
+            updateDisplay();
+        }
+
+        function sortList() {
+            if (!head) return;
+
+            let nodes = [];
+            let current = head;
+            while (current) {
+                nodes.push(current);
+                current = current.next;
+            }
+
+            nodes.sort((a, b) => {
+                const numA = Number(a.value);
+                const numB = Number(b.value);
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return numA - numB;
+                } else {
+                    return a.value.localeCompare(b.value);
+                }
+            });
+
+            for (let i = 0; i < nodes.length - 1; i++) {
+                nodes[i].next = nodes[i + 1];
+                nodes[i + 1].prev = nodes[i];
+            }
+
+            nodes[0].prev = null;
+            nodes[nodes.length - 1].next = null;
+            head = nodes[0];
+            tail = nodes[nodes.length - 1];
+
+            updateDisplay();
+        }
+
+        function reverseList() {
+            if (!head) return;
+            let current = head;
+            let prev = null;
+            let next = null;
+            while (current) {
+                next = current.next;
+                current.next = prev;
+                current.prev = next;
+                prev = current;
+                current = next;
+            }
+            head = prev;
+            updateDisplay();
+        }
+
+        function getSize() {
+            let dllsize = size * 3
+            alert(`Size: ${dllsize}`);
+        }
+
+        function isEmpty() {
+            alert(size === 0 ? "True" : "False");
+        }
+
+        function isFull() {
+            alert(size === limit ? "True" : "False");
+        }
+
+        function getHead() {
+            alert(head ? head.value : "No head");
+        }
+
+        function getTail() {
+            alert(tail ? tail.value : "No tail");
+        }
+
+        function find() {
+            const address = document.getElementById("address").value;
+            if (!address) {
+                alert("Please provide an address.");
+                return;
+            }
+            let current = head;
+            while (current) {
+                if (current.address === address) {
+                    alert(`Value at ${address}: ${current.value}`);
+                    return;
+                }
+                current = current.next;
+            }
+            alert("Address not found.");
+        }
+    </script>
+</body>
+</html>
 

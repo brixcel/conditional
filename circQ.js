@@ -1,28 +1,30 @@
-
 class CircularQueue {
-
     constructor(capacity) {
-        this.queue = new Array(capacity).fill(null);
-        this.maxCap = capacity;
-        this.front = -1;
-        this.rear = -1;
-        this.mustEmptyFirst = false;
+        this.queue = new Array(capacity).fill(null); // Initialize queue with null values
+        this.maxCap = capacity; // Maximum capacity of the queue
+        this.front = -1; // The front index
+        this.rear = -1; // The rear index
+        this.mustEmptyFirst = false; // Flag to check if elements need to be dequeued before enqueuing
     }
 
+    // Get the current size of the queue
     getSize() {
-        if (this.front === -1) return 0;
-        if (this.rear >= this.front) return this.rear - this.front + 1;
-        return this.maxCap - (this.front - this.rear - 1);
+        if (this.front === -1) return 0; // Empty queue
+        if (this.rear >= this.front) return this.rear - this.front + 1; // Normal case
+        return this.maxCap - (this.front - this.rear - 1); // Circular case
     }
 
+    // Check if the queue is empty
     isEmpty() {
         return this.front === -1;
     }
 
+    // Check if the queue is full
     isFull() {
         return (this.rear + 1) % this.maxCap === this.front;
     }
 
+    // Enqueue an element to the queue
     enqueue(data) {
         if (typeof data !== 'number' || isNaN(data)) {
             return "Only integers are allowed.";
@@ -50,7 +52,7 @@ class CircularQueue {
             this.front = 0;
         }
 
-        this.rear = (this.rear + 1) % this.maxCap;
+        this.rear = (this.rear + 1) % this.maxCap; // Circular increment
         this.queue[this.rear] = data;
         return `${data} was added to the queue.`;
     }
@@ -77,16 +79,18 @@ class CircularQueue {
         return `${frontElement} was removed from the queue.`;
     }
 
+    // Update the front index after dequeue
     updateFront() {
         if (this.front === this.rear) {
             this.front = -1;
             this.rear = -1;
             this.mustEmptyFirst = false;
         } else {
-            this.front = (this.front + 1) % this.maxCap;
+            this.front = (this.front + 1) % this.maxCap; // Circular increment
         }
     }
 
+    // Peek the front element of the queue
     peek() {
         if (this.isEmpty()) {
             return "Queue is empty.";
@@ -94,6 +98,7 @@ class CircularQueue {
         return `${this.queue[this.front]}`;
     }
 
+    // Get the rear element of the queue
     rearElement() {
         if (this.isEmpty()) {
             return "Queue is empty.";
@@ -102,11 +107,12 @@ class CircularQueue {
     }
 }
 
-let circularQueue = null;
+let circularQueue = null; // The circular queue instance
 const outputBox = document.getElementById("output");
 const queueContainer = document.getElementById("queueContainer");
 const status = document.getElementById("status");
 
+// Change the queue size dynamically
 function changeQueueSize() {
     const newSize = Math.min(10, Math.max(3, parseInt(document.getElementById("queueSize").value)));
     document.getElementById("queueSize").value = newSize; // Update input field to reflect valid size
@@ -115,7 +121,19 @@ function changeQueueSize() {
     updateQueueDisplay();
 }
 
+// Set the size of the queue
+function setQueueSize() {
+    const newSize = Math.min(10, Math.max(3, parseInt(document.getElementById("queueSize").value)));
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    circularQueue = new CircularQueue(newSize);
+    status.innerText = `Queue size has been set to ${newSize}.`;
+    updateQueueDisplay();
+}
 
+// Handle enqueue operation
 function handleEnqueue() {
     let data = document.getElementById("enqueueValue").value.trim();
 
@@ -146,6 +164,7 @@ function handleEnqueue() {
     updateQueueDisplay();
 }
 
+// Handle dequeue operation
 function handleDequeue() {
     const dequeueInput = document.getElementById("dequeueValue").value.trim();
 
@@ -175,7 +194,7 @@ function handleDequeue() {
     updateQueueDisplay();
 }
 
-
+// Handle peek operation
 function handlePeek() {
     if (!circularQueue) {
         status.innerText = "Please set a valid queue limit first.";
@@ -185,6 +204,7 @@ function handlePeek() {
     status.innerText = circularQueue.peek();
 }
 
+// Handle rear operation
 function handleRear() {
     if (!circularQueue) {
         status.innerText = "Please set a valid queue limit first.";
@@ -194,6 +214,7 @@ function handleRear() {
     status.innerText = circularQueue.rearElement();
 }
 
+// Handle queue size operation
 function handleSize() {
     if (!circularQueue) {
         status.innerText = "Please set a valid queue limit first.";
@@ -203,6 +224,7 @@ function handleSize() {
     status.innerText = `Queue size: ${circularQueue.getSize()}`;
 }
 
+// Handle IsEmpty operation
 function handleIsEmpty() {
     if (!circularQueue) {
         status.innerText = "Please set a valid queue limit first.";
@@ -212,6 +234,7 @@ function handleIsEmpty() {
     status.innerText = circularQueue.isEmpty() ? "TRUE" : "FALSE";
 }
 
+// Handle IsFull operation
 function handleIsFull() {
     if (!circularQueue) {
         status.innerText = "Please set a valid queue limit first.";
@@ -221,6 +244,7 @@ function handleIsFull() {
     status.innerText = circularQueue.isFull() ? "TRUE" : "FALSE";
 }
 
+// Function to calculate positions of queue slots in a circular layout
 function calculatePositions(size, radius) {
     const positions = [];
     const centerX = 150, centerY = 150;
@@ -236,6 +260,7 @@ function calculatePositions(size, radius) {
     return positions;
 }
 
+// Update the visual representation of the queue
 function updateQueueDisplay() {
     queueContainer.innerHTML = ''; 
     if (!circularQueue || circularQueue.isEmpty()) {
@@ -270,7 +295,7 @@ function updateQueueDisplay() {
     } while (i !== (circularQueue.rear + 1) % circularQueue.maxCap);
 }
 
-// Updated function to display "Front" and "Last" labels
+// Add front/last indicator labels
 function addFrontLastIndicator(position, label) {
     const indicator = document.createElement("div");
     indicator.className = "front-last-indicator";
@@ -285,6 +310,8 @@ function addFrontLastIndicator(position, label) {
     indicator.style.top = `${y}px`;
     queueContainer.appendChild(indicator);
 }
+
+// Handle side navbar open and close
 const sideNavbar = document.getElementById("sideNavbar");
 const openBtn = document.getElementById("openBtn");
 const closeBtn = document.getElementById("closeBtn");
@@ -300,4 +327,3 @@ closeBtn.addEventListener("click", () => {
     sideNavbar.classList.remove("active");
     mainContent.classList.remove("shifted");
 });
-changeQueueSize();

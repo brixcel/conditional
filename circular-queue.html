@@ -4,12 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Circular Queue Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <header>
-        <h1>Circular Queue Visualization</h1>
-    </header>
+    <div class="cqv-container">
+        <header class="cqv-header">
+            <h1 class="cqv-title">Circular Queue Visualization</h1>
+            <p>A Circular Queue is an extended version of a normal queue where the last element of the queue is connected to the first element of the queue forming a circle.
+            </p>
+        </header>
+    
+        <div class="cqv-controls">
+            <div>
+                
+                <label for="queueSize">Set Queue Size (2-100): </label>
+                <input type="text" id="queueSize" class="cqv-input-number" min="2" max="100" value="">
+                <div class="tooltip">
+                    <button onclick="changeQueueSize()" class="cqv-button">Confirm</button>
+                    <span class="tooltiptext">Set the size of the circular queue (2-100).</span>
+                </div>
+            </div>
+            <div>
+                <input type="text" id="enqueueValue" class="cqv-input-text" placeholder="Enter a number" min="1" max="99">
+                <div class="tooltip">
+                    <button onclick="handleEnqueue()" class="cqv-button">Enqueue</button>
+                    <span class="tooltiptext">Insert a number into the circular queue at the rear position.</span>
+                </div>
+                <input type="text" id="dequeueValue" class="cqv-input-text" placeholder="Enter a value to dequeue">
+                <div class="tooltip">
+                    <button onclick="handleDequeue()" class="cqv-button">Dequeue</button>
+                    <span class="tooltiptext">Remove the front item from the circular queue.</span>
+                </div>
+            </div>
+            <div>
+                <div class="tooltip">
+                    <button onclick="handlePeek()" class="cqv-button">Peek</button>
+                    <span class="tooltiptext">View the front item of the circular queue without removing it.</span>
+                </div>
+                <div class="tooltip">
+                    <button onclick="handleRear()" class="cqv-button">Rear</button>
+                    <span class="tooltiptext">View the last item of the circular queue.</span>
+                </div>
+                <div class="tooltip">
+                    <button onclick="handleSize()" class="cqv-button">Queue Size</button>
+                    <span class="tooltiptext">Check the current size of the circular queue.</span>
+                </div>
+                <div class="tooltip">
+                    <button onclick="handleIsEmpty()" class="cqv-button">IsEmpty</button>
+                    <span class="tooltiptext">Check if the circular queue is empty (no elements).</span>
+                </div>
+                <div class="tooltip">
+                    <button onclick="handleIsFull()" class="cqv-button">IsFull</button>
+                    <span class="tooltiptext">Check if the circular queue is full (reached its maximum size).</span>
+                </div>
+            </div>
+        </div>
+    
+        <div id="status" class="cqv-status"></div>
+        <div id="queueContainer" class="cqv-queue-container"></div>
+        <div id="output" class="cqv-output"></div>
+    </div>
+
     <div class="side-navbar" id="sideNavbar">
         <button class="close-btn" id="closeBtn">&times;</button>
         <a href="stack.html">Stack</a>
@@ -21,48 +77,268 @@
         <a href="circular-linked-list.html">Circular Linked List</a>
         <a href="avl-tree.html">AVL Tree</a>
     </div>
-    <button class="open-btn" id="openBtn"> Menu</button>
+
+    <!-- Open Navbar Button -->
+    <button class="open-btn" id="openBtn">☰ Menu</button>
+    
+
     <script>
-        const sideNavbar = document.getElementById("sideNavbar");
-        const openBtn = document.getElementById("openBtn");
-        const closeBtn = document.getElementById("closeBtn");
-        const mainContent = document.querySelector(".main-content");
+        class CircularQueue {
+    constructor(capacity) {
+        this.queue = new Array(capacity).fill(null);
+        this.capacity = capacity;
+        this.front = -1;
+        this.rear = -1;
+    }
 
-        // Open and close the side navbar
-        openBtn.addEventListener("click", () => {
-            sideNavbar.classList.add("active");
-            mainContent.classList.add("shifted");
-        });
+    getSize() {
+        if (this.front === -1) return 0;
+        if (this.rear >= this.front) return this.rear - this.front + 1;
+        return this.capacity - (this.front - this.rear - 1);
+    }
 
-        closeBtn.addEventListener("click", () => {
-            sideNavbar.classList.remove("active");
-            mainContent.classList.remove("shifted");
-        });
+    isEmpty() {
+        return this.front === -1;
+    }
+
+    isFull() {
+        return (this.rear + 1) % this.capacity === this.front;
+    }
+
+    enqueue(data) {
+        if (typeof data !== 'number' || isNaN(data) || !Number.isInteger(data)) {
+            return "Only integers are allowed.";
+        }
+
+        if (data < 1 || data > 1000) {
+            return "Please enter a number between 1 and 1000.";
+        }
+
+        if (this.isFull()) {
+            return "Queue reached its maximum capacity.";
+        }
+
+        if (this.front === -1) {
+            this.front = 0;
+        }
+
+        this.rear = (this.rear + 1) % this.capacity;
+        this.queue[this.rear] = data;
+        return `${data} was added to the queue.`;
+    }
+
+    dequeue() {
+        if (this.isEmpty()) {
+            return "Nothing to dequeue.";
+        }
+
+        const frontElement = this.queue[this.front];
+        this.queue[this.front] = null;
+        if (this.front === this.rear) {
+            this.front = -1;
+            this.rear = -1;
+        } else {
+            this.front = (this.front + 1) % this.capacity;
+        }
+
+        return `${frontElement} was removed from the queue.`;
+    }
+
+    peek() {
+        return this.isEmpty() ? "Queue is empty." : `Peek: ${this.queue[this.front]}`;
+    }
+
+    rearElement() {
+        return this.isEmpty() ? "Queue is empty." : `Rear: ${this.queue[this.rear]}`;
+    }
+}
+
+let circularQueue = null;
+const queueContainer = document.getElementById("queueContainer");
+const status = document.getElementById("status");
+
+function changeQueueSize() {
+    const newSize = parseInt(document.getElementById("queueSize").value.trim(), 10);
+    if (isNaN(newSize) || newSize <= 0 || newSize > 100) {
+        status.innerText = "Please enter a valid queue size (1-100).";
+        return;
+    }
+    circularQueue = new CircularQueue(newSize);
+    status.innerText = `Queue initialized with a size of ${newSize}.`;
+    updateQueueDisplay();
+}
+
+function handleEnqueue() {
+    const enqueueInput = document.getElementById("enqueueValue");
+    let data = enqueueInput.value.trim();
+    enqueueInput.value = ""; // Clear input field
+
+    if (!/^-?[1-9]\d*$/.test(data)) {
+        status.innerText = "Please enter a valid integer.";
+        return;
+    }
+
+    data = parseInt(data, 10);
+
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    const result = circularQueue.enqueue(data);
+    status.innerText = result;
+    updateQueueDisplay();
+}
+
+function handleDequeue() {
+    const dequeueInput = document.getElementById("dequeueValue");
+    let value = dequeueInput.value.trim();
+    dequeueInput.value = ""; // Clear input field
+
+    if (!/^-?[1-9]\d*$/.test(value)) {
+        status.innerText = "Please enter a valid integer.";
+        return;
+    }
+
+    value = parseInt(value, 10);
+
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+
+    if (circularQueue.queue[circularQueue.front] !== value) {
+        status.innerText = `You can only dequeue the front element. The front is ${circularQueue.queue[circularQueue.front]}, not ${value}.`;
+        return;
+    }
+
+    const result = circularQueue.dequeue();
+    status.innerText = result;
+    updateQueueDisplay();
+}
+
+function handlePeek() {
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    status.innerText = circularQueue.peek();
+}
+
+function handleRear() {
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    status.innerText = circularQueue.rearElement();
+}
+
+function handleSize() {
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    status.innerText = `Queue size: ${circularQueue.getSize()}`;
+}
+
+function handleIsEmpty() {
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    status.innerText = circularQueue.isEmpty() ? "TRUE" : "FALSE";
+}
+
+function handleIsFull() {
+    if (!circularQueue) {
+        status.innerText = "Please set a valid queue limit first.";
+        return;
+    }
+    status.innerText = circularQueue.isFull() ? "TRUE" : "FALSE";
+}
+
+function calculatePositions(size, radius) {
+    const positions = [];
+    const centerX = radius + 30;
+    const centerY = radius + 30;
+    const angleStep = (2 * Math.PI) / size;
+
+    for (let i = 0; i < size; i++) {
+        const angle = i * angleStep;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        positions.push({ x, y });
+    }
+    return positions;
+}
+
+function updateQueueDisplay() {
+    queueContainer.innerHTML = '';
+    if (!circularQueue || circularQueue.isEmpty()) {
+        return;
+    }
+    const radius = 120 + Math.min(circularQueue.getSize(), 100) * 5;
+    queueContainer.style.width = `${2 * radius + 60}px`;
+    queueContainer.style.height = `${2 * radius + 60}px`;
+    const positions = calculatePositions(circularQueue.capacity, radius);
+    let i = circularQueue.front;
+    do {
+        const slot = document.createElement("div");
+        slot.className = "cqv-queue-slot";
+        slot.style.left = `${positions[i].x}px`;
+        slot.style.top = `${positions[i].y}px`;
+        if (circularQueue.queue[i] !== null) {
+            slot.classList.add("cqv-queue-slot-filled");
+            slot.innerText = circularQueue.queue[i];
+        }
+        queueContainer.appendChild(slot);
+
+        if (i === circularQueue.front) {
+            addFrontLastIndicator(positions[i], "Front");
+        }
+        if (i === circularQueue.rear) {
+            addFrontLastIndicator(positions[i], "Last");
+        }
+        i = (i + 1) % circularQueue.capacity;
+    } while (i !== (circularQueue.rear + 1) % circularQueue.capacity);
+}
+
+function addFrontLastIndicator(position, label) {
+    const indicator = document.createElement("div");
+    indicator.className = "cqv-front-last-indicator";
+    indicator.innerText = label;
+
+    const offset = 50;
+    const angle = Math.atan2(position.y - (queueContainer.clientHeight / 2), position.x - (queueContainer.clientWidth / 2));
+    const x = position.x + offset * Math.cos(angle);
+    const y = position.y + offset * Math.sin(angle);
+
+    indicator.style.left = `${x}px`;
+    indicator.style.top = `${y}px`;
+    queueContainer.appendChild(indicator);
+}
+
+
+const sideNavbar = document.getElementById("sideNavbar");
+const openBtn = document.getElementById("openBtn");
+const closeBtn = document.getElementById("closeBtn");
+const mainContent = document.querySelector(".main-content");
+
+// Open and close the side navbar
+openBtn.addEventListener("click", () => {
+    sideNavbar.classList.add("active");
+    mainContent.classList.add("shifted");
+});
+
+closeBtn.addEventListener("click", () => {
+    sideNavbar.classList.remove("active");
+    mainContent.classList.remove("shifted");
+});
+
+
+changeQueueSize();
+
+
+
     </script>
-    <div class="controls">
-        <div>
-            <label for="queueSize">Choose Queue Size (3-10): </label>
-            <input type="number" id="queueSize" min="3" max="10" value="5" onchange="changeQueueSize()">
-        </div>
-        <div>
-            <input type="text" id="enqueueValue" placeholder="Enter a number" min="1" max="99">
-            <button onclick="handleEnqueue()">Enqueue</button>
-            <input type="text" id="dequeueValue" placeholder="Enter a value to dequeue">
-            <button onclick="handleDequeue()">Dequeue</button>
-        </div>
-        <div>
-            <button onclick="handlePeek()">Peek</button>
-            <button onclick="handleRear()">Rear</button>
-            <button onclick="handleSize()">Queue Size</button>
-            <button onclick="handleIsEmpty()">IsEmpty</button>
-            <button onclick="handleIsFull()">IsFull</button>
-        </div>
-    </div>
-
-    <div id="status" class="status"></div>
-    <div id="queueContainer" class="queue-container"></div>
-    <div id="output" class="output"></div>
-
-    <script src="circQ.js"></script>
 </body>
 </html>
