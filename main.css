@@ -539,104 +539,247 @@ button:hover {
 }
 
 /* Stack Section Layout */
-.stackSection {
-    margin: 20px auto;
-    padding: 20px;
-    background: #FFFFFF;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    align-items: center;
+/* stack-style.css */
+
+
+.stack-side-navbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #1877f2; /* Facebook blue */
+    padding-top: 20px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
 }
 
-.stackSection h1 {
-    font-size: 28px;
-    color: #1877F2;
-    margin-bottom: 20px;
-    text-align: center;
+.stack-side-navbar.open {
+    transform: translateX(0);
 }
 
-/* Stack Visualization */
-.stackVisualContainer {
+.stack-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.stack-nav-link {
+    color: black;
+    text-decoration: none;
+    display: block;
+    padding: 10px 20px;
+    transition: background 0.3s;
+}
+
+.stack-nav-link:hover {
+    background-color: #145dbf; /* Darker blue on hover */
+}
+
+/* Navbar Overlay */
+.stack-navbar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 300px;
-    border: 2px solid #1877F2;
-    border-radius: 5px;
-    overflow-y: auto;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+}
+
+.stack-navbar-overlay.active {
+    display: block;
+}
+
+/* Open Button */
+.stack-menu-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #1877f2; /* Facebook blue */
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+/* Stack Section Styles */
+.stack-heading {
+    text-align: center;
+    padding: 20px;
+    color: #1877f2;
+    font-size: 5.0rem;
+}
+
+.stack-description {
+    font-size: 1.5rem;
+    color: #1877f2;
+    padding: 20px;
+}
+
+.stack-box {
+    float: right;
+    margin: 100px 200px 100px 100px;
+    width: 300px;
+    height: 200px;
+    border: 2px solid #1877f2;
+    border-top: none;
+    background-color: transparent;
+    overflow-y: scroll;
     display: flex;
     flex-direction: column-reverse;
-    align-items: center;
-    background-color: #F0F2F5;
-    padding: 10px;
 }
 
-.stackBar {
-    width: 90%;
-    padding: 15px;
-    margin: 5px 0;
+.stack-bar {
+    width: 100%;
+    margin-top: 5px;
+    background-color: #1877f2;
+    color: black;
     text-align: center;
-    background-color: #1877F2;
-    color: white;
-    border-radius: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    font-weight: bold;
-    font-size: 16px;
-    transition: transform 0.2s ease;
+    line-height: 30px;
+    height: 30px;
+    border-radius: 4px;
 }
 
-.stackBar:hover {
-    transform: scale(1.01);
+.stack-highlight {
+    background-color: #1877f2;
+    border: 2px solid black;
 }
 
-/* Highlight effect for the top element */
-.stackHighlight {
-    background-color: #FFCC00 !important;
-    color: #333;
-}
-
-/* Stack Controls */
-.stackControls {
+.stack-buttons {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    margin-left: 50px;
     gap: 15px;
-    margin-top: 20px;
 }
 
-.stackControls button {
-    background-color: #1877F2;
+.stack-input-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stack-capacity-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stack-button {
+    font-size: 1.2rem;
+    padding: 12px 20px;
+    width: 250px;
+    margin: 5px 0;
+    background-color: #086ef5;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 16px;
+    border: 2px solid #1877f2;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    position: relative;
 }
 
-.stackControls button:disabled {
-    background-color: #A1B1C1;
+.stack-button:hover {
+    background-color: #1877f2;
+    color: black;
+}
+
+.stack-button:disabled {
+    background-color: #ccc;
     cursor: not-allowed;
+    color: #666;
 }
 
-.stackControls button:hover:not(:disabled) {
-    background-color: #145DBF;
-}
-
-/* Stack Input Controls */
-.stackInputControls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.stackInputControls input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #D3D3D3;
+.stack-input {
+    font-size: 1.2rem;
+    padding: 12px 20px;
+    width: 200px;
+    border: 2px solid #1877f2;
     border-radius: 5px;
-    font-size: 16px;
+    color: #1877f2;
 }
 
+/* Tooltip styling */
+.stack-button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.stack-button:hover[data-tooltip]::after {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .stack-box {
+        position: relative;
+        float: none;
+        width: 100%;
+        margin: 0;
+        height: auto;
+    }
+
+    .stack-buttons {
+        flex-direction: row;
+        justify-content: space-around;
+        margin-left: 0;
+        margin-top: 20px;
+    }
+
+    .stack-input-container,
+    .stack-capacity-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stack-side-navbar {
+        width: 100%;
+    }
+
+    .stack-menu-button {
+        display: block;
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        background: none;
+        border: none;
+        color: #1877f2;
+        font-size: 2rem;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .stack-content {
+        margin-left: 0;
+    }
+
+    .stack-side-navbar.open .stack-content {
+        margin-left: 0;
+    }
+}
 
 
 /* Header Styles */

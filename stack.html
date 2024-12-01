@@ -8,8 +8,7 @@
 </head>
 <body>
     <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
-        <a href="home.html">Home</a>
+        <button class="close-btn" id="closeBtn">&times;</button>
         <a href="stack.html">Stack</a>
         <a href="regular-queue.html">Regular Queue</a>
         <a href="circular-queue.html">Circular Queue</a>
@@ -19,34 +18,34 @@
         <a href="circular-linked-list.html">Circular Linked List</a>
         <a href="avl-tree.html">AVL Tree</a>
     </div>
-    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
 
-    <section class="stackSection">
-        <h1>Stack Data Structure</h1>
-        <p class="stackDescription">A stack is a linear data structure that follows the Last In, First Out (LIFO) principle, meaning the last element added to the stack will be the first one to be removed.</p>
+    <!-- Open Navbar Button -->
+    <button class="open-btn" id="openBtn">☰ Menu</button>
+    <section class="stack-section">
+        <h1 class="stack-heading">Stack Data Structure</h1>
+        <p class="stack-description">A stack is a linear data structure that follows the Last In, First Out (LIFO) principle, meaning the last element added to the stack will be the first one to be removed.</p>
 
-        <div class="stackVisualContainer"></div>
-        <div id="outputMessage" class="outputMessage"></div> <!-- Output Message Container -->
+        <div class="stack-box"></div>
 
-        <div class="stackControls">
-            <div class="capacityControls">
-                <input type="text" id="stackCapacityInput" placeholder="Enter max capacity" />
-                <button id="setStackCapacityBtn">Set Stack Capacity</button>
-                <button id="resetStackBtn">Reset Stack</button>
-            </div>
+        <div class="stack-buttons">
+          <div class="stack-capacity-container">
+            <button id="stack-setCapacityButton" class="stack-button" data-tooltip="Set the maximum capacity of the stack">Set Stack Capacity</button>
+            <button id="stack-refreshButton" class="stack-button" data-tooltip="Refresh the stack's capacity">Refresh Capacity</button>
+          </div>
 
-            <div class="stackInputControls">
-                <input type="text" id="stackElementInput" placeholder="Enter value" />
-                <button id="addElementBtn" disabled>Push</button>
-            </div>
-            
-            <button id="removeElementBtn" disabled>Pop</button>
-            <button id="viewTopElementBtn" disabled>peek</button>
-            <button id="checkStackEmptyBtn" disabled>isEmpty</button>
-            <button id="checkStackFullBtn" disabled>isFull</button>
-            <button id="viewRearElementBtn" disabled>Rear</button>
+          <div class="stack-input-container">
+            <button id="stack-pushButton" class="stack-button" data-tooltip="Adds an element onto the stack" disabled>Push</button>
+            <input type="text" id="stack-numberInput" class="stack-input" placeholder="Enter a number" />
+          </div>
+          
+          <button id="stack-popButton" class="stack-button" data-tooltip="Removes the top element from the stack" disabled>Pop</button>
+          <button id="stack-peekButton" class="stack-button" data-tooltip="Returns the top element" disabled>Peek</button>
+          <button id="stack-isEmptyButton" class="stack-button" data-tooltip="Checks if the stack is empty" disabled>Is_Empty</button>
+          <button id="stack-isFullButton" class="stack-button" data-tooltip="Checks if the stack is full" disabled>Is_Full</button>
+          <button id="stack-sizeButton" class="stack-button" data-tooltip="Shows the current size of the stack" disabled>Size</button> 
         </div>
     </section>
+
     <script src="stack.js"></script>
 </body>
 </html>
