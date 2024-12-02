@@ -58,8 +58,8 @@ function isFull() {
 function enqueue() {
     const queueInput = document.getElementById("queueInput").value.trim();
 
-    if (!queueInput) {
-        showMessage("Please enter a value to enqueue.");
+    if (!/^[1-9]\d*$/.test(queueInput)) {
+        showMessage("Please enter a valid number to enqueue. The number should not start with zero.");
         return;
     }
 
@@ -72,7 +72,6 @@ function enqueue() {
     updateQueueDisplay();
     showMessage(`Enqueued: ${queueInput}`);
 }
-
 // Remove an element from the queue
 function dequeue() {
     if (isEmpty()) {
