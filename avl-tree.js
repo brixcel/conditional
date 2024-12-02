@@ -2,19 +2,33 @@
 const sideNavbar = document.getElementById("sideNavbar");
 const openBtn = document.getElementById("openBtn");
 const closeBtn = document.getElementById("closeBtn");
-const mainContent = document.querySelector(".main-content");
+const overlay = document.getElementById("overlay");
 
-// Open and close the side navbar
-openBtn.addEventListener("click", () => {
+function openMenu() {
     sideNavbar.classList.add("active");
-    mainContent.classList.add("shifted");
-});
+    overlay.style.display = "block";
+}
 
-closeBtn.addEventListener("click", () => {
+function closeMenu() {
     sideNavbar.classList.remove("active");
-    mainContent.classList.remove("shifted");
+    overlay.style.display = "none";
+}
+
+openBtn.addEventListener("click", openMenu);
+closeBtn.addEventListener("click", closeMenu);
+overlay.addEventListener("click", closeMenu);
+
+// Close menu when clicking outside
+document.addEventListener("click", function(event) {
+    if (!sideNavbar.contains(event.target) && event.target !== openBtn) {
+        closeMenu();
+    }
 });
 
+// Prevent clicks inside the menu from closing it
+sideNavbar.addEventListener("click", function(event) {
+    event.stopPropagation();
+});
 class AVLnode {
     constructor(value) {
         this.value = value;
@@ -229,18 +243,18 @@ class AVLTree {
 const avlTree = new AVLTree();
 
 function addNumber() {
-const numberInput = document.getElementById('numberInput');
-const value = parseInt(numberInput.value, 10);
+    const numberInput = document.getElementById('numberInput');
+    const value = parseInt(numberInput.value, 10);
 
-// Validate if the input is a positive number
-if (isNaN(value) || value <= 0) {
-    alert('Please enter a valid positive number.');
-    return;
-}
+    // Validate if the input is a positive number and not a string and not a number starting with zero
+    if (isNaN(value) || value <= 0 || numberInput.value.startsWith('0')) {
+        alert('Please enter a valid positive number that does not start with zero.');
+        return;
+    }
 
-// Add the number to the AVL tree
-avlTree.add(value);
-numberInput.value = '';  // Clear the input field after adding
+    // Add the number to the AVL tree
+    avlTree.add(value);
+    numberInput.value = '';  // Clear the input field after adding
 }
 
 

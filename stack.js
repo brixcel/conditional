@@ -1,6 +1,6 @@
-let stackMaxCapacity = 0;
-let stackCurrentSize = 0;
-
+// Initialize stack capacity and size
+let stackCapacity = 0;
+let stackSize = 0;
 // Side Navbar Elements
 const sideNavbar = document.getElementById("sideNavbar");
 const openBtn = document.getElementById("openBtn");
@@ -18,140 +18,146 @@ closeBtn.addEventListener("click", () => {
     mainContent.classList.remove("shifted");
 });
 
-// Function to configure the stack's maximum capacity
-function configureStackMaxCapacity() {
-    const userInput = document.getElementById('stackCapacityInput').value.trim();
+// Function to set the stack capacity when the "Set Stack Capacity" button is clicked
+function setStackCapacity() {
+    let capacity = prompt("Enter the maximum capacity of the stack (positive whole number):");
 
-    // Check if input starts with '0' or is not a valid number
-    if (userInput.startsWith('0')) {
-        displayMessage("Stack capacity cannot start with zero. Please enter a valid positive number.");
-        return;
-    }
-
-    if (userInput && !isNaN(userInput) && parseInt(userInput) > 0 && Number.isInteger(Number(userInput))) {
-        stackMaxCapacity = parseInt(userInput, 10);
-        stackCurrentSize = 0;
-        displayMessage(`Stack capacity set to ${stackMaxCapacity}`);
+    // Validate that the input is a positive whole number
+    if (capacity !== null) {
+        capacity = capacity.trim();  // Remove any extra spaces
         
-        enableStackButtons();
-        document.getElementById('setStackCapacityBtn').disabled = true;
-        document.getElementById('stackCapacityInput').disabled = true;
-    } else {
-        displayMessage("Please enter a valid positive whole number.");
-    }
-}
+        // Check if capacity is a valid positive whole number
+        if (capacity && !isNaN(capacity) && parseInt(capacity) > 0 && 
+            !capacity.startsWith('0') && Number.isInteger(Number(capacity))) {
+            stackCapacity = parseInt(capacity, 10);
+            stackSize = 0;  // Reset stack size when setting capacity
+            alert(`Stack capacity set to ${stackCapacity}`);
 
-// Function to display output messages
-function displayMessage(message) {
-    document.getElementById('outputMessage').textContent = message;
-}
-
-// Function to enable stack control buttons
-function enableStackButtons() {
-    document.getElementById('addElementBtn').disabled = false;
-    document.getElementById('removeElementBtn').disabled = false;
-    document.getElementById('viewTopElementBtn').disabled = false;
-    document.getElementById('checkStackEmptyBtn').disabled = false;
-    document.getElementById('checkStackFullBtn').disabled = false;
-    document.getElementById('viewRearElementBtn').disabled = false;  // Enable rear button
-}
-
-// Add element to stack
-document.getElementById('addElementBtn').addEventListener('click', function() {
-    const elementValue = document.getElementById('stackElementInput').value.trim();
-
-    if (elementValue) {
-        if (stackCurrentSize < stackMaxCapacity) {
-            const newStackElement = document.createElement('div');
-            newStackElement.classList.add('stackBar');
-            newStackElement.textContent = elementValue;
-
-            const stackContainer = document.querySelector('.stackVisualContainer');
-            stackContainer.appendChild(newStackElement);
-
-            stackCurrentSize++;
-            displayMessage(`Added element: ${elementValue}`);
-            document.getElementById('stackElementInput').value = '';
+            // Enable other buttons after setting the capacity
+            enableActionButtons();
+            
+            // Disable the Set Stack Capacity button
+            document.getElementById('stack-setCapacityButton').disabled = true;
         } else {
-            displayMessage("The stack is full! Cannot add more items.");
+            alert("Please enter a valid positive whole number greater than 0. It should not start with 0.");
         }
-    } else {
-        displayMessage("Please enter a value.");
     }
-});
+}
 
-// Remove element from stack with validation
-document.getElementById('removeElementBtn').addEventListener('click', function() {
-    const elementToRemove = document.getElementById('stackElementInput').value.trim();
-    const stackContainer = document.querySelector('.stackVisualContainer');
+// Function to enable action buttons after setting capacity
+function enableActionButtons() {
+    document.getElementById('stack-pushButton').disabled = false;
+    document.getElementById('stack-popButton').disabled = false;
+    document.getElementById('stack-peekButton').disabled = false;
+    document.getElementById('stack-isEmptyButton').disabled = false;
+    document.getElementById('stack-isFullButton').disabled = false;
+    document.getElementById('stack-sizeButton').disabled = false;  // Enable the size button
+}
 
-    if (!elementToRemove) {
-        displayMessage("Please enter a value to pop.");
-        return;
-    }
-
-    if (stackCurrentSize > 0) {
-        const topElement = stackContainer.lastElementChild;
-
-        if (topElement.textContent === elementToRemove) {
-            stackContainer.removeChild(topElement);
-            stackCurrentSize--;
-            displayMessage(`Removed element: ${elementToRemove}`);
-        } else {
-            displayMessage("Error: The entered value is not at the top of the stack.");
-        }
-    } else {
-        displayMessage("The stack is empty! Cannot remove any items.");
-    }
-
-    document.getElementById('stackElementInput').value = '';
-});
-
-// View the top element of the stack
-document.getElementById('viewTopElementBtn').addEventListener('click', function() {
-    const stackContainer = document.querySelector('.stackVisualContainer');
-
-    if (stackCurrentSize > 0) {
-        const topElement = stackContainer.lastElementChild;
-        displayMessage(`Top element: ${topElement.textContent}`);
-    } else {
-        displayMessage("The stack is empty! Cannot view the top element.");
-    }
-});
-
-// View the rear (bottom) element of the stack
-document.getElementById('viewRearElementBtn').addEventListener('click', function() {
-    const stackContainer = document.querySelector('.stackVisualContainer');
-
-    if (stackCurrentSize > 0) {
-        const rearElement = stackContainer.firstElementChild;  // Bottom element
-        displayMessage(`Rear element: ${rearElement.textContent}`);
-    } else {
-        displayMessage("The stack is empty! Cannot view the rear element.");
-    }
-});
-
-// Check if the stack is empty
-document.getElementById('checkStackEmptyBtn').addEventListener('click', function() {
-    displayMessage(stackCurrentSize === 0 ? "True: The stack is empty." : "False: The stack is not empty.");
-});
-
-// Check if the stack is full
-document.getElementById('checkStackFullBtn').addEventListener('click', function() {
-    displayMessage(stackCurrentSize === stackMaxCapacity ? "True: The stack is full." : "False: The stack is not full.");
-});
-
-// Event listener for setting stack capacity
-document.getElementById('setStackCapacityBtn').addEventListener('click', configureStackMaxCapacity);
-
-// Event listener for resetting the stack
-document.getElementById('resetStackBtn').addEventListener('click', function() {
+// Function to refresh the page and reset the capacity
+function refreshCapacity() {
+    // Reload the page to reset everything
     location.reload();
-});
-window.addEventListener('resize', () => {
-    // Check if the navbar is open and the window width is greater than a specific size (e.g., 768px)
-    if (window.innerWidth >= 768) {
-        sideNavbar.classList.remove('active');
-        mainContent.classList.remove('shifted');
+}
+
+// Push button event listener
+document.getElementById('stack-pushButton').addEventListener('click', function() {
+    const inputValue = document.getElementById('stack-numberInput').value.trim();
+    
+    // Validate if the input is a valid positive whole number (integer)
+    if (inputValue && !isNaN(inputValue) && parseFloat(inputValue) === parseInt(inputValue) && parseInt(inputValue) > 0 &&
+        !inputValue.startsWith('0')) {
+        if (stackSize < stackCapacity) {
+            // Create a new bar div
+            const newBar = document.createElement('div');
+            newBar.classList.add('stack-bar');
+            
+            // Set the text of the bar to the input value
+            newBar.textContent = inputValue;
+            
+            // Get the stack-box container
+            const stackBox = document.querySelector('.stack-box');
+            
+            // Add the new bar to the bottom of the stack (stacking from top to bottom)
+            stackBox.appendChild(newBar);
+            
+            // Update the stack size
+            stackSize++;
+            
+            // Scroll to the bottom of the container to show the latest added element
+            stackBox.scrollTop = stackBox.scrollHeight;  // Scroll to the bottom of the container
+            
+            // Clear the input field after pushing
+            document.getElementById('stack-numberInput').value = '';
+        } else {
+            // Warn the user if they try to add more items than the capacity
+            alert('The stack is full! Cannot add more items.');
+        }
+    } else {
+        alert('Please enter a valid positive whole number (e.g., 1, 2, 3), it should not start with 0 and cannot be negative.');
     }
 });
+
+// Pop button event listener
+document.getElementById('stack-popButton').addEventListener('click', function() {
+    const stackBox = document.querySelector('.stack-box');
+    
+    // Check if the stack has any items to pop
+    if (stackSize > 0) {
+        // Remove the top bar (last element)
+        stackBox.removeChild(stackBox.lastElementChild);
+        
+        // Update the stack size
+        stackSize--;
+    } else {
+        alert('The stack is empty! Cannot pop any items.');
+    }
+});
+
+// Peek button event listener
+document.getElementById('stack-peekButton').addEventListener('click', function() {
+    const stackBox = document.querySelector('.stack-box');
+    
+    // Check if the stack has any items to peek
+    if (stackSize > 0) {
+        const topBar = stackBox.lastElementChild; // The last element is the top of the stack
+        topBar.classList.add('stack-highlight'); // Add the highlight class to the top element
+        topBar.style.backgroundColor = "#FFFF80"; // Light yellow color
+        
+        setTimeout(() => {
+            topBar.classList.remove('stack-highlight');
+            topBar.style.backgroundColor = ""; // Reset the background color
+        }, 1000); // Removes the highlight after 1 second
+    } else {
+        alert('The stack is empty! Cannot peek.');
+    }
+});
+
+// Is Empty button event listener
+document.getElementById('stack-isEmptyButton').addEventListener('click', function() {
+    if (stackSize === 0) {
+        alert('True. The stack is empty.');
+    } else {
+        alert('False. The stack is not empty.');
+    }
+});
+
+// Is Full button event listener
+document.getElementById('stack-isFullButton').addEventListener('click', function() {
+    if (stackSize === stackCapacity) {
+        alert('True. The stack is full.');
+    } else {
+        alert('False. The stack is not full.');
+    }
+});
+
+// Size button event listener
+document.getElementById('stack-sizeButton').addEventListener('click', function() {
+    alert(`The current size of the stack is: ${stackSize}`);
+});
+
+// Add event listener for the Set Capacity button
+document.getElementById('stack-setCapacityButton').addEventListener('click', setStackCapacity);
+
+// Add event listener for the Refresh button
+document.getElementById('stack-refreshButton').addEventListener('click', refreshCapacity);

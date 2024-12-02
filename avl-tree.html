@@ -100,12 +100,18 @@
             z-index: 1000;
         }
 
+        .side-navbar.active {
+            left: 0;
+        }
+
         .side-navbar a {
             padding: 12px 20px;
             font-size: 18px;
             color: #FFFFFF;
             display: block;
             transition: background-color 0.3s ease;
+            text-decoration: none;
+            text-align: center;
         }
 
         .side-navbar a:hover {
@@ -135,15 +141,29 @@
             left: 10px;
             z-index: 1001;
         }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
     @media (min-width: 768px) {
         body {
             max-width: 1200px;
             margin: 0 auto;
         }
+
         #button-container {
             justify-content: space-between;
         }
     }
+
     @media (max-width: 767px) {
         h1 {
             font-size: 2em;
@@ -159,10 +179,39 @@
             font-size: 1em;
         }
     }
+
+    @media (max-width: 480px) {
+        body {
+            padding: 0;
+        }
+        #button-container {
+            margin-top: 10px;
+        }
+        #output {
+            margin-top: 10px;
+        }
+        .side-navbar {
+            width: 100%;
+            height: 100%;
+        }
+    }
 </style>
 </head>
 <body>
-
+    <div class="overlay" id="overlay"></div>
+    <div class="side-navbar" id="sideNavbar">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <a href="home.html">Home</a>
+        <a href="stack.html">Stack</a>
+        <a href="regular-queue.html">Regular Queue</a>
+        <a href="circular-queue.html">Circular Queue</a>
+        <a href="priority-queue.html">Priority Queue</a>
+        <a href="singly-linked-list.html">Singly Linked List</a>
+        <a href="doubly-linked-list.html">Doubly Linked List</a>
+        <a href="circular-linked-list.html">Circular Linked List</a>
+        <a href="avl-tree.html">AVL Tree</a>
+    </div>
+    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
     
     <h1>AVL Tree Visualization</h1>
     <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto;">
@@ -191,19 +240,7 @@
     <p id="output" style="margin-top: 20px; font-size: 1.2em; color: #333;"></p>
     
     <h2>Command Descriptions</h2>
-    <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn">&times;</button>
-        <a href="home.html">Home</a>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
-    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
+   
     <div class="command">
         <h2>Enqueue</h2>
         <p>Inserts a new value into the AVL tree while maintaining its balance. It updates the tree structure and visualizes the changes.</p>
