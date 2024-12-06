@@ -21,8 +21,10 @@
                 <label for="queueSize">Set Queue Size (2-100): </label>
                 <input type="text" id="queueSize" class="cqv-input-number" min="2" max="100" value="">
                 <div class="tooltip">
-                    <button onclick="changeQueueSize()" class="cqv-button">Confirm</button>
-                    <span class="tooltiptext">Set the size of the circular queue (2-100).</span>
+                    <button onclick="changeQueueSize()" class="cqv-button">Confirm</button>                    
+                    <button onclick="resetQueueSize()" class="cqv-button">Reset</button>
+
+
                 </div>
             </div>
             <div>
@@ -92,6 +94,9 @@
         this.rear = -1;
     }
 
+
+    
+
     getSize() {
         if (this.front === -1) return 0;
         if (this.rear >= this.front) return this.rear - this.front + 1;
@@ -152,6 +157,11 @@
     rearElement() {
         return this.isEmpty() ? "Queue is empty." : `Rear: ${this.queue[this.rear]}`;
     }
+     reset() {
+                this.queue = new Array(this.capacity).fill(null);
+                this.front = -1;
+                this.rear = -1;
+            }
 }
 
 let circularQueue = null;
@@ -161,7 +171,7 @@ const status = document.getElementById("status");
 function changeQueueSize() {
     const newSize = parseInt(document.getElementById("queueSize").value.trim(), 10);
     if (isNaN(newSize) || newSize <= 0 || newSize > 100) {
-        status.innerText = "Please enter a valid queue size (1-100).";
+        status.innerText = "Please enter a valid queue size (2-100).";
         return;
     }
     circularQueue = new CircularQueue(newSize);
@@ -189,6 +199,43 @@ function handleEnqueue() {
     status.innerText = result;
     updateQueueDisplay();
 }
+
+function resetQueueSize() {
+    // Clear all input fields
+    document.getElementById('queueSize').value = '';
+    document.getElementById('enqueueValue').value = '';
+    document.getElementById('dequeueValue').value = '';
+    
+    // Reset the circular queue and related data
+    if (circularQueue) {
+        circularQueue.reset();
+    }
+    
+    // Reset the display of the queue (to clear any visual representations)
+    updateQueueDisplay();
+
+    // Enable the queue size input to allow for a new value to be entered
+    document.getElementById('queueSize').disabled = false;
+
+    // Clear the previous status messages if any
+    const statusDiv = document.getElementById('status');
+    statusDiv.innerHTML = ''; // Clears any existing content
+
+    // Add the reset warning message
+    const warningMessage = document.createElement('div');
+    warningMessage.id = 'resetWarning';
+    warningMessage.textContent = 'The queue has been reset. Please input a new queue size to start again.';
+
+    // Append the warning message to the status div
+    statusDiv.appendChild(warningMessage);
+
+    // Automatically remove the warning message after 5 seconds
+    setTimeout(() => {
+        statusDiv.innerHTML = ''; // Clear the warning message after 5 seconds
+    }, 3000);
+}
+
+
 
 function handleDequeue() {
     const dequeueInput = document.getElementById("dequeueValue");

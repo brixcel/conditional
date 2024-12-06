@@ -35,10 +35,11 @@
 
         <div class="cLL-max-size-section">
             <label for="maxSizeInput">Enter Maximum Size:</label>
-            <input type="number" id="maxSizeInput" class="cLL-max-size-input" placeholder="Enter Max Size">
+            <input type="number" id="maxSizeInput" class="cLL-max-size-input" placeholder="Enter Max Size" min="1">
             <button id="setMaxSizeButton" class="cLL-btn" onclick="setMaxSize()">Set Max Size</button>
             <div id="sizeReminder" class="cLL-success-message">Please set the maximum size first!</div>
         </div>
+        
 
         <div class="cLL-operations-section">
             <div class="cLL-input-group">
@@ -59,7 +60,7 @@
             </div>
             
             <h3 id="operations" class="cLL-title">Perform Operations</h3>
-            <div class="cLL-grid-btn">
+            <div class="buttons-grid">
                 <button class="cLL-tooltip-btn" onclick="append()">
                     Append
                     <span class="cLL-tooltip-text">Add Element at the tail</span>

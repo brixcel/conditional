@@ -24,6 +24,9 @@
     
     <!-- Main Content -->
     <div class="main-content">
+        <!-- Message Display at the Top -->
+        <div id="queueMessage" class="queue-message" role="alert"></div>
+
         <div class="queue-app-container">
             <h1 class="queue-app-title">Regular Queue Visualization</h1>
             
@@ -38,6 +41,7 @@
             <div class="queue-controls">
                 <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
                 <button id="setQueueSizeBtn" aria-label="Set Queue Size">Set Queue Size</button>
+                <button id="resetQueueSizeBtn" aria-label="Reset Queue Size">Reset Queue Size</button>
             </div>
             
             <!-- Queue Display Area -->
@@ -45,37 +49,32 @@
                 <div id="queue" class="queue-display"></div>
             </div>
             
-            <!-- Queue Operations -->
+            <!-- Queue Operation Controls -->
+            <div class="queue-controls">
+                <input id="queueInput" type="text" placeholder="Enter element">
+                <button id="enqueueBtn" aria-label="Enqueue Element" disabled>Enqueue</button>
+                <button id="dequeueBtn" aria-label="Dequeue Element" disabled>Dequeue</button>
+                <button id="peekBtn" aria-label="Peek Front Element" disabled>Peek</button>
+                <button id="rearBtn" aria-label="View Rear Element" disabled>Rear</button>
+                <button id="isEmptyBtn" aria-label="Check If Queue is Empty" disabled>isEmpty</button>
+                <button id="isFullBtn" aria-label="Check If Queue is Full" disabled>isFull</button>
+            </div>
+            
+            <!-- Queue Operations Description -->
             <div class="queue-controls-description">
                 <p>Queue Operations:</p>
                 <ul>
-                    <li><b>Enqueue</b>:Adds an element to the end of the queue.</li>
-                    <li><b>Dequeue</b>:Removes an element from the front of the queue.</li>
-                    <li><b>Peek</b>:Returns the element at the front of the queue without removing it.</li>
-                    <li><b>Rear</b>:Returns the element at the end of the queue without removing it.</li>
-                    <li><b>isEmpty</b>:Checks if the queue is empty.</li>
-                    <li><b>isFull</b>:Checks if the queue is full.</li>
+                    <li><b>Enqueue</b>: Adds an element to the end of the queue.</li>
+                    <li><b>Dequeue</b>: Removes an element from the front of the queue.</li>
+                    <li><b>Peek</b>: Returns the element at the front of the queue without removing it.</li>
+                    <li><b>Rear</b>: Returns the element at the end of the queue without removing it.</li>
+                    <li><b>isEmpty</b>: Checks if the queue is empty.</li>
+                    <li><b>isFull</b>: Checks if the queue is full.</li>
                 </ul>
             </div>
-            <div class="queue-controls">
-                <input id="queueInput" type="text" placeholder="Enter element">
-                <button id="enqueueBtn" aria-label="Enqueue Element">Enqueue</button>
-                <button id="dequeueBtn" aria-label="Dequeue Element">Dequeue</button>
-                <button id="peekBtn" aria-label="Peek Front Element">Peek</button>
-                <button id="rearBtn" aria-label="View Rear Element">Rear</button>
-                <button id="isEmptyBtn" aria-label="Check If Queue is Empty">isEmpty</button>
-                <button id="isFullBtn" aria-label="Check If Queue is Full">isFull</button>
-            </div>
-            <div class="car">
-                <div class="number">1</div>
-                <div class="window"></div>
-            </div>
-            <!-- Message Display -->
-            <div id="queueMessage" class="queue-message"></div>
         </div>
     </div>
     
-    <script src="main.js"></script>
+    <script src="regularqueue.js"></script>
 </body>
 </html>
-

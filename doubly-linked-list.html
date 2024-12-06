@@ -181,6 +181,18 @@
                 margin-left: 0;
             }
         }
+        .highlight {
+        animation: highlight 3s forwards;
+        }
+
+        @keyframes highlight {
+            0% {
+                background-color: yellow;
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
     </style>
 </head>
 <body>
@@ -209,28 +221,30 @@
         <section class="controls">
             <label for="list-limit">Set Limit: </label>
             <input type="number" id="list-limit" placeholder="Limit" min="1">
-            <button onclick="setLimit()">Set Limit</button><br>
+            <button onclick="setLimit()">Set Limit</button>
+            <button onclick="resetPage()" class="disabled">Reset</button><br>
             <input type="text" id="value" placeholder="Value" class="disabled">
             <input type="number" id="index" placeholder="Index" class="disabled">
             <input type="text" id="address" placeholder="Address" class="disabled"><br>
             <input type="text" id="new-address" placeholder="New Address" class="disabled"><br>
-            <button onclick="prepend()" class="disabled">Prepend</button>
-            <button onclick="append()" class="disabled">Append</button>
-            <button onclick="insert()" class="disabled">Insert</button>
-            <button onclick="deleteHead()" class="disabled">Delete Head</button>
-            <button onclick="deleteTail()" class="disabled">Delete Tail</button>
-            <button onclick="deleteIndex()" class="disabled">Delete Index</button>
-            <button onclick="update()" class="disabled">Update</button>
-            <button onclick="replace()" class="disabled">Replace</button>
-            <button onclick="clearList()" class="disabled">Clear</button>
-            <button onclick="reverseList()" class="disabled">Reverse</button>
-            <button onclick="sortList()" class="disabled">Sort</button>
+            <button  id="prependBtn" onclick="prepend()" class="disabled">Prepend</button>
+            <button  id="appendBtn" onclick="append()" class="disabled">Append</button>
+            <button  id="insertBtn" onclick="insert()" class="disabled">Insert</button>
+            <button id="deleteHeadBtn" onclick="deleteHead()" class="disabled">Delete Head</button>
+            <button id="deleteTailBtn" onclick="deleteTail()" class="disabled">Delete Tail</button>
+            <button id="deleteIndexBtn" onclick="deleteIndex()" class="disabled">Delete Index</button>
+            <button id="updateBtn" onclick="update()" class="disabled">Update</button>
+            <button id="replaceBtn" onclick="replace()" class="disabled">Replace</button>
+            <button id="clearBtn" onclick="clearList()" class="disabled">Clear</button>
+            <button id="reverseBtn" onclick="reverseList()" class="disabled">Reverse</button>
+            <button id="sortBtn" onclick="sortList()" class="disabled">Sort</button>
             <button onclick="getSize()" class="disabled">Size</button>
             <button onclick="isEmpty()" class="disabled">Is Empty</button>
             <button onclick="isFull()" class="disabled">Is Full</button>
             <button onclick="getHead()" class="disabled">Head</button>
             <button onclick="getTail()" class="disabled">Tail</button>
-            <button onclick="find()" class="disabled">Find</button>
+            <button id="findBtn" onclick="find()" class="disabled">Find</button>
+            
         </section>
         <div class="scroll-box">
             <div class="content">
@@ -323,7 +337,7 @@
         class Node {
             constructor(value) {
                 this.value = value;
-                this.address = `DLL${addressCounter.toString().padStart(2, "0")}`;
+                this.address = `ABC${addressCounter.toString().padStart(3, "0")}`;
                 this.next = null;
                 this.prev = null;
                 addressCounter++;
@@ -338,6 +352,7 @@
                 enableControls();
                 document.getElementById("list-limit").disabled = true;
                 document.querySelector('button[onclick="setLimit()"]').disabled = true;
+                toggleButtonStates();
             } else {
                 alert("Please enter a valid limit.");
             }
@@ -350,11 +365,49 @@
             });
         }
 
+        function resetPage() {
+            location.reload();
+        }
+
+        function toggleButtonStates() {
+            const isFull = size >= limit;
+            const isEmpty = size === 0;
+
+            // Disable or enable prepend, append, and insert buttons based on whether the list is full
+            const modifyButtons = ["prependBtn", "appendBtn", "insertBtn"];
+            modifyButtons.forEach(buttonId => {
+                const button = document.getElementById(buttonId);
+                if (isFull) {
+                    button.classList.add("disabled");
+                } else {
+                    button.classList.remove("disabled");
+                }
+            });
+
+            // Disable or enable operation buttons based on whether the list is empty
+            const operationButtons = [
+                "deleteHeadBtn", "deleteTailBtn", "deleteIndexBtn", 
+                "updateBtn", "replaceBtn", "clearBtn", 
+                "reverseBtn", "sortBtn", "findBtn"
+            ];
+            operationButtons.forEach(buttonId => {
+                const button = document.getElementById(buttonId);
+                if (isEmpty) {
+                    button.classList.add("disabled");
+                } else {
+                    button.classList.remove("disabled");
+                }
+            });
+        }
         function update() {
             const address = document.getElementById("address").value;
             const newValue = document.getElementById("value").value;
             if (!address || !newValue) {
                 alert("Please provide both address and new value.");
+                return;
+            }
+            if (valueExists(newValue)) {
+                alert("The value already exists.");
                 return;
             }
             let current = head;
@@ -378,6 +431,14 @@
                 alert("Please provide valid data.");
                 return;
             }
+            if (valueExists(newValue)) {
+                alert("The value already exists.");
+                return;
+            }
+            if (addressExists(newAddress)) {
+                alert("The new address already exists.");
+                return;
+            }
             let current = head;
             while (current) {
                 if (current.address === address) {
@@ -390,6 +451,17 @@
                 current = current.next;
             }
             alert("Address not found.");
+        }
+
+        function addressExists(newAddress) {
+            let current = head;
+            while (current) {
+                if (current.address === newAddress) {
+                    return true;
+                }
+                current = current.next;
+            }
+            return false;
         }
 
         function updateDisplay() {
@@ -430,14 +502,26 @@
 
         function append() {
             const value = document.getElementById("value").value;
-            if (!value || valueExists(value)) {
-                alert("Enter a valid value, or the value already exists.");
+            if (!value) {
+                alert("Please enter a value.");
                 return;
             }
+            
+            if (isNaN(value)) {
+                alert("Please enter a numeric value.");
+                return;
+            }
+            
+            if (valueExists(value)) {
+                alert("The value already exists.");
+                return;
+            }
+
             if (size >= limit) {
                 alert("List is full.");
                 return;
             }
+
             const newNode = new Node(value);
             if (!tail) {
                 head = tail = newNode;
@@ -449,12 +533,23 @@
             size++;
             updateDisplay();
             resetInputs();
+            toggleButtonStates()
         }
 
         function prepend() {
             const value = document.getElementById("value").value;
-            if (!value || valueExists(value)) {
-                alert("Enter a valid value, or the value already exists.");
+            if (!value) {
+                alert("Please enter a value.");
+                return;
+            }
+            
+            if (isNaN(value)) {
+                alert("Please enter a numeric value.");
+                return;
+            }
+            
+            if (valueExists(value)) {
+                alert("The value already exists.");
                 return;
             }
             if (size >= limit) {
@@ -472,6 +567,7 @@
             size++;
             updateDisplay();
             resetInputs();
+            toggleButtonStates()
         }
 
         function valueExists(value) {
@@ -486,8 +582,28 @@
         function insert() {
             const index = parseInt(document.getElementById("index").value);
             const value = document.getElementById("value").value;
-            if (!value || valueExists(value) || isNaN(index) || index < 0 || index > size) {
-                alert("Invalid index or value.");
+            if (!value) {
+                alert("Please enter a value.");
+                return;
+            }
+            
+            if (isNaN(value)) {
+                alert("Please enter a numeric value.");
+                return;
+            }
+            
+            if (valueExists(value)) {
+                alert("The value already exists.");
+                return;
+            }
+            
+            if (isNaN(index)) {
+                alert("Please enter a valid index.");
+                return;
+            }
+            
+            if (index < 0 || index > size) {
+                alert("Index out of bounds.");
                 return;
             }
             if (size >= limit) {
@@ -514,6 +630,7 @@
             size++;
             updateDisplay();
             resetInputs();
+            toggleButtonStates()
         }
 
         function deleteHead() {
@@ -526,6 +643,7 @@
             else tail = null;
             size--;
             updateDisplay();
+            toggleButtonStates()
         }
 
         function deleteTail() {
@@ -538,6 +656,7 @@
             else head = null;
             size--;
             updateDisplay();
+            toggleButtonStates()
         }
 
         function deleteIndex() {
@@ -562,6 +681,7 @@
             if (current.next) current.next.prev = current.prev;
             size--;
             updateDisplay();
+            toggleButtonStates()
         }
 
         function resetInputs() {
@@ -575,6 +695,7 @@
             head = tail = null;
             size = 0;
             updateDisplay();
+            toggleButtonStates()
         }
 
         function sortList() {
@@ -639,13 +760,39 @@
         function isFull() {
             alert(size === limit ? "True" : "False");
         }
+        function highlightNode(nodeElement) {
+            if (nodeElement) {
+                nodeElement.classList.add('highlight');
+                setTimeout(() => {
+                    nodeElement.classList.remove('highlight');
+                }, 2000);
+            }
+        }
 
         function getHead() {
-            alert(head ? head.value : "No head");
+            if (!head) {
+                alert("The list is empty.");
+                return;
+            }
+            const container = document.getElementById("list-container");
+            const nodeElements = container.querySelectorAll('.node-box');
+            if (nodeElements.length > 0) {
+                highlightNode(nodeElements[2]); // Highlight the first node
+            }
+            alert(`Head value: ${head.value}`);
         }
 
         function getTail() {
-            alert(tail ? tail.value : "No tail");
+            if (!tail) {
+                alert("The list is empty.");
+                return;
+            }
+            const container = document.getElementById("list-container");
+            const nodeElements = container.querySelectorAll('.node-box');
+            if (nodeElements.length > 0) {
+                highlightNode(nodeElements[nodeElements.length - 2]); // Highlight the last node
+            }
+            alert(`Tail value: ${tail.value}`);
         }
 
         function find() {
@@ -658,6 +805,7 @@
             while (current) {
                 if (current.address === address) {
                     alert(`Value at ${address}: ${current.value}`);
+                    resetInputs();
                     return;
                 }
                 current = current.next;

@@ -36,6 +36,9 @@
             background-color: #4A90E2;
             position: relative;
         }
+        .queue-item-priority {
+            background-color: #F59E0B;
+        }
         .priority-label {
             position: absolute;
             top: -20px;
@@ -44,7 +47,7 @@
             font-weight: bold;
         }
         .priority-highlight {
-            background-color: #F3F4F6; /* Light gray background for highlight */
+            background-color: #F3F4F6;
             padding: 10px;
             border-radius: 8px;
             border: 2px solid #4A90E2;
@@ -54,7 +57,11 @@
             font-weight: bold;
         }
         .priority-highlight input {
-            accent-color: #4A90E2; /* Blue accent for the checkbox */
+            accent-color: #4A90E2;
+        }
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -75,7 +82,6 @@
     <div class="container p-4 space-y-8 max-w-4xl w-full bg-white rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-blue-600 text-center">Priority Queue Visualization</h1>
 
-        <!-- Description of the Priority Queue -->
         <div class="bg-white rounded-lg p-6 space-y-6">
             <p class="text-gray-700 text-center">A Priority Queue is a special type of queue in which each element has a priority. 
                 Elements are dequeued based on their priority: higher priority elements are dequeued first.
@@ -83,15 +89,14 @@
                 while lower priority elements are placed at the end.</p>
         </div>
 
-        <!-- Max Size Section -->
         <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
             <div class="flex space-x-2 justify-center">
                 <input type="text" id="maxSize" placeholder="Enter max size" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <button onclick="setMaxSize()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Set Max Size</button>
+                <button onclick="resetQueue()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Reset</button>
             </div>
             <p class="text-center text-sm text-gray-500 mt-2">Set the maximum size for the priority queue.</p>
 
-            <!-- Enqueue and Priority Section -->
             <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
                 <div class="flex-grow flex space-x-2">
                     <input type="text" id="enqueueValue" placeholder="Enter positive number to enqueue" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -99,106 +104,79 @@
                 </div>
                 <p class="text-center text-sm text-gray-500 mt-2">Add an element to the queue. Check "Priority" for high-priority elements.</p>
 
-                <!-- Highlighted Priority Checkbox -->
                 <div class="priority-highlight">
                     <input type="checkbox" id="priority" class="rounded text-blue-600 focus:ring-blue-500">
                     <label for="priority" class="ml-2 text-sm text-gray-700">Priority</label>
                 </div>
             </div>
 
-            <!-- Dequeue Section -->
             <div class="flex space-x-2 justify-center">
                 <input type="text" id="dequeueValue" placeholder="Enter value to dequeue" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <button onclick="dequeue()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Dequeue</button>
             </div>
             <p class="text-center text-sm text-gray-500 mt-2">Remove an element from the queue. Enter the value to remove.</p>
 
-            <!-- Operations Section -->
-            <div class="flex flex-wrap gap-2 justify-center">
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="peek()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Peek</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">View the first element in the queue without removing it.</p>
-                    </div>
+            <div class="flex flex-col space-y-4">
+                <div class="flex items-center space-x-4">
+                    <button onclick="peek()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Peek</button>
+                    <p class="text-sm text-gray-500">View the first element in the queue without removing it.</p>
                 </div>
-
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="rear()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Rear</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">View the last element in the queue without removing it.</p>
-                    </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="rear()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Rear</button>
+                    <p class="text-sm text-gray-500">View the last element in the queue without removing it.</p>
                 </div>
-
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="isEmpty()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Empty</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">Check if the queue is empty.</p>
-                    </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="isEmpty()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Empty</button>
+                    <p class="text-sm text-gray-500">Check if the queue is empty.</p>
                 </div>
-
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="isFull()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Full</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">Check if the queue has reached its maximum size.</p>
-                    </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="isFull()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Full</button>
+                    <p class="text-sm text-gray-500">Check if the queue has reached its maximum size.</p>
                 </div>
-
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="size()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Size</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">Get the current number of elements in the queue.</p>
-                    </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="size()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Size</button>
+                    <p class="text-sm text-gray-500">Get the current number of elements in the queue.</p>
                 </div>
-
-                <div class="flex flex-col items-center">
-                    <div class="flex flex-col items-center">
-                        <button onclick="display()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Display</button>
-                        <p class="text-center text-sm text-gray-500 mt-2">Show all elements currently in the queue.</p>
-                    </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="display()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Display</button>
+                    <p class="text-sm text-gray-500">Show all elements currently in the queue.</p>
                 </div>
             </div>
 
-            <!-- Output Section -->
             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
                 <p id="output" class="font-mono whitespace-pre-wrap">No actions performed yet</p>
             </div>
 
-            <!-- Queue Display -->
             <div id="fullAlert" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
                 <p class="font-mono">Queue is full!</p>
             </div>
 
             <div class="flex items-center justify-center space-x-8">
-                <span class="text-gray-600">OUT</span>
+                <span class="text-gray-600">FRONT</span>
                 <div id="queueDisplay" class="queue-container">
                     <p class="text-gray-500">Queue is empty</p>
                 </div>
-                <span class="text-gray-600">IN</span>
+                <span class="text-gray-600">BACK</span>
             </div>
         </div>
     </div>
 
-
-
-   
-
     <script>
-        // Priority Queue Implementation
         const sideNavbar = document.getElementById("sideNavbar");
-const openBtn = document.getElementById("openBtn");
-const closeBtn = document.getElementById("closeBtn");
-const mainContent = document.querySelector(".main-content");
+        const openBtn = document.getElementById("openBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const mainContent = document.querySelector(".main-content");
 
-// Open and close the side navbar
-openBtn.addEventListener("click", () => {
-    sideNavbar.classList.add("active");
-    mainContent.classList.add("shifted");
-});
+        openBtn.addEventListener("click", () => {
+            sideNavbar.classList.add("active");
+            mainContent.classList.add("shifted");
+        });
 
-closeBtn.addEventListener("click", () => {
-    sideNavbar.classList.remove("active");
-    mainContent.classList.remove("shifted");
-});
+        closeBtn.addEventListener("click", () => {
+            sideNavbar.classList.remove("active");
+            mainContent.classList.remove("shifted");
+        });
+
         class QueueItem {
             constructor(id, value, priority) {
                 this.id = id;
@@ -294,7 +272,41 @@ closeBtn.addEventListener("click", () => {
             queue = new PriorityQueue(size);
             setOutput(`Queue initialized with max size: ${size}`);
             updateQueueDisplay();
+            enableButtons();
         }
+
+        function disableButtons() {
+            const buttons = document.querySelectorAll('button:not([onclick="setMaxSize()"]):not([onclick="resetQueue()"]):not(#openBtn):not(#closeBtn)');
+            buttons.forEach(button => {
+                button.classList.add('btn-disabled');
+                button.disabled = true;
+            });
+        }
+
+        function enableButtons() {
+            const buttons = document.querySelectorAll('.btn-disabled');
+            buttons.forEach(button => {
+                button.classList.remove('btn-disabled');
+                button.disabled = false;
+            });
+        }
+
+        function resetQueue() {
+            queue = null;
+            document.getElementById('maxSize').value = '';
+            document.getElementById('enqueueValue').value = '';
+            document.getElementById('dequeueValue').value = '';
+            document.getElementById('priority').checked = false;
+            setOutput('Queue has been reset. Please set a new max size.');
+            updateQueueDisplay();
+            disableButtons();
+        }
+
+        window.onload = function() {
+            disableButtons();
+            document.querySelector('button[onclick="resetQueue()"]').disabled = false;
+            document.querySelector('button[onclick="resetQueue()"]').classList.remove('btn-disabled');
+        };
 
         function enqueue() {
             if (!queue) {
@@ -340,6 +352,11 @@ closeBtn.addEventListener("click", () => {
             const dequeueInput = document.getElementById('dequeueValue');
             const value = dequeueInput.value.trim();
 
+            if (queue.isEmpty()) {
+                setOutput('Error: Queue is empty. Cannot dequeue.');
+                return;
+            }
+
             if (value !== queue.peek().value) {
                 setOutput('Error: You can only dequeue the front element of the queue.');
                 return;
@@ -356,6 +373,7 @@ closeBtn.addEventListener("click", () => {
             updateQueueDisplay();
             dequeueInput.value = '';
         }
+
         function isEmpty() {
             if (!queue) {
                 setOutput('Please set the max size first.');
@@ -419,18 +437,18 @@ closeBtn.addEventListener("click", () => {
             document.getElementById('output').textContent = message;
         }
 
-       function updateQueueDisplay() {
+        function updateQueueDisplay() {
             const queueDiv = document.getElementById('queueDisplay');
             queueDiv.innerHTML = '';
 
-            if (queue.isEmpty()) {
+            if (!queue || queue.isEmpty()) {
                 queueDiv.innerHTML = '<p class="text-gray-500">Queue is empty</p>';
                 return;
             }
 
             queue.items.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'queue-item';
+                itemDiv.className = `queue-item ${item.priority ? 'queue-item-priority' : ''}`;
                 itemDiv.textContent = item.value;
 
                 if (item.priority) {
@@ -446,3 +464,4 @@ closeBtn.addEventListener("click", () => {
     </script>
 </body>
 </html>
+

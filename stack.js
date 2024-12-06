@@ -18,6 +18,19 @@ closeBtn.addEventListener("click", () => {
     mainContent.classList.remove("shifted");
 });
 
+// Function to disable the textbox if the stack capacity is not set
+function disableTextbox() {
+    const numberInput = document.getElementById('stack-numberInput');
+    if (stackCapacity <= 0) {
+        numberInput.disabled = true;
+    } else {
+        numberInput.disabled = false;
+    }
+}
+
+// Call this function initially to disable the textbox by default
+disableTextbox();
+
 // Function to set the stack capacity when the "Set Stack Capacity" button is clicked
 function setStackCapacity() {
     let capacity = prompt("Enter the maximum capacity of the stack (positive whole number):");
@@ -35,6 +48,8 @@ function setStackCapacity() {
 
             // Enable other buttons after setting the capacity
             enableActionButtons();
+            // Call disableTextbox to enable the input field
+            disableTextbox();
             
             // Disable the Set Stack Capacity button
             document.getElementById('stack-setCapacityButton').disabled = true;
@@ -104,11 +119,22 @@ document.getElementById('stack-popButton').addEventListener('click', function() 
     
     // Check if the stack has any items to pop
     if (stackSize > 0) {
-        // Remove the top bar (last element)
-        stackBox.removeChild(stackBox.lastElementChild);
-        
-        // Update the stack size
-        stackSize--;
+        // Get the value of the top element (LIFO)
+        const topElementValue = stackBox.lastElementChild.textContent;
+
+        // Get the user input from the textbox
+        const userInput = document.getElementById('stack-numberInput').value.trim(); // Assuming 'stack-numberInput' is the ID of your textbox
+
+        if (userInput === topElementValue) {
+            // Remove the top bar (last element)
+            stackBox.removeChild(stackBox.lastElementChild);
+            
+            // Update the stack size
+            stackSize--;
+        } else {
+            // Inform the user about the incorrect input based on LIFO
+            alert(`Incorrect input. According to LIFO, the number to pop should be: ${topElementValue}`);
+        }
     } else {
         alert('The stack is empty! Cannot pop any items.');
     }
@@ -161,3 +187,4 @@ document.getElementById('stack-setCapacityButton').addEventListener('click', set
 
 // Add event listener for the Refresh button
 document.getElementById('stack-refreshButton').addEventListener('click', refreshCapacity);
+document.getElementById('stack-refreshButton').textContent = "Reset"; 

@@ -97,7 +97,7 @@
         }
 
         /* Input and Button Styles */
-        input[type="number"] {
+        input[type="number"], input[type="text"] {
             padding: 10px;
             margin: 10px 0;
             width: 100%;
@@ -117,6 +117,12 @@
 
         button:hover {
             background-color: #145DBF;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
         }
 
         /* Message Styles */
@@ -141,7 +147,7 @@
                 padding: 10px;
             }
 
-            input[type="number"] {
+            input[type="number"], input[type="text"] {
                 max-width: 100%;
             }
 
@@ -170,6 +176,24 @@
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-bottom: 20px;
+        }
+        .operation-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #1877F2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .operation-btn:hover {
+            background-color: #145DBF;
+        }
+        .operation-btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -250,98 +274,99 @@
             <h2>Set Linked List Max Size</h2>
             <input type="number" id="maxSizeInput" placeholder="Enter Max Size (1-20)" min="1" max="20">
             <div style="text-align: center;">
-                <button onclick="setMaxSize()">Set Max Size</button>
+                <button onclick="setMaxSize()" id="setMaxSizeBtn" class="operation-btn">Set Max Size</button>
             </div>
         </div>
 
         <div id="message"></div>
+                <div class="list-display">
+            <h3>Current Linked List:</h3>
+            <div id="linkedListDisplay"></div>
+        </div>
 
         <div class="operations-container">
-            <h2>Perform Operations</h2>
-            <input type="number" id="operationValue" placeholder="Enter Value (for Append/Prepend)" min="1" disabled>
-            <input type="number" id="operationIndex" placeholder="Enter Index (for Insert/Delete)" min="0" disabled>
+           <h2>Perform Operations</h2>
+            <input type="text" id="operationValue" placeholder="Enter Value (for Append/Prepend)" disabled>
+            <input type="text" id="findAddressInput" placeholder="Enter Address to Find">
 
             <div class="buttons-container">
                 <div>
-                    <button onclick="append()">Append</button>
+                    <button onclick="append()" id="appendBtn" class="operation-btn">Append</button>
                     <p class="button-description">Add Element at the tail (last)</p>
                 </div>
                 <div>
-                    <button onclick="prepend()">Prepend</button>
+                    <button onclick="prepend()" id="prependBtn" class="operation-btn">Prepend</button>
                     <p class="button-description">Add Element at the head (top)</p>
                 </div>
                 <div>
-                    <button onclick="insertAt()">Insert at Index</button>
+                    <button onclick="insertAt()" id="insertAtBtn" class="operation-btn">Insert at Index</button>
                     <p class="button-description">Insert Element on specific Index</p>
+                    <p id="insertIndexError" style="color: red;"></p>
                 </div>
                 <div>
-                    <button onclick="deleteHead()">Delete Head</button>
+                    <button onclick="deleteHead()" id="deleteHeadBtn" class="operation-btn">Delete Head</button>
                     <p class="button-description">Delete the top element</p>
                 </div>
                 <div>
-                    <button onclick="deleteTail()">Delete Tail</button>
+                    <button onclick="deleteTail()" id="deleteTailBtn" class="operation-btn">Delete Tail</button>
                     <p class="button-description">Delete the last element</p>
                 </div>
                 <div>
-                    <button onclick="deleteIndex()">Delete by Index</button>
+                    <button onclick="deleteIndex()" id="deleteIndexBtn" class="operation-btn">Delete by Index</button>
                     <p class="button-description">Delete the element by index #</p>
                 </div>
                 <div>
-                    <button onclick="clearList()">Clear List</button>
+                    <button onclick="clearList()" id="clearListBtn" class="operation-btn">Clear List</button>
                     <p class="button-description">Delete entire linked list</p>
                 </div>
                 <div>
-                    <button onclick="getSize()">Size</button>
+                    <button onclick="getSize()" id="getSizeBtn" class="operation-btn">Size</button>
                     <p class="button-description">Display the linked list size</p>
                 </div>
                 <div>
-                    <button onclick="reverseList()">Reverse</button>
+                    <button onclick="reverseList()" id="reverseBtn" class="operation-btn">Reverse</button>
                     <p class="button-description">Reverse the order of Linked list</p>
                 </div>
                 <div>
-                    <button onclick="findElement()">Find</button>
-                    <p class="button-description">Search the address using the element and return the value</p>
+                    <button onclick="findElement()" id="findBtn" class="operation-btn">Find</button>
+                    <p class="button-description">Search the element using the address and return the value</p>
                 </div>
                 <div>
-                    <button onclick="sortList()">Sort</button>
+                    <button onclick="sortList()" id="sortBtn" class="operation-btn">Sort</button>
                     <p class="button-description">Sort the linked list from lowest to highest or from A-Z</p>
                 </div>
                 <div>
-                    <button onclick="isEmpty()">Is Empty</button>
+                    <button onclick="isEmpty()" id="isEmptyBtn" class="operation-btn">Is Empty</button>
                     <p class="button-description">Return True/False</p>
                 </div>
                 <div>
-                    <button onclick="isFull()">Is Full</button>
+                    <button onclick="isFull()" id="isFullBtn" class="operation-btn">Is Full</button>
                     <p class="button-description">Return True/False</p>
                 </div>
                 <div>
-                    <button onclick="showHead()">Head</button>
+                    <button onclick="showHead()" id="showHeadBtn" class="operation-btn">Head</button>
                     <p class="button-description">Return the head element</p>
                 </div>
                 <div>
-                    <button onclick="showTail()">Tail</button>
+                    <button onclick="showTail()" id="showTailBtn" class="operation-btn">Tail</button>
                     <p class="button-description">Return the tail element</p>
                 </div>
                 <div>
-                    <button onclick="updateAddress()">Update Address</button>
+                    <button onclick="updateAddress()" id="updateAddressBtn" class="operation-btn">Update Address</button>
                     <p class="button-description">Update the element value using the address</p>
                 </div>
                 <div>
-                    <button onclick="replaceAddress()">Replace Address</button>
+                    <button onclick="replaceAddress()" id="replaceAddressBtn" class="operation-btn">Replace Address</button>
                     <p class="button-description">Update the element value and address</p>
                 </div>
+                <div>
+                    <button onclick="resetWebsite()" id="resetBtn" class="operation-btn">Reset</button>
+                    <p class="button-description">Resets the max size and list</p>
+                </div>
             </div>
-        </div>
-
-        <div class="list-display">
-            <h3>Current Linked List:</h3>
-            <div id="linkedListDisplay"></div>
         </div>
     </div>
     <script src="singly-linked-list.js"></script>
 </body>
 </html>
-
-
-
 

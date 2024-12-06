@@ -1135,6 +1135,8 @@ button:hover {
 
 
 
+
+
 /* Container Class */
 .cLL-container {
     display: flex;
@@ -1301,38 +1303,39 @@ button:hover {
 }
 
 /* Buttons Grid Class */
-.cLL-grid-btn {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
+.buttons-grid {
+    display: flex; /* Use flexbox for button container */
+    flex-wrap: wrap; /* Allow buttons to wrap if they don't fit in one row */
+    gap: 10px; /* Add space between buttons */
+    justify-content: center; /* Center buttons horizontally */
+    align-items: center; /* Center buttons vertically */
     margin-top: 20px;
 }
 
-/* Individual Button in Grid */
-.cLL-grid-btn button {
-    padding: 10px 20px;
-    font-size: 1.1em;
-    border: 1px solid #007bff;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
+/* Individual button styling */
+.buttons-grid button {
+    padding: 10px 20px; /* Add padding inside the button */
+    font-size: 1.1em; /* Slightly larger text */
+    border: 1px solid #007bff; /* Blue border for buttons */
+    border-radius: 5px; /* Rounded corners */
+    background-color: #007bff; /* Blue background color */
+    color: white; /* White text color */
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Button Hover Effect in Grid */
-.cLL-grid-btn button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+/* Button hover effect */
+.buttons-grid button:hover {
+    background-color: #0056b3; /* Darker blue background on hover */
+    transform: scale(1.05); /* Slight scale effect */
 }
 
-/* Disabled Button Effect */
-.cLL-grid-btn button:disabled {
-    background-color: #b3c7e6;
-    color: #808080;
-    cursor: not-allowed;
+/* Button disable effect */
+.buttons-grid button:disabled {
+    background-color: #b3c7e6; /* Lighter blue for disabled state */
+    color: #808080; /* Grey text color for disabled buttons */
+    cursor: not-allowed; /* Change cursor to indicate it's disabled */
+    transform: none; /* Remove hover effect */
 }
 
 /* Tooltip Button Class */

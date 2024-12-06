@@ -19,6 +19,7 @@ class Node {
         this.value = value;
         this.address = null;
         this.next = null;
+        this.prev = null;
     }
 }
 
@@ -36,24 +37,37 @@ class LinkedList {
             return false;
         }
     
+        // Create a new node
         const newNode = new Node(value);
-        newNode.address = 'adr_' + this.counter;
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padding for counter
         this.counter++;
     
         if (!this.head) {
+            // If the list is empty, the new node points to itself
             this.head = newNode;
-            newNode.next = this.head;  // Point to itself for circular structure
+            newNode.next = this.head;  // Circular next to itself
+            newNode.prev = this.head;  // Circular prev to itself (since it's the only node)
         } else {
-            let current = this.head;
-            while (current.next !== this.head) {
-                current = current.next;
+            let lastNode = this.head;
+    
+            // Traverse to the last node (the one whose next points to the head)
+            while (lastNode.next !== this.head) {
+                lastNode = lastNode.next;
             }
-            current.next = newNode;
-            newNode.next = this.head;  // Point back to head for circular structure
+    
+            // Update the pointers to insert the new node
+            lastNode.next = newNode;    // Last node's next points to the new node
+            newNode.prev = lastNode;    // New node's prev points to the last node
+            newNode.next = this.head;   // New node's next points to the head
+            this.head.prev = newNode;   // Head's prev points to the new node (to complete circular linking)
         }
+    
+        // Increase the size of the linked list
         this.size++;
         return true;
     }
+    
+    
 
     prepend(value) {
         if (this.size >= this.maxSize) {
@@ -61,59 +75,99 @@ class LinkedList {
             return false;
         }
     
+        // Create a new node
         const newNode = new Node(value);
-        newNode.address = 'adr_' + this.counter;
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padding for counter
         this.counter++;
     
         if (!this.head) {
+            // If the list is empty, the new node points to itself
             this.head = newNode;
-            newNode.next = this.head;  // Point to itself for circular structure
+            newNode.next = this.head;  // Circular next to itself
+            newNode.prev = this.head;  // Circular prev to itself
         } else {
-            newNode.next = this.head;
-            let current = this.head;
-            while (current.next !== this.head) {
-                current = current.next;
+            // If the list is not empty
+            let lastNode = this.head;
+    
+            // Traverse to the last node
+            while (lastNode.next !== this.head) {
+                lastNode = lastNode.next;
             }
-            current.next = newNode;
+    
+            // Link the new node
+            newNode.next = this.head;  // New node points to current head
+            newNode.prev = lastNode;   // New node's prev points to the last node
+    
+            // Update the last node's next to point to the new node
+            lastNode.next = newNode;
+    
+            // Update the head's prev pointer to point to the new node
+            this.head.prev = newNode;
+    
+            // Update the head to be the new node
             this.head = newNode;
         }
+    
         this.size++;
         return true;
     }
+    
+    
 
     insertAt(value, index) {
         console.log(`Inserting value: ${value} at index: ${index}`);
-
+    
+        // Check if the index is valid: it should be between 0 and the current size (inclusive)
         if (index < 0 || index > this.size) {
-            console.log('Index out of bounds');
+            alert(`Error: Index ${index} is out of bounds. Valid index range is 0 to ${this.size}`);
             return false;
         }
-
+    
+        // Check if the list is full
         if (this.size >= this.maxSize) {
             alert('List is full!');
             return false;
         }
-
+    
+        // Create a new node with a zero-padded address
         const newNode = new Node(value);
-        newNode.address = `adr_${this.counter}`;
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padded address
         this.counter++;
-
+    
+        // Case 1: Inserting at the beginning (index 0)
         if (index === 0) {
             return this.prepend(value);
         }
-
+    
         let current = this.head;
+        // Traverse to the node just before the desired index
         for (let i = 0; i < index - 1; i++) {
             current = current.next;
         }
-
-        newNode.next = current.next;
-        current.next = newNode;
-
+    
+        // Case 2: Inserting at the end (after the last node)
+        if (current.next === this.head) {
+            // Handle insertion at the end
+            newNode.next = this.head;       // New node's next points to the head (circular)
+            newNode.prev = current;         // New node's prev points to the current (last) node
+            current.next = newNode;         // Last node's next points to the new node
+            this.head.prev = newNode;       // Head's prev points to the new node (circular)
+        } else {
+            // Case 3: Inserting in the middle
+            newNode.next = current.next;    // New node's next points to the current node's next
+            current.next.prev = newNode;    // Current node's next's prev points to the new node
+            current.next = newNode;         // Current node's next points to the new node
+            newNode.prev = current;         // New node's prev points to the current node
+        }
+    
+        // Increment the size after the insertion
         this.size++;
         console.log('List after insertion:', this.head);
         return true;
     }
+    
+    
+    
 
     deleteHead() {
         if (!this.head) return false;
@@ -186,18 +240,21 @@ class LinkedList {
     toArray() {
         const array = [];
         if (!this.head) return array;
-
+    
         let current = this.head;
         do {
             array.push({
                 value: current.value,
-                address: current.address
+                address: current.address,
+                prevAddress: current.prev ? current.prev.address : 'N/A',
+                nextAddress: current.next ? current.next.address : 'N/A'
             });
             current = current.next;
         } while (current !== this.head);
-
+    
         return array;
     }
+    
 
     find(value) {
         if (!this.head) return -1;
@@ -216,33 +273,66 @@ class LinkedList {
     }
 
     reverse() {
-        if (this.size <= 1) return;
-
+        if (this.size <= 1) return; // No need to reverse if the list has 1 or fewer nodes
+    
         let prev = null;
         let current = this.head;
         let next;
+    
         const oldHead = this.head;
-
+        
         do {
             next = current.next;
-            current.next = prev;
+            current.next = prev;  // Reverse the next pointer
+            current.prev = next;  // Reverse the prev pointer
+    
+            // Move to the next node in the original list
             prev = current;
             current = next;
-        } while (current !== this.head);
-
+        } while (current !== oldHead); // Continue until we reach the original head
+    
+        // After the loop, prev will be the new head
         this.head = prev;
+    
+        // Ensure the old head's next pointer points to the new head (circular structure)
         oldHead.next = this.head;
+        this.head.prev = oldHead;  // And the new head's prev pointer points to the old head
     }
+    
 
     sort() {
-        if (this.size <= 1) return;
-
-        const array = this.toArray();
-        array.sort((a, b) => a.value - b.value);
-
-        this.clear();
-        array.forEach(node => this.append(node.value));
+        if (this.size <= 1) return;  // No need to sort if the list has 1 or fewer nodes
+        
+        let current = this.head;
+        const nodes = []; // To hold nodes and preserve their order
+        
+        // Collect all nodes into an array with their address and value
+        do {
+            nodes.push(current);  // Add the current node to the array
+            current = current.next;
+        } while (current !== this.head);
+    
+        // Sort the nodes by value
+        nodes.sort((a, b) => a.value - b.value);
+    
+        // Reassign the sorted values back to the nodes
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].value = nodes[i].value; // Assign the sorted value (addresses remain unchanged)
+        }
+    
+        // Rebuild the circular links (next and prev pointers) to ensure proper circular structure
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].next = nodes[(i + 1) % nodes.length]; // Next pointer
+            nodes[i].prev = nodes[(i - 1 + nodes.length) % nodes.length]; // Prev pointer
+        }
+    
+        // Reassign head to the first node
+        this.head = nodes[0];
     }
+    
+    
+    
+    
 
     getSize() {
         return this.size;
@@ -302,18 +392,24 @@ function updateVisualization() {
     nodes.forEach((node, index) => {
         const nodeElement = document.createElement('div');
         nodeElement.className = 'node';
+
+        // Create content for each node: Value, Address, Prev, and Next
         nodeElement.innerHTML = `
-            ${node.value}
-            <div class="node-address">${node.address}</div>
+            <div class="node-value">${node.value}</div>
+            <div class="node-address">Address: ${node.address}</div>
+            <div class="node-prev">Prev: ${node.prevAddress !== 'N/A' ? node.prevAddress : 'N/A'}</div>
+            <div class="node-next">Next: ${node.nextAddress !== 'N/A' ? node.nextAddress : 'N/A'}</div>
         `;
+
+        // Append the node element to the list
         currentList.appendChild(nodeElement);
 
         // Create arrows between nodes
         if (index < nodes.length - 1) {
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
-            arrow.textContent = '→'; // You can use an arrow symbol here
-            currentList.appendChild(arrow);
+            arrow.textContent = '↔'; // Bidirectional arrow between nodes
+            currentList.appendChild(arrow); 
         }
     });
 
@@ -327,6 +423,7 @@ function updateVisualization() {
         }
     }
 }
+
 
 function drawStraightLink(tailNode, headNode, container) {
     // Get the positions of the tail and head nodes relative to the container
@@ -421,7 +518,32 @@ function addOperationLog(operation) {
     logEntry.textContent = operation;
     logContainer.appendChild(logEntry);
     logContainer.scrollTop = logContainer.scrollHeight;
+}function addOperationLog(operation) {
+    const logContainer = document.getElementById('operationsLog');
+
+    // Check if the log container has text content (initial state message)
+    if (logContainer.textContent === 'No operations yet.') {
+        logContainer.innerHTML = ''; // Clear the default message
+    }
+
+    // Remove the previous log entry if it exists
+    const previousLogEntry = logContainer.querySelector('.log-entry');
+    if (previousLogEntry) {
+        logContainer.removeChild(previousLogEntry); // Remove previous log entry
+    }
+
+    // Create a new log entry with the current operation
+    const logEntry = document.createElement('div');
+    logEntry.classList.add('log-entry');
+    logEntry.textContent = operation;
+
+    // Append the new log entry
+    logContainer.appendChild(logEntry);
+
+    // Scroll to the bottom to show the latest log entry
+    logContainer.scrollTop = logContainer.scrollHeight;
 }
+
 
 function setMaxSize() {
     const maxSizeInput = document.getElementById('maxSizeInput');
@@ -451,11 +573,8 @@ function setMaxSize() {
     addOperationLog(`Set maximum size to ${size}`);
 }
 
-
-
-
 function enableOperations() {
-    const buttons = document.querySelectorAll('.cLL-buttons-grid button');
+    const buttons = document.querySelectorAll('.buttons-grid button');
     buttons.forEach(button => {
         button.disabled = false;
     });
@@ -535,9 +654,20 @@ function deleteByIndex() {
 }
 
 function clearList() {
+    // Clear the linked list and update the visualization
     linkedList.clear();
     updateVisualization();
-    addOperationLog('Cleared the list');
+    
+    // Reset the max size
+    document.getElementById('maxSizeInput').value = ''; // Clear the max size input
+    document.getElementById('maxSizeInput').disabled = false; // Re-enable max size input
+    document.getElementById('setMaxSizeButton').disabled = false; // Re-enable set max size button
+    
+    // Reset the buttons to be disabled (as max size is cleared)
+    disableAllInputs();
+    
+    // Log the operation
+    addOperationLog('Cleared the list and reset max size');
 }
 
 function size() {
@@ -620,19 +750,46 @@ function update() {
 }
 
 function replace() {
-    const index = document.getElementById('indexInput').value;
-    const value = document.getElementById('valueInput').value;
-    if (!index || !value) {
-        alert('Please enter both index and value!');
+    // Check if the list is empty
+    if (linkedList.is_empty()) {
+        addOperationLog("Attempted to replace a node, but the list is empty.");
         return;
     }
-    if (linkedList.deleteAt(parseInt(index)) && linkedList.insertAt(parseInt(value), parseInt(index))) {
+
+    const address = prompt("Enter the address of the node you want to replace:");
+    if (!address) {
+        alert("Please enter a valid address!");
+        return;
+    }
+
+    const newAddress = prompt("Enter the new address:");
+    if (!newAddress) {
+        alert("Please enter a valid new address!");
+        return;
+    }
+
+    // Replace the node based on address and new address
+    let current = linkedList.head;
+    let replaced = false;
+
+    while (current) {
+        if (current.address === address) {
+            current.address = newAddress;
+            replaced = true;
+            break;
+        }
+        current = current.next;
+    }
+
+    if (replaced) {
         updateVisualization();
-        addOperationLog(`Replaced node at index ${index} with value ${value}`);
-        clearInputs();
+        showSuccess("Node replaced successfully!");
+        addOperationLog(`Node at address ${address} replaced with new address ${newAddress}`);
+    } else {
+        alert("Node with the given address not found!");
+        addOperationLog(`Failed to replace node with address ${address}. Node not found.`);
     }
 }
-
 function showAddressInput() {
     const value = document.getElementById('valueInput').value;
     
@@ -682,7 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function disableAllInputs() {
-    const buttons = document.querySelectorAll('.cLL-buttons-grid button');
+    const buttons = document.querySelectorAll('.buttons-grid button');
     buttons.forEach(button => {
         button.disabled = true;
     });
