@@ -29,118 +29,51 @@ document.addEventListener("click", function(event) {
 sideNavbar.addEventListener("click", function(event) {
     event.stopPropagation();
 });
-class AVLnode {
+
+class TreeNode {
     constructor(value) {
         this.value = value;
         this.left = null;
         this.right = null;
-        this.height = 1;
+        this.parent = null; // Keep track of the parent node
     }
 }
 
-class AVLTree {
+class BinarySearchTree {
     constructor() {
         this.root = null;
     }
 
-    getHeight(node) {
-        return node ? node.height : 0;
-    }
-
-    getTreeHeight() {
-        const getHeightRecursive = (node) => {
-            if (!node) return 0; // No node means no height
-            return Math.max(getHeightRecursive(node.left), getHeightRecursive(node.right)) + 1;
-        };
-
-    return getHeightRecursive(this.root);
-    }
-
-    getBalanceFactor(node) {
-        return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
-    }
-
-    rotateRight(y) {
-        const x = y.left;
-        const T2 = x.right;
-
-        x.right = y;
-        y.left = T2;
-
-        y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
-        x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
-
-        return x;
-    }
-
-    rotateLeft(x) {
-        const y = x.right;
-        const T2 = y.left;
-
-        y.left = x;
-        x.right = T2;
-
-        x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
-        y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
-
-        return y;
-    }
-
     insert(node, value) {
-        if (!node) return new AVLnode(value);
+        if (!node) return new TreeNode(value);
 
         if (value < node.value) {
-            node.left = this.insert(node.left, value);
+            const leftChild = this.insert(node.left, value);
+            node.left = leftChild;
+            leftChild.parent = node; // Set parent
         } else if (value > node.value) {
-            node.right = this.insert(node.right, value);
+            const rightChild = this.insert(node.right, value);
+            node.right = rightChild;
+            rightChild.parent = node; // Set parent
         } else {
-            return node;
-        }
-
-        node.height = Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1;
-
-        const balance = this.getBalanceFactor(node);
-
-        if (balance > 1 && value < node.left.value) return this.rotateRight(node);
-        if (balance < -1 && value > node.right.value) return this.rotateLeft(node);
-        if (balance > 1 && value > node.left.value) {
-            node.left = this.rotateLeft(node.left);
-            return this.rotateRight(node);
-        }
-        if (balance < -1 && value < node.right.value) {
-            node.right = this.rotateRight(node.right);
-            return this.rotateLeft(node);
+            return node; // Duplicate values are not allowed
         }
 
         return node;
     }
 
-    add(value) {
+    enqueue(value) {
         this.root = this.insert(this.root, value);
-        this.visualize();
-    }
-
-    rotateRootLeft() {
-        if (this.root) {
-            this.root = this.rotateLeft(this.root);
-            this.visualize();
-        }
-    }
-
-    rotateRootRight() {
-        if (this.root) {
-            this.root = this.rotateRight(this.root);
-            this.visualize();
-        }
+        this.visualize(false); // No highlighting
     }
 
     clear() {
         this.root = null;
-        this.visualize();
+        this.visualize(false); // No highlighting
     }
 
-    visualize() {
-        const canvas = document.getElementById('avlTreeCanvas');
+    visualize(highlightRoot = false) {
+        const canvas = document.getElementById('bstCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth * 0.8;
         canvas.height = 400;
@@ -154,11 +87,9 @@ class AVLTree {
         const calculatePositions = (node, x, y, depth, minGap) => {
             if (!node) return;
 
-            // Assign position for the current node
-            positions.set(node, { x, y });
+            positions.set (node, { x, y });
 
-            // Calculate positions for child nodes
-            const gap = minGap / Math.pow(2, depth); // Reduce gap as depth increases
+            const gap = minGap / Math.pow(2, depth);
             if (node.left) {
                 calculatePositions(node.left, x - gap, y + 70, depth + 1, minGap);
             }
@@ -167,483 +98,329 @@ class AVLTree {
             }
         };
 
-        // Calculate positions starting from the root node
-        calculatePositions(this.root, canvas.width / 2, 50, 0, canvas.width / 4);
+        calculatePositions(this.root, canvas.width / 2, 20, 0, canvas.width / 4);
 
-        const drawNode = (node) => {
-            if (!node) return;
+        for (const [node, pos] of positions) {
+            ctx.fillStyle = (highlightRoot && node === this.root) ? 'yellow' : '#007BFF'; // Highlight root node if specified
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(node.value, pos.x - 10, pos.y + 5);
 
-            const { x, y } = positions.get(node);
-            const radius = 20;
-
-            // Draw edges to children
             if (node.left) {
-                const leftPos = positions.get(node.left);
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(leftPos.x, leftPos.y);
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(positions.get(node.left).x, positions.get(node.left).y);
                 ctx.stroke();
             }
             if (node.right) {
-                const rightPos = positions.get(node.right);
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(rightPos.x, rightPos.y);
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(positions.get(node.right).x, positions.get(node.right).y);
                 ctx.stroke();
             }
+        }
+    }
 
-            // Draw node
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = "#1877f2";
-            ctx.fill();
-            ctx.stroke();
+    getTreeHeight(node) {
+        if (!node) return 0;
+        return Math.max(this.getTreeHeight(node.left), this.getTreeHeight(node.right)) + 1;
+    }
 
-            // Draw value
-            ctx.fillStyle = "white";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(node.value, x, y);
+    showTreeHeight() {
+        const height = this.getTreeHeight(this.root);
+        document.getElementById('output').innerText = `Tree Height: ${height}`;
+    }
 
-            // Recursively draw children
-            drawNode(node.left);
-            drawNode(node.right);
-        };
+    balanceTree() {
+        const nodes = this.getSortedNodes(this.root);
+        this.clear();
+        this.root = this.buildBalancedTree(nodes);
+        this.visualize(false); // No highlighting
+        document.getElementById('output').innerText = 'Tree has been rebalanced.';
+    }
 
-        // Start drawing from the root node
-        drawNode(this.root);
+    getSortedNodes(node) {
+        if (!node) return [];
+        const leftNodes = this.getSortedNodes(node.left);
+        const rightNodes = this.getSortedNodes(node.right);
+        return [...leftNodes, node.value, ...rightNodes];
+    }
+
+    buildBalancedTree(values) {
+        if (values.length === 0) return null;
+
+        const mid = Math.floor(values.length / 2);
+        const root = new TreeNode(values[mid]);
+
+        root.left = this.buildBalancedTree(values.slice(0, mid));
+        root.right = this.buildBalancedTree(values.slice(mid + 1));
+
+        return root;
     }
 
     peekRoot() {
-        return this.root ? `Root Node: ${this.root.value}` : 'Tree is empty.';
-    }
-
-    peekParent(value, node = this.root, parent = null) {
-        if (!node) return `Node with value ${value} not found.`;
-        if (node.value === value) return parent ? `Parent Node: ${parent.value}` : 'This node is the root and has no parent.';
-        return value < node.value
-            ? this.peekParent(value, node.left, node)
-            : this.peekParent(value, node.right, node);
-    }
-
-    peekChildren(value, node = this.root) {
-        if (!node) return `Node with value ${value} not found.`;
-        if (node.value === value) {
-            const leftChild = node.left ? node.left.value : 'None';
-            const rightChild = node.right ? node.right.value : 'None';
-            return `Children of Node ${value}: Left = ${leftChild}, Right = ${rightChild}`;
+        if (this.root) {
+            document.getElementById('output').innerText = `Root Node: ${this.root.value}`;
+            this.visualize(true); // Highlight the root node
+        } else {
+            document.getElementById('output').innerText = 'The tree is empty.';
         }
-        return value < node.value
-            ? this.peekChildren(value, node.left)
-            : this.peekChildren(value, node.right);
+    }
+
+    peekChildren() {
+        const childrenInfo = this.collectChildren(this.root);
+        document.getElementById('output').innerText = childrenInfo.length > 0 ? `Children: ${childrenInfo.join(', ')}` : 'No children found.';
+    }
+
+    collectChildren(node) {
+        if (!node) return [];
+        const children = [];
+        if (node !== this.root) { // Exclude the root node
+            const childValues = [];
+            if (node.left) childValues.push(node.left.value);
+            if (node.right) childValues.push(node.right.value);
+            if (childValues.length > 0) {
+                children.push(`(${childValues.join(', ')})`);
+            }
+        }
+        return [...children, ...this.collectChildren(node.left), ...this.collectChildren(node.right)];
+    }
+
+    collectLeafNodes(node) {
+        if (!node) return [];
+
+        const leafNodes = [];
+
+        // Check if the current node is a leaf (no left or right child)
+        if (!node.left && !node.right) {
+            leafNodes.push(node.value);
+        }
+
+        // Recursively check left and right subtrees
+        return [
+            ...leafNodes,
+            ...this.collectLeafNodes(node.left),
+            ...this.collectLeafNodes(node.right)
+        ];
+    }
+
+    peekLeafNodes() {
+        const leafNodes = this.collectLeafNodes(this.root);
+        document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
+    }
+
+    collectParentNodes(node) {
+        if (!node) return [];
+
+        const parentNodes = [];
+
+        if (node !== this.root && (node.left || node.right)) {
+            parentNodes.push(node.value); // Add node to parent nodes if it has at least one child
+        }
+
+        // Recursively collect parents from left and right children
+        return [
+        ...parentNodes,
+        ...this.collectParentNodes(node.left),
+        ...this.collectParentNodes(node.right)
+    ];
+}
+
+    peekParentNodes() {
+        const parentNodes = this.collectParentNodes(this.root);
+        if (parentNodes.length > 0) {
+            document.getElementById('output').innerText = `Parent Nodes: (${parentNodes.join(', ')})`;
+    } else {
+        document.getElementById('output').innerText = 'No parent nodes found.';
     }
 }
 
-// Initialize AVL Tree
-const avlTree = new AVLTree();
+    collectSubtrees(node, isRoot = true) {
+        if (!node) return [];
 
-function addNumber() {
-    const numberInput = document.getElementById('numberInput');
-    const value = parseInt(numberInput.value, 10);
+        const subtrees = [];
 
-    // Validate if the input is a positive number and not a string and not a number starting with zero
-    if (isNaN(value) || value <= 0 || numberInput.value.startsWith('0')) {
-        alert('Please enter a valid positive number that does not start with zero.');
+        // Skip root node and its immediate children
+        if (!isRoot && node.left && node.right) {
+            subtrees.push(`(${node.value}, ${node.left.value}, ${node.right.value})`);
+        }
+
+        // Recursively collect subtrees from children
+        return [
+            ...subtrees,
+            ...this.collectSubtrees(node.left, false),
+            ...this.collectSubtrees(node.right, false)
+        ];
+    }
+
+    updateNode() {
+const input = document.getElementById('numberInput');
+const newValue = parseInt(input.value);
+if (!newValue || isNaN(newValue)) {
+alert('Please enter a valid number.');
+return;
+}
+
+// Get the node to update based on user input
+const targetValue = parseInt(prompt("Enter the value of the node to update:"));
+if (!targetValue || isNaN(targetValue)) {
+alert('Please enter a valid target value.');
+return;
+}
+
+const targetNode = this.findNode(this.root, targetValue);
+
+if (!targetNode) {
+alert('Node to update not found.');
+return;
+}
+
+// Check if the new value already exists in the tree
+if (this.findNode(this.root, newValue)) {
+alert('Cannot update: The new value already exists in the tree.');
+return;
+}
+
+// Ensure the new value respects the BST rules based on the parent-child relationship
+if (targetNode.parent) {
+if (targetNode === targetNode.parent.left) { // Left child
+    if (newValue >= targetNode.parent.value) {
+        alert('Cannot update: New value for left child must be smaller than the parent value.');
         return;
     }
+} else if (targetNode === targetNode.parent.right) { // Right child
+    if (newValue <= targetNode.parent.value) {
+        alert('Cannot update: New value for right child must be larger than the parent value.');
+        return;
+    }
+}
+}
 
-    // Add the number to the AVL tree
-    avlTree.add(value);
-    numberInput.value = '';  // Clear the input field after adding
+// Perform the update (update the value of the node)
+targetNode.value = newValue;
+
+// Re-visualize the tree after the update
+this.visualize(false); // No highlighting
+document.getElementById('output').innerText = `Node with value ${targetValue} updated to ${newValue}.`;
+}
+
+// Helper function to find a node by value
+findNode(node, value) {
+if (!node) return null;
+if (node.value === value) return node;
+if (value < node.value) return this.findNode(node.left, value);
+return this.findNode(node.right, value);
 }
 
 
-// Rotate tree left at root
-function rotateTreeLeft() {
-    avlTree.rotateRootLeft();
+collectSiblings(node) {
+if (!node || !node.parent) return []; // If node or parent doesn't exist, no siblings
+
+const siblings = [];
+const parent = node.parent;
+
+// Check for siblings in the parent's left and right children
+if (parent.left && parent.left !== node) {
+siblings.push(parent.left.value); // Add left sibling
+}
+if (parent.right && parent.right !== node) {
+siblings.push(parent.right.value); // Add right sibling
 }
 
-// Rotate tree right at root
-function rotateTreeRight() {
-    avlTree.rotateRootRight();
+return siblings;
 }
 
-// Clear the tree
+// Function to display the siblings of a selected node
+peekSiblings() {
+const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
+const node = this.findNode(this.root, nodeValue);
+
+if (!node) {
+document.getElementById('output').innerText = 'Node not found.';
+return;
+}
+
+// Find siblings for the selected node
+const siblingsInfo = this.collectSiblings(node);
+if (siblingsInfo.length > 0) {
+document.getElementById('output').innerText = `Node ${node.value} has siblings: ${siblingsInfo.join(', ')}`;
+} else {
+document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
+}
+}
+
+
+
+    showSubtree() {
+        const subtreeInfo = this.collectSubtrees(this.root);
+        const formattedSubtree = subtreeInfo.length > 0 
+            ? `Subtrees: ${subtreeInfo.join(', ')}`
+            : 'No subtrees found with both left and right children.';
+
+        document.getElementById('output').innerText = formattedSubtree;
+    }
+}
+
+const bst = new BinarySearchTree();
+
+function enqueueNumber() {
+const input = document.getElementById('numberInput');
+const value = parseInt(input.value);
+
+// Check if the value is 0 or negative
+if (value <= 0) {
+alert('Only positive numbers greater than zero are allowed.');
+input.value = '';  // Clear the input field
+return;
+}
+
+if (!isNaN(value)) {
+bst.enqueue(value);
+input.value = '';  // Clear the input field
+}
+}
+
+
 function clearTree() {
-    avlTree.clear();
-}
-
-// Peek functions
-function peekRoot() {
-    const output = avlTree.peekRoot();
-    document.getElementById('output').innerText = output;
-}
-
-function peekParent() {
-    const value = parseInt(prompt('Enter the node value to find its parent:'), 10);
-    if (!isNaN(value)) {
-        const output = avlTree.peekParent(value);
-        document.getElementById('output').innerText = output;
-    } else {
-        alert('Please enter a valid number.');
-    }
-}
-
-function peekChildren() {
-    const value = parseInt(prompt('Enter the node value to find its children:'), 10);
-    if (!isNaN(value)) {
-        const output = avlTree.peekChildren(value);
-        document.getElementById('output').innerText = output;
-    } else {
-        alert('Please enter a valid number.');
-    }
-}
-
-// Function to display subtrees (all nodes under each node in the tree)
-function showSubtrees() {
-    const subtrees = getSubtrees(avlTree.root);
-    const output = subtrees.length ? `Subtrees: ${subtrees.map(subtree => `(${subtree.join(', ')})`).join(', ')}` : 'No subtrees found.';
-    document.getElementById('output').innerText = output;
-}
-
-// Helper function to get subtrees starting from a given node
-function getSubtrees(node) {
-if (!node) return [];
-let subtrees = [];
-
-const collectSubtree = (n) => {
-    if (!n) return [];
-    let nodes = [n.value];
-    nodes = nodes.concat(collectSubtree(n.left));
-    nodes = nodes.concat(collectSubtree(n.right));
-    return nodes;
-};
-
-if (node) {
-    subtrees.push(collectSubtree(node));
-    subtrees = subtrees.concat(getSubtrees(node.left));
-    subtrees = subtrees.concat(getSubtrees(node.right));
-}
-
-return subtrees;
-}
-
-
-
-// Function to display leaf nodes (nodes without children)
-function showLeafNodes() {
-const leafNodes = getLeafNodes(avlTree.root);
-const output = leafNodes.length ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
-document.getElementById('output').innerText = output;
-}
-
-// Helper function to get leaf nodes (nodes with no children)
-function getLeafNodes(node) {
-let leaves = [];
-if (!node) return leaves;
-
-if (!node.left && !node.right) {
-    leaves.push(node.value);
-} else {
-    leaves = leaves.concat(getLeafNodes(node.left));
-    leaves = leaves.concat(getLeafNodes(node.right));
-}
-return leaves;
-}
-
-function showSiblings() {
-const siblingPairs = getAllSiblingPairs(avlTree.root);
-const output = siblingPairs.length
-? `Sibling Pairs: ${siblingPairs.map(pair => `(${pair.join(', ')})`).join(', ')}`
-: 'No sibling pairs found.';
-document.getElementById('output').innerText = output;
-}
-
-// Function to gather all sibling pairs
-function getAllSiblingPairs(node, parent = null) {
-if (!node) return [];
-
-let siblingPairs = [];
-
-// If there's a parent, check if this node has siblings
-if (parent) {
-// Check if the parent has left and right children
-if (parent.left && parent.right) {
-    // Form a pair and add to sibling pairs
-    siblingPairs.push([parent.left.value, parent.right.value]);
-}
-}
-
-// Recursively check left and right children
-siblingPairs = siblingPairs.concat(getAllSiblingPairs(node.left, node));
-siblingPairs = siblingPairs.concat(getAllSiblingPairs(node.right, node));
-
-return siblingPairs;
-}
-
-
-function updateNode() {
-const oldValue = parseInt(prompt('Enter the current value of the node to update:'), 10);
-const newValue = parseInt(prompt('Enter the new value for the node:'), 10);
-
-if (!isNaN(oldValue) && !isNaN(newValue)) {
-const nodeToUpdate = findNode(avlTree.root, oldValue);
-
-if (nodeToUpdate) {
-    // Remove the old value by deleting the node and adding the new value
-    avlTree.root = removeNode(avlTree.root, oldValue);
-    avlTree.add(newValue);
-
-    // Output the updated tree
-    document.getElementById('output').innerText = `Node updated from ${oldValue} to ${newValue}.`;
-} else {
-    alert(`Node with value ${oldValue} not found.`);
-}
-} else {
-alert('Please enter valid numbers.');
-}
-}
-
-// Helper function to find a node by value
-function findNode(node, value) {
-if (!node) return null;
-if (node.value === value) return node;
-if (value < node.value) return findNode(node.left, value);
-return findNode(node.right, value);
-}
-
-// Helper function to remove a node by value
-function removeNode(node, value) {
-if (!node) return node;
-
-// Perform standard BST deletion
-if (value < node.value) {
-node.left = removeNode(node.left, value);
-} else if (value > node.value) {
-node.right = removeNode(node.right, value);
-} else {
-// Node to be deleted found
-if (!node.left) {
-    return node.right;
-} else if (!node.right) {
-    return node.left;
-}
-
-// Node with two children, get the inorder successor
-node.value = minValue(node.right);
-node.right = removeNode(node.right, node.value);
-}
-
-node.height = Math.max(avlTree.getHeight(node.left), avlTree.getHeight(node.right)) + 1;
-
-// Rebalance the tree if necessary
-const balance = avlTree.getBalanceFactor(node);
-if (balance > 1 && avlTree.getBalanceFactor(node.left) >= 0) {
-return avlTree.rotateRight(node);
-}
-if (balance < -1 && avlTree.getBalanceFactor(node.right) <= 0) {
-return avlTree.rotateLeft(node);
-}
-if (balance > 1 && avlTree.getBalanceFactor(node.left) < 0) {
-node.left = avlTree.rotateLeft(node.left);
-return avlTree.rotateRight(node);
-}
-if (balance < -1 && avlTree.getBalanceFactor(node.right) > 0) {
-node.right = avlTree.rotateRight(node.right);
-return avlTree.rotateLeft(node);
-}
-
-return node;
-}
-
-// Helper function to find the minimum value node
-function minValue(node) {
-let current = node;
-while (current.left) {
-current = current.left;
-}
-return current.value;
-}
-
-// Function to delete a specific node
-function deleteNode() {
-const valueToDelete = parseInt(prompt('Enter the value of the node to delete:'), 10);
-
-if (!isNaN(valueToDelete)) {
-const nodeToDelete = findNode(avlTree.root, valueToDelete);
-
-if (nodeToDelete) {
-    // Remove the node
-    avlTree.root = removeNode(avlTree.root, valueToDelete);
-
-    // Output the updated tree
-    document.getElementById('output').innerText = `Node with value ${valueToDelete} deleted.`;
-} else {
-    alert(`Node with value ${valueToDelete} not found.`);
-}
-} else {
-alert('Please enter a valid number.');
-}
-}
-
-// Helper function to find a node by value
-function findNode(node, value) {
-if (!node) return null;
-if (node.value === value) return node;
-if (value < node.value) return findNode(node.left, value);
-return findNode(node.right, value);
-}
-
-// Helper function to remove a node from the tree
-function removeNode(node, value) {
-if (!node) return node;
-
-// Step 1: Perform standard BST deletion
-if (value < node.value) {
-node.left = removeNode(node.left, value);
-} else if (value > node.value) {
-node.right = removeNode(node.right, value);
-} else {
-// Node with the value found
-// Case 1: Node has no child (leaf node)
-if (!node.left && !node.right) {
-    return null;
-}
-// Case 2: Node has one child
-if (!node.left) {
-    return node.right;
-} else if (!node.right) {
-    return node.left;
-}
-
-// Case 3: Node has two children
-// Get the inorder successor (smallest in the right subtree)
-node.value = minValue(node.right);
-// Delete the inorder successor
-node.right = removeNode(node.right, node.value);
-}
-
-// Step 2: Update height and rebalance if needed
-node.height = Math.max(avlTree.getHeight(node.left), avlTree.getHeight(node.right)) + 1;
-
-// Rebalance the tree if necessary
-const balance = avlTree.getBalanceFactor(node);
-
-if (balance > 1 && avlTree.getBalanceFactor(node.left) >= 0) {
-return avlTree.rotateRight(node);
-}
-if (balance < -1 && avlTree.getBalanceFactor(node.right) <= 0) {
-return avlTree.rotateLeft(node);
-}
-if (balance > 1 && avlTree.getBalanceFactor(node.left) < 0) {
-node.left = avlTree.rotateLeft(node.left);
-return avlTree.rotateRight(node);
-}
-if (balance < -1 && avlTree.getBalanceFactor(node.right) > 0) {
-node.right = avlTree.rotateRight(node.right);
-return avlTree.rotateLeft(node);
-}
-
-return node;
-}
-
-// Function to delete a specific node
-function deleteNode() {
-const valueToDelete = parseInt(prompt('Enter the value of the node to delete:'), 10);
-
-if (!isNaN(valueToDelete)) {
-const nodeToDelete = findNode(avlTree.root, valueToDelete);
-
-if (nodeToDelete) {
-    // Remove the node
-    avlTree.root = removeNode(avlTree.root, valueToDelete);
-
-    // Output the updated tree
-    document.getElementById('output').innerText = `Node with value ${valueToDelete} deleted.`;
-
-    // Re-render the tree visualization
-    avlTree.visualize();
-} else {
-    alert(`Node with value ${valueToDelete} not found.`);
-}
-} else {
-alert('Please enter a valid number.');
-}
-}
-
-
-// Helper function to find the minimum value node
-function minValue(node) {
-let current = node;
-while (current.left) {
-current = current.left;
-}
-return current.value;
+    bst.clear();
+    document.getElementById('output').innerText = 'Tree cleared.';
 }
 
 function showTreeHeight() {
-const height = avlTree.getTreeHeight();
-document.getElementById('output').innerText = `Tree Height (Number of Levels): ${height}`;
+    bst.showTreeHeight();
 }
 
 function balanceTree() {
-// First, get all the nodes in the tree in sorted order
-const nodes = getSortedNodes(avlTree.root);
-
-// Clear the tree
-avlTree.clear();
-
-// Rebuild the tree from the sorted node list to ensure it's balanced
-avlTree.root = buildBalancedTree(nodes); // Assign the new root to the AVL tree
-
-// Re-render the tree visualization
-avlTree.visualize();
-
-document.getElementById('output').innerText = 'Tree has been rebalanced.';
+    bst.balanceTree();
 }
 
-// Helper function to traverse the tree in-order and return all nodes
-function getSortedNodes(node) {
-if (!node) return [];
-const leftNodes = getSortedNodes(node.left);
-const rightNodes = getSortedNodes(node.right);
-return [...leftNodes, node.value, ...rightNodes];
+function peekRoot() {
+    bst.peekRoot();
 }
 
-// Helper function to build a balanced tree from a sorted array of values
-function buildBalancedTree(values) {
-if (values.length === 0) return null;
-
-// Find the middle value (root of the subtree)
-const mid = Math.floor(values.length / 2);
-const root = new AVLnode(values[mid]);
-
-// Recursively build the left and right subtrees
-root.left = buildBalancedTree(values.slice(0, mid));  // Left half
-root.right = buildBalancedTree(values.slice(mid + 1)); // Right half
-
-// Recalculate height and balance factor for the root node
-root.height = Math.max(avlTree.getHeight(root.left), avlTree.getHeight(root.right)) + 1;
-
-return root;
+function peekChildren() {
+    bst.peekChildren();
 }
 
-
-// Helper function to build a balanced tree from a sorted array of values
-function buildBalancedTree(values) {
-if (values.length === 0) return null;
-
-// Find the middle value (root of the subtree)
-const mid = Math.floor(values.length / 2);
-const root = new AVLnode(values[mid]);
-
-// Recursively build the left and right subtrees
-root.left = buildBalancedTree(values.slice(0, mid));  // Left half
-root.right = buildBalancedTree(values.slice(mid + 1)); // Right half
-
-// Recalculate height and balance factor for the root node
-root.height = Math.max(avlTree.getHeight(root.left), avlTree.getHeight(root.right)) + 1;
-
-return root;
+function peekParentNodes() {
+    bst.peekParentNodes();
 }
 
+function peekLeafNodes() {
+    const leafNodes = bst.collectLeafNodes(bst.root);
+    document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
+}
+
+function updateNode() {
+    bst.updateNode() ;
+}
+
+function peekSiblings(){
+    bst.peekSiblings() ;
+}
+
+function showSubtree() {
+    bst.showSubtree();
+}

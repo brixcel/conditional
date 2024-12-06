@@ -212,92 +212,68 @@
         <a href="avl-tree.html">AVL Tree</a>
     </div>
     <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
-    
-    <h1>AVL Tree Visualization</h1>
+    <h1>Avl Tree Visualization</h1>
     <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto;">
-        An <strong>AVL tree</strong> is a self-balancing binary search tree in which the difference between the heights of 
-        the left and right subtrees of any node is at most one. This property ensures that the tree remains balanced, 
-        providing efficient operations for insertion, deletion, and search, all of which have a time complexity of 
-        <em>O(log n)</em>.
+        A <strong>AVL TREE</strong> is defined as a self-balancing Binary Search Tree (BST) where the difference between heights of left and right subtrees for any node cannot be more than one.
     </p>
 
     <input type="number" id="numberInput" placeholder="Enter a number">
-    <button onclick="addNumber()">Enqueue</button>
+    <button onclick="enqueueNumber()">Enqueue</button>
     <button onclick="clearTree()">Delete all</button>
+    <button onclick="showTreeHeight()">Show Height</button>
+    <button onclick="balanceTree()">Balance Tree</button>
     <button onclick="peekRoot()">Root</button>
-    <button onclick="peekParent()">Parent</button>
-    <button onclick="peekChildren()">Child/Children</button>
-    <button onclick="showSubtrees()">Subtrees</button>
-    <button onclick="showLeafNodes()">LeafNodes</button>
-    <button onclick="showSiblings()">Siblings</button>
-    <button onclick="updateNode()">Update</button>
-    <button onclick="deleteNode()">Delete</button>
-    <button onclick="showTreeHeight()">Level</button>
-    <button onclick="balanceTree()">Balance</button>
+    <button onclick="peekParentNodes()">Parents</button>
+    <button onclick="peekChildren()">Children</button>
+    <button onclick="peekLeafNodes()">Leaf Nodes</button>
+    <button onclick="peekSiblings()">Show Siblings</button>
+    <button onclick="updateNode()">Update Node</button>
+    <button onclick="showSubtree()">Show Subtree</button>
 
 
-    <canvas id="avlTreeCanvas" style="border: 1px solid #000; margin-top: 20px;"></canvas>
+    <canvas id="bstCanvas" style="border: 1px solid #000; margin-top: 20px;"></canvas>
     <p id="output" style="margin-top: 20px; font-size: 1.2em; color: #333;"></p>
-    
-    <h2>Command Descriptions</h2>
-   
-    <div class="command">
+
+    <h2>Check Descriptions</h2>
+    <div class="check">
         <h2>Enqueue</h2>
-        <p>Inserts a new value into the AVL tree while maintaining its balance. It updates the tree structure and visualizes the changes.</p>
+        <p>Inserts a new value into the binary search tree while maintaining its order. It updates the tree structure and visualizes the changes.</p>
     </div>
-
-    <div class="command">
-        <h2>clear()</h2>
-        <p>Removes all nodes from the AVL tree, effectively resetting it to an empty state. This command also updates the visualization to reflect the cleared tree.</p>
+    <div class="check">
+        <h2>Clear Tree</h2>
+        <p>Removes all nodes from the binary search tree, effectively clearing the tree. The visualization is updated to show an empty tree.</p>
     </div>
-
-    <div class="command">
-        <h2>Root()</h2>
-        <p>Retrieves and displays the value of the root node of the AVL tree. If the tree is empty, it informs the user that there is no root node.</p>
+    <div class="check">
+        <h2>Show Tree Height</h2>
+        <p>Displays the height of the binary search tree, which is the number of edges from the root to the deepest leaf node. This function helps understand the depth of the tree.</p>
     </div>
-
-    <div class="command">
-        <h2>Parent(value)</h2>
-        <p>Finds and displays the parent node of a specified value in the tree. If the value is the root or not found, it provides appropriate feedback.</p>
+    <div class="check">
+        <h2>Balance Tree</h2>
+        <p>Rebalances the binary search tree by sorting the nodes in ascending order and reconstructing the tree to ensure it is balanced. The visualization is updated after the tree is rebalanced.</p>
     </div>
-
-    <div class="command">
-        <h2>Children(value)</h2>
-        <p>Displays the left and right children of a specified node value. If the node has no children, it indicates that as well.</p>
+    <div class="check">
+        <h2>Peek Root</h2>
+        <p>Displays the root node of the binary search tree, highlighting it visually on the canvas. If the tree is empty, it notifies the user that no root node exists.</p>
     </div>
-
-    <div class="command">
-        <h2>Subtrees()</h2>
-        <p>Lists all subtrees in the AVL tree, showing the nodes under each parent node. This helps users understand the structure of the tree.</p>
+    <div class="check">
+        <h2>Peek Parent Nodes</h2>
+        <p>Displays all the nodes that are parents (i.e., nodes with at least one child). The list of parent nodes is presented, and if there are no such nodes, a message is shown.</p>
     </div>
-
-    <div class="command">
-        <h2>LeafNodes()</h2>
-        <p>Identifies and displays all leaf nodes in the tree, which are nodes without any children.</p>
+    <div class="check">
+        <h2>Peek Leaf Nodes</h2>
+        <p>Displays all the leaf nodes of the tree (nodes that have no left or right children). If there are no leaf nodes, it will notify the user.</p>
     </div>
-
-    <div class="command">
-        <h2>Siblings()</h2>
-        <p>Displays pairs of sibling nodes in the tree. This command helps users visualize relationships between nodes.</ </div>
-
-    <div class="command">
-        <h2>Update()</h2>
-        <p>Allows the user to update the value of a specified node. It first removes the old value and then adds the new value, ensuring the tree remains balanced.</p>
+    <div class="check">
+        <h2>Peek Siblings</h2>
+        <p>Displays the siblings of the root node. If the root node has no siblings (because it’s the only node in the tree), it will notify the user.</p>
     </div>
-
-    <div class="command">
-        <h2>Delete()</h2>
-        <p>Removes a specified node from the AVL tree. It updates the tree structure and visualizes the changes, ensuring the tree remains balanced after deletion.</p>
+    <div class="check">
+        <h2>Update Node</h2>
+        <p>Allows the user to update the value of an existing node in the tree, with checks to ensure that the new value adheres to the binary search tree properties. The tree will be re-visualized after the update. If the node to be updated is not found, or if the new value violates the rules, the user is alerted.</p>
     </div>
-
-    <div class="command">
-        <h2>Level()</h2>
-        <p>Calculates and displays the height of the AVL tree, which indicates the number of levels in the tree.</p>
-    </div>
-
-    <div class="command">
-        <h2>Balance()</h2>
-        <p>Rebalances the AVL tree by clearing it and rebuilding it from the sorted list of its nodes. This ensures optimal performance for future operations.</p>
+    <div class="check">
+        <h2>Show Subtree</h2>
+        <p>Displays all subtrees in the tree where each subtree contains at least one node with both a left and a right child. This helps to visualize parts of the tree that have both child nodes.</p>
     </div>
 
     <script src="avl-tree.js"></script>
