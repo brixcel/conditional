@@ -5,211 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AVL Tree Visualization</title>
     <style>
+       body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 20px;
+}
+.check {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+.check h2 {
+    margin: 0;
+    color: #007BFF;
+}
+.check p {
+    margin: 5px 0;
+}
+p {
+    font-size: 1.2em;
+    max-width: 900px;
+    margin: 20px auto;
+    text-align: justify;
+    line-height: 1.5;
+}
+input[type="number"] {
+    font-size: 1.1em;
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 150px;
+}
+button {
+    font-size: 1.1em;
+    padding: 10px 15px;
+    margin: 10px 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #1877f2;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #155c8a;
+}
+#button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+}
+#avlTreeCanvas {
+    display: block;
+    margin: 30px auto;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    max-width: 100%;
+    height: auto;
+}
+#output {
+    font-size: 1.2em;
+    color: #333;
+    margin-top: 20px;
+    text-align: center;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+/* Side Navbar Styles */
+.side-navbar {
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: -250px; /* Hidden by default */
+    background: #1877F2;
+    overflow-y: auto;
+    transition: left 0.3s ease-in-out;
+    padding-top: 60px;
+    z-index: 1000;
+}
+
+.side-navbar.active {
+    left: 0; /* Slide in */
+}
+
+.side-navbar a {
+    padding: 12px 20px;
+    font-size: 18px;
+    color: #FFFFFF;
+    display: block;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.side-navbar a:hover {
+    background-color: #145DBF;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    padding: 5px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.open-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: #1C1E21;
+    cursor: pointer;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+}
+
+.overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+
+/* Show overlay when active */
+.overlay.active {
+    display: block;
+}
+
+/* Media Queries */
+
+/* For tablets and larger screens */
+@media (min-width: 768px) {
     body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background-color: #f4f4f9;
-        color: #333;
-        line-height: 1.6;
-        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
     }
+
+    #button-container {
+        justify-content: space-between;
+    }
+}
+
+/* For small devices */
+@media (max-width: 767px) {
     h1 {
-        text-align: center;
-        font-size: 2.5em;
-        color: #333;
-        margin-bottom: 20px;
+        font-size: 2em;
     }
-    .check {
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-    }
-    .check h2 {
-        margin: 0;
-        color: #007BFF;
-    }
-    .check p {
-        margin: 5px 0;
-    }
-    p {
-        font-size: 1.2em;
-        max-width: 900px;
-        margin: 20px auto;
-        text-align: justify;
-        line-height: 1.5;
-    }
-    input[type="number"] {
-        font-size: 1.1em;
-        padding: 10px;
-        margin-right: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        width: 150px;
-    }
-    button {
-        font-size: 1.1em;
-        padding: 10px 15px;
-        margin: 10px 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #1877f2;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    button:hover {
-        background-color: #155c8a;
+    input[type="number"], button {
+        font-size: 1em;
     }
     #button-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 20px;
-    }
-    #avlTreeCanvas {
-        display: block;
-        margin: 30px auto;
-        background-color: #fff;
-        border: 2px solid #ddd;
-        max-width: 100%;
-        height: auto;
+        flex-direction: column;
+        align-items: center;
     }
     #output {
-        font-size: 1.2em;
-        color: #333;
-        margin-top: 20px;
-        text-align: center;
-        padding: 15px;
-        background-color: #fff;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        max-width: 900px;
-        margin: 30px auto;
+        font-size: 1em;
+    }
+}
+
+/* For mobile devices */
+@media (max-width: 480px) {
+    body {
+        padding: 0;
     }
     .side-navbar {
-            width: 250px;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: -250px;
-            background: #1877F2;
-            overflow-y: auto;
-            transition: 0.3s ease-in-out;
-            padding-top: 60px;
-            z-index: 1000;
-        }
-
-        .side-navbar.active {
-            left: 0;
-        }
-
-        .side-navbar a {
-            padding: 12px 20px;
-            font-size: 18px;
-            color: #FFFFFF;
-            display: block;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .side-navbar a:hover {
-            background-color: #145DBF;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 18px;
-            padding: 5px;
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        .open-btn {
-            font-size: 24px;
-            background: none;
-            border: none;
-            color: #1C1E21;
-            cursor: pointer;
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 1001;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-    @media (min-width: 768px) {
-        body {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        #button-container {
-            justify-content: space-between;
-        }
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: -100%; /* Hide sidebar completely */
+        bottom: 0;
+        right: 0;
+        z-index: 1000;
+        overflow-y: auto;
     }
-    @media (max-width: 767px) {
-        h1 {
-            font-size: 2em;
-        input[type="number"], button {
-            font-size: 1em;
-        }
-        #button-container {
-            flex-direction: column;
-            align-items: center;
-        }
-        #output {
-            font-size: 1em;
-        }
+    .side-navbar.active {
+        left: 0; /* Slide in fully */
     }
-
-    @media (max-width: 480px) {
-        body {
-            padding: 0;
-        }
-        .side-navbar {
-            width: 100%;
-            height: auto;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        .side-navbar.active {
-            left: 0;
-        }
-        #button-container {
-            margin-top: 10px;
-        #output {
-            margin-top: 10px;
-        }
-        }
+    .side-navbar a {
+        font-size: 1.5em;
     }
+    #button-container {
+        margin-top: 10px;
+    }
+    #output {
+        margin-top: 10px;
+    }
+}
 
-</style>
+    </style>
 </head>
 <body>
+    <!-- Overlay for Sidebar -->
     <div class="overlay" id="overlay"></div>
-    <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn">&times;</button>
+
+    <!-- Side Navbar -->
+    <div class="side-navbar" id="sideNavbar" aria-hidden="true">
+        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
         <a href="index.html">Home</a>
         <a href="stack.html">Stack</a>
         <a href="regular-queue.html">Regular Queue</a>
@@ -220,29 +241,39 @@
         <a href="circular-linked-list.html">Circular Linked List</a>
         <a href="avl-tree.html">AVL Tree</a>
     </div>
+
+    <!-- Open Navbar Button -->
     <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
-    <h1>Avl Tree Visualization</h1>
+
+    <!-- Main Content -->
+    <h1>AVL Tree Visualization</h1>
     <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto;">
         A <strong>AVL TREE</strong> is defined as a self-balancing Binary Search Tree (BST) where the difference between heights of left and right subtrees for any node cannot be more than one.
     </p>
 
-    <input type="number" id="numberInput" placeholder="Enter a number">
-    <button onclick="enqueueNumber()">Enqueue</button>
-    <button onclick="clearTree()">Delete all</button>
-    <button onclick="showTreeHeight()">Show Height</button>
-    <button onclick="balanceTree()">Balance Tree</button>
-    <button onclick="peekRoot()">Root</button>
-    <button onclick="peekParentNodes()">Parents</button>
-    <button onclick="peekChildren()">Children</button>
-    <button onclick="peekLeafNodes()">Leaf Nodes</button>
-    <button onclick="peekSiblings()">Show Siblings</button>
-    <button onclick="updateNode()">Update Node</button>
-    <button onclick="showSubtree()">Show Subtree</button>
+    <!-- Input and Buttons -->
+    <input type="number" id="numberInput" placeholder="Enter a number" aria-label="Number Input">
+    <div id="button-container">
+        <button onclick="enqueueNumber()">Enqueue</button>
+        <button onclick="clearTree()">Delete all</button>
+        <button onclick="showTreeHeight()">Show Height</button>
+        <button onclick="balanceTree()">Balance Tree</button>
+        <button onclick="peekRoot()">Root</button>
+        <button onclick="peekParentNodes()">Parents</button>
+        <button onclick="peekChildren()">Children</button>
+        <button onclick="peekLeafNodes()">Leaf Nodes</button>
+        <button onclick="peekSiblings()">Show Siblings</button>
+        <button onclick="updateNode()">Update Node</button>
+        <button onclick="showSubtree()">Show Subtree</button>
+    </div>
 
-
+    <!-- Canvas for BST Visualization -->
     <canvas id="bstCanvas" style="border: 1px solid #000; margin-top: 20px;"></canvas>
+
+    <!-- Output Section -->
     <p id="output" style="margin-top: 20px; font-size: 1.2em; color: #333;"></p>
 
+    <!-- Descriptions Section -->
     <h2>Check Descriptions</h2>
     <div class="check">
         <h2>Enqueue</h2>
@@ -285,9 +316,7 @@
         <p>Displays all subtrees in the tree where each subtree contains at least one node with both a left and a right child. This helps to visualize parts of the tree that have both child nodes.</p>
     </div>
 
+    <!-- JavaScript File -->
     <script src="avl-tree.js"></script>
-   
 </body>
 </html>
-
-
