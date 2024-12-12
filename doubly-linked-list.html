@@ -223,7 +223,7 @@
             <input type="number" id="list-limit" placeholder="Limit" min="1">
             <button onclick="setLimit()">Set Limit</button>
             <button onclick="resetPage()" class="disabled">Reset</button><br>
-            <input type="text" id="value" placeholder="Value" class="disabled">
+            <input type="text" id="value" placeholder="Value or New Value" class="disabled">
             <input type="number" id="index" placeholder="Index" class="disabled">
             <input type="text" id="address" placeholder="Address" class="disabled"><br>
             <input type="text" id="new-address" placeholder="New Address" class="disabled"><br>
@@ -256,47 +256,47 @@
             <div class="col">
                 <h5>Linked List Operations</h5>
                 <p class="button-description">
-                    1. Append - Add Element at the tail (last)<br>
-                    2. Prepend - Add Element at the head (top)<br>
-                    3. Insert - Insert Element on specific Index<br>
-                    4. Head - Return the head element<br>
-                    5. Tail - Return the tail element<br>
-                    6. Delete Tail - Delete the last element<br>
-                    7. Delete Head - Delete the top element<br>
-                    8. Delete Index - Delete the element by index #<br> 
-                    9. Update - Update the element value using the address<br>
-                    10. Replace - Update the element value and address<br>
-                    11. Clear - Delete entire linked list<br>
-                    12. Display - Return the linked list<br>
-                    13. Size - Display the linked list size<br>
-                    14. Reverse - Reverse the order of Linked List<br>
-                    15. Find - Search the element using the address and return the value<br>
-                    16. Sort - Sort the linked list from lowest to highest (or from A-B)<br>
-                    17. isEmpty - Return True / False<br>
-                    18. isFull - Return True / False<br>
+                    1.  <b>Append</b> - Add Element at the tail (last)<br>
+                    2.  <b>Prepend</b> - Add Element at the head (top)<br>
+                    3.  <b>Insert</b> - Insert Element on specific Index<br>
+                    4.  <b>Head</b> - Return the head element<br>
+                    5.  <b>Tail</b> - Return the tail element<br>
+                    6.  <b>Delete Tail</b> - Delete the last element<br>
+                    7.  <b>Delete Head</b> - Delete the top element<br>
+                    8.  <b>Delete Index</b> - Delete the element by index #<br> 
+                    9.  <b>Update</b> - Update the element value using the address<br>
+                    10. <b>Replace</b> - Update the element value and address<br>
+                    11. <b>Clear</b> - Delete entire linked list<br>
+                    12. <b>Display</b> - Return the linked list<br>
+                    13. <b>Size</b> - Display the linked list size<br>
+                    14. <b>Reverse</b> - Reverse the order of Linked List<br>
+                    15. <b>Find</b> - Search the element using the address and return the value<br>
+                    16. <b>Sort</b> - Sort the linked list from lowest to highest (or from A-B)<br>
+                    17. <b>isEmpty</b> - Return True / False<br>
+                    18. <b>isFull</b> - Return True / False<br>
                 </p>
             </div>
             <div class="col">
                 <h5>Necessary Data to Input</h5>
                 <p class="button-description">
-                    1. Append input: (Value)<br>
-                    2. Prepend input: (Value)<br>
-                    3. Insert input: (Value, Index)<br>
-                    4. Head input: None<br>
-                    5. Tail input: None<br>
-                    6. Delete Tail input: None<br>
-                    7. Delete Head input: None<br>
-                    8. Delete Index input: (Index)<br>
-                    9. Update input: (Value, Address)<br>
-                    10. Replace input: (Address, Value, New Address)<br>
-                    11. Clear input: None<br>
-                    12. Display input: None<br>
-                    13. Size input: None<br>
-                    14. Reverse input: None<br>
-                    15. Find input: (Address)<br>
-                    16. Sort input: None<br>
-                    17. isEmpty input: None<br>
-                    18. isFull input: None<br>
+                    1. <b>Append</b> input: (Value)<br>
+                    2. <b>Prepend</b> input: (Value)<br>
+                    3. <b>Insert</b> input: (New Value, Index)<br>
+                    4. <b>Head</b> input: None<br>
+                    5. <b>Tail</b> input: None<br>
+                    6. <b>Delete Tail</b> input: None<br>
+                    7. <b>Delete Head</b> input: None<br>
+                    8. <b>Delete Index</b> input: (Index)<br>
+                    9. <b>Update</b> input: (New Value, Address)<br>
+                    10.<b>Replace</b> input: (Address, New Value, New Address)<br>
+                    11. <b>Clear</b> input: None<br>
+                    12. <b>Display</b> input: None<br>
+                    13. <b>Size</b> input: None<br>
+                    14. <b>Reverse</b> input: None<br>
+                    15. <b>Find</b> input: (Address)<br>
+                    16. <b>Sort</b> input: None<br>
+                    17. <b>isEmpty</b> input: None<br>
+                    18. <b>isFull</b> input: None<br>
                 </p>
             </div>
         </div>
@@ -401,11 +401,12 @@
         }
         function update() {
             const address = document.getElementById("address").value;
-            const newValue = document.getElementById("value").value;
+            let newValue = document.getElementById("value").value;
             if (!address || !newValue) {
                 alert("Please provide both address and new value.");
                 return;
             }
+            newValue = parseInt(newValue, 10);
             if (valueExists(newValue)) {
                 alert("The value already exists.");
                 return;
@@ -425,12 +426,13 @@
 
         function replace() {
             const address = document.getElementById("address").value;
-            const newValue = document.getElementById("value").value;
+            let newValue = document.getElementById("value").value;
             const newAddress = document.getElementById("new-address").value;
             if (!address || !newValue || !newAddress) {
                 alert("Please provide valid data.");
                 return;
             }
+            newValue = parseInt(newValue, 10);
             if (valueExists(newValue)) {
                 alert("The value already exists.");
                 return;
@@ -501,17 +503,18 @@
         }
 
         function append() {
-            const value = document.getElementById("value").value;
+            let value = document.getElementById("value").value;
             if (!value) {
                 alert("Please enter a value.");
                 return;
             }
-            
+
+            value = parseInt(value, 10);
             if (isNaN(value)) {
                 alert("Please enter a numeric value.");
                 return;
             }
-            
+
             if (valueExists(value)) {
                 alert("The value already exists.");
                 return;
@@ -523,26 +526,33 @@
             }
 
             const newNode = new Node(value);
-            if (!tail) {
+            if (!head) {
                 head = tail = newNode;
             } else {
-                tail.next = newNode;
-                newNode.prev = tail;
+                let current = head;
+                while (current.next) {
+                    current = current.next;
+                }
+                current.next = newNode;
+                newNode.prev = current;
                 tail = newNode;
             }
             size++;
             updateDisplay();
             resetInputs();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
+
+
+
         function prepend() {
-            const value = document.getElementById("value").value;
+            let value = document.getElementById("value").value;
             if (!value) {
                 alert("Please enter a value.");
                 return;
             }
-            
+            value = parseInt(value, 10);
             if (isNaN(value)) {
                 alert("Please enter a numeric value.");
                 return;
@@ -567,7 +577,7 @@
             size++;
             updateDisplay();
             resetInputs();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
         function valueExists(value) {
@@ -581,12 +591,12 @@
 
         function insert() {
             const index = parseInt(document.getElementById("index").value);
-            const value = document.getElementById("value").value;
+            let value = document.getElementById("value").value;
             if (!value) {
                 alert("Please enter a value.");
                 return;
             }
-            
+            value = parseInt(value, 10);
             if (isNaN(value)) {
                 alert("Please enter a numeric value.");
                 return;
@@ -625,12 +635,14 @@
             }
             newNode.next = current.next;
             newNode.prev = current;
-            if (current.next) current.next.prev = newNode;
+            if (current.next) {
+                current.next.prev = newNode;
+            }
             current.next = newNode;
             size++;
             updateDisplay();
             resetInputs();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
         function deleteHead() {
@@ -643,7 +655,7 @@
             else tail = null;
             size--;
             updateDisplay();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
         function deleteTail() {
@@ -656,7 +668,7 @@
             else head = null;
             size--;
             updateDisplay();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
         function deleteIndex() {
@@ -667,10 +679,12 @@
             }
             if (index === 0) {
                 deleteHead();
+                resetInputs();
                 return;
             }
             if (index === size - 1) {
                 deleteTail();
+                resetInputs();
                 return;
             }
             let current = head;
@@ -681,7 +695,8 @@
             if (current.next) current.next.prev = current.prev;
             size--;
             updateDisplay();
-            toggleButtonStates()
+            resetInputs();
+            toggleButtonStates();
         }
 
         function resetInputs() {
@@ -695,7 +710,7 @@
             head = tail = null;
             size = 0;
             updateDisplay();
-            toggleButtonStates()
+            toggleButtonStates();
         }
 
         function sortList() {
@@ -734,9 +749,14 @@
 
         function reverseList() {
             if (!head) return;
+
             let current = head;
             let prev = null;
             let next = null;
+
+            // Swap the head and tail pointers
+            tail = head;
+
             while (current) {
                 next = current.next;
                 current.next = prev;
@@ -744,7 +764,10 @@
                 prev = current;
                 current = next;
             }
+
+            // Update the head to the last processed node
             head = prev;
+
             updateDisplay();
         }
 

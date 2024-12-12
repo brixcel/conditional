@@ -37,32 +37,22 @@ class LinkedList {
             return false;
         }
     
-        // Create a new node
         const newNode = new Node(value);
-        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padding for counter
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0');
         this.counter++;
     
         if (!this.head) {
-            // If the list is empty, the new node points to itself
             this.head = newNode;
-            newNode.next = this.head;  // Circular next to itself
-            newNode.prev = this.head;  // Circular prev to itself (since it's the only node)
+            newNode.next = newNode;
+            newNode.prev = newNode;
         } else {
-            let lastNode = this.head;
-    
-            // Traverse to the last node (the one whose next points to the head)
-            while (lastNode.next !== this.head) {
-                lastNode = lastNode.next;
-            }
-    
-            // Update the pointers to insert the new node
-            lastNode.next = newNode;    // Last node's next points to the new node
-            newNode.prev = lastNode;    // New node's prev points to the last node
-            newNode.next = this.head;   // New node's next points to the head
-            this.head.prev = newNode;   // Head's prev points to the new node (to complete circular linking)
+            let lastNode = this.head.prev;
+            lastNode.next = newNode;
+            newNode.prev = lastNode;
+            newNode.next = this.head;
+            this.head.prev = newNode;
         }
     
-        // Increase the size of the linked list
         this.size++;
         return true;
     }
@@ -170,36 +160,63 @@ class LinkedList {
     
 
     deleteHead() {
-        if (!this.head) return false;
-        
+        if (!this.head) return false;  // List is empty
+    
         if (this.size === 1) {
+            // If there is only one node, clear the list
             this.head = null;
         } else {
+            // If there are multiple nodes
             let current = this.head;
-            while (current.next !== this.head) {
-                current = current.next;
+    
+            // Update the tail to point to the second node
+            let lastNode = this.head;
+            while (lastNode.next !== this.head) {
+                lastNode = lastNode.next;
             }
-            current.next = this.head.next;
+    
+            // Set the new head
             this.head = this.head.next;
+            // Update the new head's prev pointer to point to the last node
+            this.head.prev = lastNode;
+            // Update the last node's next pointer to point to the new head
+            lastNode.next = this.head;
+    
+            // Update the addresses
+            this.head.prevAddress = lastNode.address;
+            this.head.nextAddress = this.head.next ? this.head.next.address : "n/a";
+            lastNode.nextAddress = this.head.address;
         }
-
+    
         this.size--;
         return true;
     }
+    
 
     deleteTail() {
-        if (!this.head) return false;
-        
+        if (!this.head) return false;  // List is empty
+
         if (this.size === 1) {
+            // If there is only one node, clear the list
             this.head = null;
         } else {
             let current = this.head;
             let previous = null;
+
+            // Traverse to the last node
             while (current.next !== this.head) {
                 previous = current;
                 current = current.next;
             }
+
+            // Update the second-to-last node's next to point to the head (circular link)
             previous.next = this.head;
+            // Update the head's prev to point to the new tail (second-to-last node)
+            this.head.prev = previous;
+
+            // Now update the addresses accordingly
+            previous.nextAddress = this.head.address;
+            this.head.prevAddress = previous.address;
         }
 
         this.size--;
@@ -207,30 +224,47 @@ class LinkedList {
     }
 
     deleteAt(index) {
+        // Check if the list is empty
+        if (this.is_empty()) {
+            alert('The list is empty. Nothing to delete.');
+            return false;
+        }
+    
+        // If deleting the head node
+        if (index === 0) {
+            return this.deleteHead(); // Reuse deleteHead for head deletion
+        }
+    
+        // If deleting the tail node
+        if (index === this.size - 1) {
+            return this.deleteTail(); // Reuse deleteTail for tail deletion
+        }
+    
+        // Check if the index is invalid
         if (index < 0 || index >= this.size) {
             alert('Invalid index!');
             return false;
         }
-
-        if (index === 0) {
-            return this.deleteHead();
-        }
-
+    
         let current = this.head;
-        let previous = null;
         let count = 0;
-
+    
+        // Traverse to the node at the given index
         while (count < index) {
-            previous = current;
             current = current.next;
             count++;
         }
-
-        previous.next = current.next;
-
+    
+        // Update the pointers of adjacent nodes
+        current.prev.next = current.next;
+        current.next.prev = current.prev;
+    
+        // Decrement the size of the list
         this.size--;
+    
         return true;
     }
+    
 
     clear() {
         this.head = null;
@@ -239,15 +273,17 @@ class LinkedList {
 
     toArray() {
         const array = [];
-        if (!this.head) return array;
+        if (!this.head) {
+            return array;
+        }
     
         let current = this.head;
         do {
             array.push({
                 value: current.value,
                 address: current.address,
-                prevAddress: current.prev ? current.prev.address : 'N/A',
-                nextAddress: current.next ? current.next.address : 'N/A'
+                prevAddress: this.size === 1 ? 'Null' : current.prev.address,
+                nextAddress: this.size === 1 ? 'Null' : current.next.address
             });
             current = current.next;
         } while (current !== this.head);
@@ -256,21 +292,20 @@ class LinkedList {
     }
     
 
-    find(value) {
-        if (!this.head) return -1;
-
+    find(address) {
+        if (!this.head) return -1;  // List is empty
+    
         let current = this.head;
-        let index = 0;
         do {
-            if (current.value === value) {
-                return current.address;
+            if (current.address === address) {
+                return current.value;  // Return the value of the node that matches the address
             }
             current = current.next;
-            index++;
         } while (current !== this.head);
-
-        return -1;
+    
+        return -1;  // Address not found
     }
+    
 
     reverse() {
         if (this.size <= 1) return; // No need to reverse if the list has 1 or fewer nodes
@@ -676,25 +711,34 @@ function size() {
 }
 
 function reverseList() {
+    // Check if the list is empty
+    if (linkedList.is_empty()) {
+        addOperationLog("The list is empty. Nothing to reverse.");
+        return;  // Exit the function if the list is empty
+    }
+
+    // Reverse the list
     linkedList.reverse();
     updateVisualization();
     addOperationLog('Reversed the list');
 }
 
+
 function find() {
-    const value = document.getElementById('valueInput').value;
-    if (!value) {
-        alert('Please enter a value to find!');
+    const address = prompt('Please enter the address to find:');  // Ask user for address input
+    if (!address) {
+        alert('Please enter a valid address!');
         return;
     }
-    const result = linkedList.find(parseInt(value));
+    
+    const result = linkedList.find(address);  // Call find method using address
     if (result !== -1) {
-        addOperationLog(`Found value ${value} at address ${result}`);
+        addOperationLog(`Found node with address ${address}. Value: ${result}`);
     } else {
-        addOperationLog(`Value ${value} not found in the list`);
+        addOperationLog(`Address ${address} not found in the list`);
     }
-    clearInputs();
 }
+
 
 function showHead() {
     const head = linkedList.headNode();
@@ -725,10 +769,18 @@ function checkIfFull() {
 }
 
 function sortList() {
+    // Check if the list is empty
+    if (linkedList.is_empty()) {
+        addOperationLog("The list is empty. Nothing to sort.");
+        return;  // Exit the function if the list is empty
+    }
+
+    // Sort the list
     linkedList.sort();
     updateVisualization();
     addOperationLog('Sorted the list');
 }
+
 
 function update() {
     const address = prompt("Enter the address of the node you want to update:");
@@ -762,34 +814,46 @@ function replace() {
         return;
     }
 
+    // Check if the node with the given address exists
+    let current = linkedList.head;
+    let nodeFound = false;
+    
+    while (current) {
+        if (current.address === address) {
+            nodeFound = true;
+            break;
+        }
+        current = current.next;
+    }
+
+    if (!nodeFound) {
+        alert("Node with the given address not found!");
+        addOperationLog(`Failed to replace node with address ${address}. Node not found.`);
+        return;
+    }
+
     const newAddress = prompt("Enter the new address:");
     if (!newAddress) {
         alert("Please enter a valid new address!");
         return;
     }
 
-    // Replace the node based on address and new address
-    let current = linkedList.head;
-    let replaced = false;
-
-    while (current) {
-        if (current.address === address) {
-            current.address = newAddress;
-            replaced = true;
-            break;
-        }
-        current = current.next;
+    const newValue = prompt("Enter the new value for the node:");
+    if (!newValue) {
+        alert("Please enter a valid new value!");
+        return;
     }
 
-    if (replaced) {
-        updateVisualization();
-        showSuccess("Node replaced successfully!");
-        addOperationLog(`Node at address ${address} replaced with new address ${newAddress}`);
-    } else {
-        alert("Node with the given address not found!");
-        addOperationLog(`Failed to replace node with address ${address}. Node not found.`);
-    }
+    // Replace the node's address and value
+    current.address = newAddress;
+    current.value = newValue;
+
+    // After replacement, update the visualization or any other relevant parts of the system
+    updateVisualization();
+    showSuccess("Node replaced successfully!");
+    addOperationLog(`Node at address ${address} replaced with new address ${newAddress} and new value "${newValue}"`);
 }
+
 function showAddressInput() {
     const value = document.getElementById('valueInput').value;
     
