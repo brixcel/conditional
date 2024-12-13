@@ -42,7 +42,6 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
-// Binary Search Tree Implementation (Existing Code)
 class TreeNode {
     constructor(value) {
         this.value = value;
@@ -50,6 +49,21 @@ class TreeNode {
         this.right = null;
         this.parent = null; // Keep track of the parent node
     }
+}
+
+
+function toggleButtons() {
+    const buttons = document.querySelectorAll("button");
+    const isTreeEmpty = !bst.root; // Check if the tree is empty
+
+    buttons.forEach(button => {
+    // Disable all buttons if the tree is empty, except for the "Enqueue" button
+        if (isTreeEmpty && button.textContent !== "Enqueue") {
+            button.disabled = true;
+        } else {
+            button.disabled = false;
+        }
+    });
 }
 
 class BinarySearchTree {
@@ -80,64 +94,126 @@ class BinarySearchTree {
         this.visualize(false); // No highlighting
     }
 
+    dequeue(value) {
+const targetNode = this.findNode(this.root, value);
+
+if (!targetNode) {
+alert('Node to dequeue not found.');
+return;
+}
+
+this.root = this.removeNode(this.root, value);
+
+// Re-visualize the tree after the update
+this.visualize(false);
+document.getElementById('output').innerText = `Node with value ${value} removed.`;
+}
+
+removeNode(node, value) {
+// Base case: if the tree is empty
+if (!node) return node;
+
+// Recursive case: traverse the tree to find the node to delete
+if (value < node.value) {
+node.left = this.removeNode(node.left, value);
+} else if (value > node.value) {
+node.right = this.removeNode(node.right, value);
+} else {
+// Case 1: Node with only one child or no child
+if (!node.left) {
+    return node.right;
+} else if (!node.right) {
+    return node.left;
+}
+
+// Case 2: Node with two children
+// Get the inorder successor (smallest in the right subtree)
+node.value = this.minValueNode(node.right).value;
+
+// Delete the inorder successor
+node.right = this.removeNode(node.right, node.value);
+}
+
+return node;
+}
+
+minValueNode(node) {
+let current = node;
+// Loop down to find the leftmost leaf
+while (current.left) {
+current = current.left;
+}
+return current;
+}
+
+
     clear() {
         this.root = null;
         this.visualize(false); // No highlighting
     }
-
     visualize(highlightRoot = false) {
-        const canvas = document.getElementById('bstCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth * 0.8;
-        canvas.height = 400;
+const canvas = document.getElementById('bstCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth * 0.8;
+canvas.height = window.innerHeight * 0.8; // Increase canvas height for better spacing
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (!this.root) return;
+if (!this.root) return;
 
-        const positions = new Map();
+const positions = new Map();
 
-        const calculatePositions = (node, x, y, depth, minGap) => {
-            if (!node) return;
+// Function to calculate positions of the nodes
+const calculatePositions = (node, x, y, depth, minGap) => {
+if (!node) return;
 
-            positions.set(node, { x, y });
+positions.set(node, { x, y });
 
-            const gap = minGap / Math.pow(2, depth);
-            if (node.left) {
-                calculatePositions(node.left, x - gap, y + 70, depth + 1, minGap);
-            }
-            if (node.right) {
-                calculatePositions(node.right, x + gap, y + 70, depth + 1, minGap);
-            }
-        };
+const gap = minGap / Math.pow(2, depth);
+if (node.left) {
+    calculatePositions(node.left, x - gap, y + 100, depth + 1, minGap); // Increase vertical gap for better spacing
+}
+if (node.right) {
+    calculatePositions(node.right, x + gap, y + 100, depth + 1, minGap);
+}
+};
 
-        calculatePositions(this.root, canvas.width / 2, 20, 0, canvas.width / 4);
+calculatePositions(this.root, canvas.width / 2, 100, 0, canvas.width / 4); // Start y at 100 to leave space at the top
 
-        for (const [node, pos] of positions) {
-            ctx.fillStyle = (highlightRoot && node === this.root) ? 'yellow' : '#007BFF'; // Highlight root node if specified
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#FFFFFF';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = '16px Arial';
-            ctx.fillText(node.value, pos.x, pos.y);
+// Draw lines between nodes
+for (const [node, pos] of positions) {
+if (node.left) {
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(positions.get(node.left).x, positions.get(node.left).y);
+    ctx.stroke();
+}
+if (node.right) {
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(positions.get(node.right).x, positions.get(node.right).y);
+    ctx.stroke();
+}
+}
 
-            if (node.left) {
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(positions.get(node.left).x, positions.get(node.left).y);
-                ctx.stroke();
-            }
-            if (node.right) {
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(positions.get(node.right).x, positions.get(node.right).y);
-                ctx.stroke();
-            }
-        }
-    }
+// Draw nodes
+for (const [node, pos] of positions) {
+ctx.fillStyle = (highlightRoot && node === this.root) ? 'yellow' : '#007BFF'; // Highlight root node if specified
+ctx.beginPath();
+ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+ctx.fill();
+ctx.fillStyle = '#FFFFFF';
+ctx.fillText(node.value, pos.x - 10, pos.y + 5);
+}
+}
+
+
+// Helper function to get the maximum depth of the tree
+getMaxDepth(node) {
+if (!node) return 0;
+return Math.max(this.getMaxDepth(node.left), this.getMaxDepth(node.right)) + 1;
+}
+
 
     getTreeHeight(node) {
         if (!node) return 0;
@@ -171,10 +247,7 @@ class BinarySearchTree {
         const root = new TreeNode(values[mid]);
 
         root.left = this.buildBalancedTree(values.slice(0, mid));
-        if (root.left) root.left.parent = root;
-
         root.right = this.buildBalancedTree(values.slice(mid + 1));
-        if (root.right) root.right.parent = root;
 
         return root;
     }
@@ -228,6 +301,7 @@ class BinarySearchTree {
     peekLeafNodes() {
         const leafNodes = this.collectLeafNodes(this.root);
         document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
+        this.visualize(true);
     }
 
     collectParentNodes(node) {
@@ -241,20 +315,21 @@ class BinarySearchTree {
 
         // Recursively collect parents from left and right children
         return [
-            ...parentNodes,
-            ...this.collectParentNodes(node.left),
-            ...this.collectParentNodes(node.right)
-        ];
-    }
+        ...parentNodes,
+        ...this.collectParentNodes(node.left),
+        ...this.collectParentNodes(node.right)
+    ];
+}
 
     peekParentNodes() {
         const parentNodes = this.collectParentNodes(this.root);
         if (parentNodes.length > 0) {
             document.getElementById('output').innerText = `Parent Nodes: (${parentNodes.join(', ')})`;
-        } else {
-            document.getElementById('output').innerText = 'No parent nodes found.';
-        }
+            this.visualize(true);
+    } else {
+        document.getElementById('output').innerText = 'No parent nodes found.';
     }
+}
 
     collectSubtrees(node, isRoot = true) {
         if (!node) return [];
@@ -275,104 +350,147 @@ class BinarySearchTree {
     }
 
     updateNode() {
-        const input = document.getElementById('numberInput');
-        const newValue = parseInt(input.value);
-        if (!newValue || isNaN(newValue)) {
-            alert('Please enter a valid number.');
-            input.value = '';  // Clear the input field
-            return;
-        }
+const input = document.getElementById('numberInput');
+const newValue = parseInt(input.value);
 
-        // Get the node to update based on user input
-        const targetValue = parseInt(prompt("Enter the value of the node to update:"));
-        if (!targetValue || isNaN(targetValue)) {
-            alert('Please enter a valid target value.');
-            return;
-        }
+// Check if the new value is a valid number
+if (isNaN(newValue)) {
+alert('Please enter a valid number.');
+return;
+}
 
-        const targetNode = this.findNode(this.root, targetValue);
+const targetValue = parseInt(prompt("Enter the value of the node to update:"));
 
-        if (!targetNode) {
-            alert('Node to update not found.');
-            return;
-        }
+// Check if the target value is a valid number
+if (isNaN(targetValue)) {
+alert('Please enter a valid target value.');
+return;
+}
 
-        // Check if the new value already exists in the tree
-        if (this.findNode(this.root, newValue)) {
-            alert('Cannot update: The new value already exists in the tree.');
-            return;
-        }
+// Find the target node to update
+const targetNode = this.findNode(this.root, targetValue);
 
-        // Ensure the new value respects the BST rules based on the parent-child relationship
-        if (targetNode.parent) {
-            if (targetNode === targetNode.parent.left) { // Left child
-                if (newValue >= targetNode.parent.value) {
-                    alert('Cannot update: New value for left child must be smaller than the parent value.');
-                    return;
-                }
-            } else if (targetNode === targetNode.parent.right) { // Right child
-                if (newValue <= targetNode.parent.value) {
-                    alert('Cannot update: New value for right child must be larger than the parent value.');
-                    return;
-                }
-            }
-        }
+// If the node is not found, alert the user and exit
+if (!targetNode) {
+alert('Node to update not found.');
+return;
+}
 
-        // Perform the update (update the value of the node)
-        targetNode.value = newValue;
+// Ensure the new value is not already in the tree
+if (this.findNode(this.root, newValue)) {
+alert('Cannot update: The new value already exists in the tree.');
+return;
+}
 
-        // Re-visualize the tree after the update
-        this.visualize(false); // No highlighting
-        document.getElementById('output').innerText = `Node with value ${targetValue} updated to ${newValue}.`;
-    }
+// Validate the left and right child relationships
+if (targetNode.parent) {
+// If the node is the left child, it must be smaller than the parent
+if (targetNode === targetNode.parent.left && newValue >= targetNode.parent.value) {
+    alert('Cannot update: New value for left child must be smaller than the parent value.');
+    return;
+}
 
-    // Helper function to find a node by value
-    findNode(node, value) {
-        if (!node) return null;
-        if (node.value === value) return node;
-        if (value < node.value) return this.findNode(node.left, value);
-        return this.findNode(node.right, value);
-    }
+// If the node is the right child, it must be greater than the parent
+if (targetNode === targetNode.parent.right && newValue <= targetNode.parent.value) {
+    alert('Cannot update: New value for right child must be greater than the parent value.');
+    return;
+}
+}
 
-    collectSiblings(node) {
-        if (!node || !node.parent) return []; // If node or parent doesn't exist, no siblings
+// Validate that the left node value is smaller than the right node (if applicable)
+if (targetNode.left && targetNode.right) {
+if (newValue >= targetNode.right.value) {
+    alert('Cannot update: New left node value must be smaller than its right node.');
+    return;
+}
+}
 
-        const siblings = [];
-        const parent = node.parent;
+// Perform the update (update the value of the node)
+targetNode.value = newValue;
 
-        // Check for siblings in the parent's left and right children
-        if (parent.left && parent.left !== node) {
-            siblings.push(parent.left.value); // Add left sibling
-        }
-        if (parent.right && parent.right !== node) {
-            siblings.push(parent.right.value); // Add right sibling
-        }
+// Re-visualize the tree after the update
+this.visualize(false);
 
-        return siblings;
-    }
+// Display the success message
+document.getElementById('output').innerText = `Node with value ${targetValue} updated to ${newValue}.`;
+}
 
-    // Function to display the siblings of a selected node
-    peekSiblings() {
-        const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
-        const node = this.findNode(this.root, nodeValue);
 
-        if (!node) {
-            document.getElementById('output').innerText = 'Node not found.';
-            return;
-        }
 
-        // Find siblings for the selected node
-        const siblingsInfo = this.collectSiblings(node);
-        if (siblingsInfo.length > 0) {
-            document.getElementById('output').innerText = `Node ${node.value} has siblings: ${siblingsInfo.join(', ')}`;
-        } else {
-            document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
-        }
-    }
+
+// Helper function to find a node by value
+findNode(node, value) {
+if (!node) return null;
+if (node.value === value) return node;
+if (value < node.value) return this.findNode(node.left, value);
+return this.findNode(node.right, value);
+}
+
+
+collectSiblings(node) {
+if (!node || !node.parent) return []; // If node or parent doesn't exist, no siblings
+
+const siblings = [];
+const parent = node.parent;
+
+// Check for siblings in the parent's left and right children
+if (parent.left && parent.left !== node) {
+siblings.push(parent.left.value); // Add left sibling
+}
+if (parent.right && parent.right !== node) {
+siblings.push(parent.right.value); // Add right sibling
+}
+
+return siblings;
+}
+
+// Function to display the siblings of a selected node
+peekSiblings() {
+const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
+const node = this.findNode(this.root, nodeValue);
+
+if (!node) {
+document.getElementById('output').innerText = 'Node not found.';
+return;
+}
+
+// Find siblings for the selected node
+const siblingsInfo = this.collectSiblings(node);
+if (siblingsInfo.length > 0) {
+document.getElementById('output').innerText = `Node ${node.value} has siblings: ${siblingsInfo.join(', ')}`;
+} else {
+document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
+}
+}
+
+
+
+// Function to display the siblings of a selected node
+peekSiblings() {
+const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
+const node = this.findNode(this.root, nodeValue);
+
+if (!node) {
+document.getElementById('output').innerText = 'Node not found.';
+return;
+}
+
+// Find siblings for the selected node
+const siblingsInfo = this.collectSiblings(node);
+
+// Include the node's value in the output
+const outputValue = siblingsInfo.length > 0 ? `[${node.value}, ${siblingsInfo.join(', ')}]` : `[${node.value}]`;
+
+if (siblingsInfo.length > 0) {
+document.getElementById('output').innerText = `Node ${node.value} has siblings: ${outputValue}`;
+} else {
+document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
+}
+}
 
     showSubtree() {
         const subtreeInfo = this.collectSubtrees(this.root);
-        const formattedSubtree = subtreeInfo.length > 0 
+        const formattedSubtree = subtreeInfo.length > 0
             ? `Subtrees: ${subtreeInfo.join(', ')}`
             : 'No subtrees found with both left and right children.';
 
@@ -388,15 +506,26 @@ function enqueueNumber() {
 
     // Check if the value is 0 or negative
     if (value <= 0) {
-        alert('Only positive numbers greater than zero are allowed.');
-        input.value = '';  // Clear the input field
-        return;
+    alert('Only positive numbers greater than zero are allowed.');
+    input.value = '';  // Clear the input field
+    return;
     }
 
     if (!isNaN(value)) {
-        bst.enqueue(value);
-        input.value = '';  // Clear the input field
+    bst.enqueue(value);
+    input.value = '';  // Clear the input field
     }
+}
+
+function dequeueNode() {
+    const value = parseInt(prompt("Enter the value of the node to dequeue:"));
+
+    if (!value || isNaN(value)) {
+        alert('Please enter a valid number.');
+        return;
+    }
+
+    bst.dequeue(value);
 }
 
 function clearTree() {
@@ -425,15 +554,16 @@ function peekParentNodes() {
 }
 
 function peekLeafNodes() {
-    bst.peekLeafNodes();
+    const leafNodes = bst.collectLeafNodes(bst.root);
+    document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
 }
 
 function updateNode() {
-    bst.updateNode();
+    bst.updateNode() ;
 }
 
 function peekSiblings(){
-    bst.peekSiblings();
+    bst.peekSiblings() ;
 }
 
 function showSubtree() {

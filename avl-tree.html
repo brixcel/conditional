@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVL Tree Visualization</title>
-    <style>
-       body {
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AVL Tree Visualization</title>
+        <link rel="stylesheet" href="avl.css" />
+        <style>
+            body {
     font-family: Arial, sans-serif;
     margin: 20px;
     background-color: #f4f4f9;
@@ -221,40 +222,35 @@ button:hover {
         margin-top: 10px;
     }
 }
+        </style>
+    </head>
+    <body>
+        <div class="overlay" id="overlay"></div>
+        <div class="side-navbar" id="sideNavbar">
+            <button class="close-btn" id="closeBtn">&times;</button>
+            <a href="index.html">Home</a>
+            <a href="stack.html">Stack</a>
+            <a href="regular-queue.html">Regular Queue</a>
+            <a href="circular-queue.html">Circular Queue</a>
+            <a href="priority-queue.html">Priority Queue</a>
+            <a href="singly-linked-list.html">Singly Linked List</a>
+            <a href="doubly-linked-list.html">Doubly Linked List</a>
+            <a href="circular-linked-list.html">Circular Linked List</a>
+            <a href="avl-tree.html">AVL Tree</a>
+        </div>
+        <button class="open-btn" id="openBtn" aria-label="Open Menu">
+            ☰ Menu
+        </button>
+        <h1>Avl Tree Visualization</h1>
+        <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto">
+            A <strong>AVL TREE</strong> is defined as a self-balancing Binary
+            Search Tree (BST) where the difference between heights of left and
+            right subtrees for any node cannot be more than one.
+        </p>
 
-    </style>
-</head>
-<body>
-    <!-- Overlay for Sidebar -->
-    <div class="overlay" id="overlay"></div>
-
-    <!-- Side Navbar -->
-    <div class="side-navbar" id="sideNavbar" aria-hidden="true">
-        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
-        <a href="index.html">Home</a>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
-
-    <!-- Open Navbar Button -->
-    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
-
-    <!-- Main Content -->
-    <h1>AVL Tree Visualization</h1>
-    <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto;">
-        A <strong>AVL TREE</strong> is defined as a self-balancing Binary Search Tree (BST) where the difference between heights of left and right subtrees for any node cannot be more than one.
-    </p>
-
-    <!-- Input and Buttons -->
-    <input type="number" id="numberInput" placeholder="Enter a number" aria-label="Number Input">
-    <div id="button-container">
+        <input type="number" id="numberInput" placeholder="Enter a number" />
         <button onclick="enqueueNumber()">Enqueue</button>
+        <button onclick="dequeueNode()">Dequeue</button>
         <button onclick="clearTree()">Delete all</button>
         <button onclick="showTreeHeight()">Show Height</button>
         <button onclick="balanceTree()">Balance Tree</button>
@@ -265,58 +261,109 @@ button:hover {
         <button onclick="peekSiblings()">Show Siblings</button>
         <button onclick="updateNode()">Update Node</button>
         <button onclick="showSubtree()">Show Subtree</button>
-    </div>
+        
 
-    <!-- Canvas for BST Visualization -->
-    <canvas id="bstCanvas" style="border: 1px solid #000; margin-top: 20px;"></canvas>
+        <canvas
+            id="bstCanvas"
+            style="border: 1px solid #000; margin-top: 20px"
+        ></canvas>
+        <p
+            id="output"
+            style="margin-top: 20px; font-size: 1.2em; color: #333"
+        ></p>
 
-    <!-- Output Section -->
-    <p id="output" style="margin-top: 20px; font-size: 1.2em; color: #333;"></p>
+        <h2>Check Descriptions</h2>
+        <div class="check">
+            <h2>Enqueue</h2>
+            <p>
+                Inserts a new value into the binary search tree while
+                maintaining its order. It updates the tree structure and
+                visualizes the changes.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Denqueue</h2>
+            <p>
+                used to delete a node. It updates the tree structure and
+                visualizes the changes.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Clear Tree</h2>
+            <p>
+                Removes all nodes from the binary search tree, effectively
+                clearing the tree. The visualization is updated to show an empty
+                tree.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Show Tree Height</h2>
+            <p>
+                Displays the height of the binary search tree, which is the
+                number of edges from the root to the deepest leaf node. This
+                function helps understand the depth of the tree.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Balance Tree</h2>
+            <p>
+                Rebalances the binary search tree by sorting the nodes in
+                ascending order and reconstructing the tree to ensure it is
+                balanced. The visualization is updated after the tree is
+                rebalanced.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Peek Root</h2>
+            <p>
+                Displays the root node of the binary search tree, highlighting
+                it visually on the canvas. If the tree is empty, it notifies the
+                user that no root node exists.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Peek Parent Nodes</h2>
+            <p>
+                Displays all the nodes that are parents (i.e., nodes with at
+                least one child). The list of parent nodes is presented, and if
+                there are no such nodes, a message is shown.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Peek Leaf Nodes</h2>
+            <p>
+                Displays all the leaf nodes of the tree (nodes that have no left
+                or right children). If there are no leaf nodes, it will notify
+                the user.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Peek Siblings</h2>
+            <p>
+                Displays the siblings of the root node. If the root node has no
+                siblings (because it’s the only node in the tree), it will
+                notify the user.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Update Node</h2>
+            <p>
+                Allows the user to update the value of an existing node in the
+                tree, with checks to ensure that the new value adheres to the
+                binary search tree properties. The tree will be re-visualized
+                after the update. If the node to be updated is not found, or if
+                the new value violates the rules, the user is alerted.
+            </p>
+        </div>
+        <div class="check">
+            <h2>Show Subtree</h2>
+            <p>
+                Displays all subtrees in the tree where each subtree contains at
+                least one node with both a left and a right child. This helps to
+                visualize parts of the tree that have both child nodes.
+            </p>
+        </div>
 
-    <!-- Descriptions Section -->
-    <h2>Check Descriptions</h2>
-    <div class="check">
-        <h2>Enqueue</h2>
-        <p>Inserts a new value into the binary search tree while maintaining its order. It updates the tree structure and visualizes the changes.</p>
-    </div>
-    <div class="check">
-        <h2>Clear Tree</h2>
-        <p>Removes all nodes from the binary search tree, effectively clearing the tree. The visualization is updated to show an empty tree.</p>
-    </div>
-    <div class="check">
-        <h2>Show Tree Height</h2>
-        <p>Displays the height of the binary search tree, which is the number of edges from the root to the deepest leaf node. This function helps understand the depth of the tree.</p>
-    </div>
-    <div class="check">
-        <h2>Balance Tree</h2>
-        <p>Rebalances the binary search tree by sorting the nodes in ascending order and reconstructing the tree to ensure it is balanced. The visualization is updated after the tree is rebalanced.</p>
-    </div>
-    <div class="check">
-        <h2>Peek Root</h2>
-        <p>Displays the root node of the binary search tree, highlighting it visually on the canvas. If the tree is empty, it notifies the user that no root node exists.</p>
-    </div>
-    <div class="check">
-        <h2>Peek Parent Nodes</h2>
-        <p>Displays all the nodes that are parents (i.e., nodes with at least one child). The list of parent nodes is presented, and if there are no such nodes, a message is shown.</p>
-    </div>
-    <div class="check">
-        <h2>Peek Leaf Nodes</h2>
-        <p>Displays all the leaf nodes of the tree (nodes that have no left or right children). If there are no leaf nodes, it will notify the user.</p>
-    </div>
-    <div class="check">
-        <h2>Peek Siblings</h2>
-        <p>Displays the siblings of the root node. If the root node has no siblings (because it’s the only node in the tree), it will notify the user.</p>
-    </div>
-    <div class="check">
-        <h2>Update Node</h2>
-        <p>Allows the user to update the value of an existing node in the tree, with checks to ensure that the new value adheres to the binary search tree properties. The tree will be re-visualized after the update. If the node to be updated is not found, or if the new value violates the rules, the user is alerted.</p>
-    </div>
-    <div class="check">
-        <h2>Show Subtree</h2>
-        <p>Displays all subtrees in the tree where each subtree contains at least one node with both a left and a right child. This helps to visualize parts of the tree that have both child nodes.</p>
-    </div>
-
-    <!-- JavaScript File -->
-    <script src="avl-tree.js"></script>
-</body>
+        <script src="avl-tree.js"></script>
+    </body>
 </html>
