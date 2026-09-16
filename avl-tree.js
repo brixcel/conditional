@@ -510,8 +510,8 @@ class AVLTree {
         calculatePositions(this.root, canvas.width / 2, 60, 0, canvas.width / 3.8);
 
         // Draw edges
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#94A3B8';
+        ctx.lineWidth = 2.5;
         for (const [node, pos] of positions) {
             if (node.left && positions.has(node.left)) {
                 const childPos = positions.get(node.left);
@@ -532,26 +532,35 @@ class AVLTree {
         // Draw node circles and text
         for (const [node, pos] of positions) {
             const isRootNode = node === this.root;
-            ctx.fillStyle = (highlightRoot && isRootNode) ? '#FFD700' : '#1877F2';
+            const isHighlighted = highlightRoot && isRootNode;
+
+            // Outer shadow / glow ring
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
+            ctx.arc(pos.x, pos.y, 23, 0, Math.PI * 2);
+            ctx.fillStyle = isHighlighted ? 'rgba(245, 158, 11, 0.25)' : 'rgba(37, 99, 235, 0.15)';
             ctx.fill();
-            ctx.strokeStyle = '#0B4A9E';
+
+            // Inner circle
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 21, 0, Math.PI * 2);
+            ctx.fillStyle = isHighlighted ? '#F59E0B' : '#2563EB';
+            ctx.fill();
+            ctx.strokeStyle = isHighlighted ? '#B45309' : '#1E3A8A';
             ctx.lineWidth = 2;
             ctx.stroke();
 
             // Value text
-            ctx.fillStyle = (highlightRoot && isRootNode) ? '#000000' : '#FFFFFF';
-            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(node.value, pos.x, pos.y);
 
             // Height and Balance Factor badge
             const bf = this.getBalance(node);
-            ctx.font = 'bold 11px monospace';
+            ctx.font = 'bold 11px ui-monospace, monospace';
             ctx.fillStyle = Math.abs(bf) <= 1 ? '#059669' : '#DC2626';
-            ctx.fillText(`h:${node.height} | bf:${bf > 0 ? '+' + bf : bf}`, pos.x, pos.y + 34);
+            ctx.fillText(`h:${node.height} | bf:${bf > 0 ? '+' + bf : bf}`, pos.x, pos.y + 35);
         }
     }
 }

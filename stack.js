@@ -168,11 +168,18 @@ if (popBtn) {
 
             // If user supplied a number, verify it matches top; otherwise pop directly
             if (userInput === '' || userInput === topElementValue) {
-                stackBox.removeChild(stackBox.lastElementChild);
-                stackSize--;
-                if (numberInput) numberInput.value = '';
-                updateStackState();
-                notify(`Popped ${topElementValue} from Top of Stack (LIFO)`, "info");
+                const elementToPop = stackBox.lastElementChild;
+                elementToPop.classList.add('stack-bar-pop');
+                
+                setTimeout(() => {
+                    if (elementToPop.parentNode === stackBox) {
+                        stackBox.removeChild(elementToPop);
+                    }
+                    stackSize--;
+                    if (numberInput) numberInput.value = '';
+                    updateStackState();
+                    notify(`Popped ${topElementValue} from Top of Stack (LIFO)`, "info");
+                }, 240);
             } else {
                 notify(`LIFO Rule: Top element is ${topElementValue}, not ${userInput}.`, "error");
             }

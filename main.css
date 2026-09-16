@@ -606,12 +606,19 @@ input:disabled, select:disabled {
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
     box-shadow: var(--shadow-sm);
-    animation: fadeIn 0.25s ease;
+    animation: stackPushSpring 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: all 0.25s ease;
+    will-change: transform, opacity;
+}
+
+.stack-bar-pop {
+    animation: stackPopFly 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
 .stack-highlight {
     background-color: var(--warning) !important;
     color: #FFFFFF !important;
+    animation: pulseHighlight 0.6s ease-in-out;
 }
 
 /* Queue Stage */
@@ -645,8 +652,19 @@ input:disabled, select:disabled {
     font-weight: 700;
     font-family: var(--font-mono);
     font-size: 1.05rem;
-    animation: fadeIn 0.25s ease;
+    animation: queueSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     flex-shrink: 0;
+    will-change: transform, opacity;
+}
+
+.car:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.car-exit {
+    animation: queueSlideOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
 .car::before, .car::after {
@@ -807,6 +825,19 @@ input:disabled, select:disabled {
     min-width: 76px;
     text-align: center;
     flex-shrink: 0;
+    animation: nodeSpringIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    will-change: transform, opacity;
+}
+
+.node-box:hover, .node:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.node-highlight {
+    animation: pointerSweep 0.8s ease-in-out !important;
+    border-color: #2563EB !important;
 }
 
 .arrow {
@@ -815,6 +846,7 @@ input:disabled, select:disabled {
     font-weight: bold;
     user-select: none;
     flex-shrink: 0;
+    animation: fadeIn 0.3s ease;
 }
 
 /* AVL Canvas */
@@ -1117,3 +1149,149 @@ input:disabled, select:disabled {
         height: 270px;
     }
 }
+
+/* --------------------------------------------------------------------------
+   12. GPU-Accelerated Keyframe Animations & Micro-Interactions
+   -------------------------------------------------------------------------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes stackPushSpring {
+    0% {
+        transform: translateY(-40px) scale(0.85);
+        opacity: 0;
+    }
+    60% {
+        transform: translateY(6px) scale(1.04);
+        opacity: 1;
+    }
+    80% {
+        transform: translateY(-2px) scale(0.99);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes stackPopFly {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    35% {
+        transform: translateY(-10px) scale(1.06);
+        background-color: var(--danger);
+        color: #FFFFFF;
+    }
+    100% {
+        transform: translateY(-60px) scale(0.7);
+        opacity: 0;
+    }
+}
+
+@keyframes queueSlideIn {
+    0% {
+        transform: translateX(50px) scale(0.85);
+        opacity: 0;
+    }
+    70% {
+        transform: translateX(-6px) scale(1.03);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes queueSlideOut {
+    0% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes nodeSpringIn {
+    0% {
+        transform: scale(0.7) translateY(20px);
+        opacity: 0;
+    }
+    65% {
+        transform: scale(1.08) translateY(-4px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes nodeFadeOut {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.6) translateY(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes pointerSweep {
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+        border-color: var(--primary-light);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.25);
+        border-color: #2563EB;
+        transform: scale(1.07);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+        transform: scale(1);
+    }
+}
+
+@keyframes ringSlotPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.22);
+        box-shadow: 0 0 16px rgba(37, 99, 235, 0.6);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes pulseHighlight {
+    0% {
+        background-color: var(--warning);
+        transform: scale(1);
+    }
+    50% {
+        background-color: #F59E0B;
+        transform: scale(1.08);
+        box-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+    }
+    100% {
+        background-color: var(--warning);
+        transform: scale(1);
+    }
+}
+

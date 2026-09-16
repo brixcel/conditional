@@ -123,18 +123,24 @@ function dequeue() {
         return;
     }
 
-    if (queue[0] !== queueInput) {
+    if (queueInput !== "" && queue[0] !== queueInput) {
         showMessage(`The front of the queue is ${queue[0]}. Please enter this number to dequeue.`, "error");
         return;
     }
 
-    const dequeuedElement = queue.shift();
-    dequeueOccurred = true;
-    updateQueueDisplay();
-    showMessage(`Dequeued: ${dequeuedElement}`, "info");
+    const firstCar = document.querySelector("#queue .car");
+    if (firstCar) {
+        firstCar.classList.add("car-exit");
+    }
 
-    queueInputElement.value = "";
-    updateButtonStates();
+    setTimeout(() => {
+        const dequeuedElement = queue.shift();
+        dequeueOccurred = true;
+        updateQueueDisplay();
+        showMessage(`Dequeued (FIFO): ${dequeuedElement}`, "info");
+        queueInputElement.value = "";
+        updateButtonStates();
+    }, 200);
 }
 
 // Clear the Queue
