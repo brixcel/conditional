@@ -3,24 +3,7 @@ let maxSize = null;
 let addressCounter = 1;
 let maxSizeSet = false;
 
-// Side Navbar functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const sideNavbar = document.getElementById('sideNavbar');
-    const closeBtn = document.getElementById('closeBtn');
-    
-    // Create and add open button for mobile views
-    const openBtn = document.createElement('button');
-    openBtn.innerHTML = '&#9776;'; // hamburger icon
-    openBtn.className = 'open-btn';
-    document.body.insertBefore(openBtn, document.body.firstChild);
-
-    openBtn.addEventListener('click', function() {
-        sideNavbar.style.left = '0';
-    });
-
-    closeBtn.addEventListener('click', function() {
-        sideNavbar.style.left = '-250px';
-    });
     updateButtonStates();
 
     // Add event listener for operationValue input
@@ -235,40 +218,56 @@ function clearList() {
 // Display the current linked list
 function displayList(highlightIndex = -1) {
     const display = document.getElementById('linkedListDisplay');
+    if (!display) return;
+    
     if (linkedList.length === 0) {
-        display.innerHTML = 'Linked List is empty.';
+        display.innerHTML = '<span style="color: var(--text-muted); font-style: italic; margin: auto;">List is empty</span>';
     } else {
-        let listHTML = '<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center;">';
+        let listHTML = '';
         linkedList.forEach((node, index) => {
-            const highlight = index === highlightIndex ? 'background-color: #FFFF00;' : '';
+            const isHead = (index === 0);
+            const isTail = (index === linkedList.length - 1);
+            let roleBadge = '';
+            if (isHead && isTail) {
+                roleBadge = '<span style="font-size: 0.68rem; font-weight: 700; color: var(--primary-light); background: var(--primary-subtle); padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">HEAD &amp; TAIL</span>';
+            } else if (isHead) {
+                roleBadge = '<span style="font-size: 0.68rem; font-weight: 700; color: var(--primary-light); background: var(--primary-subtle); padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">HEAD</span>';
+            } else if (isTail) {
+                roleBadge = '<span style="font-size: 0.68rem; font-weight: 700; color: var(--warning); background: var(--warning-subtle); padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">TAIL</span>';
+            }
+
+            const highlightStyle = index === highlightIndex ? 'border-color: var(--warning); background-color: #FEF08A;' : '';
+            
             listHTML += `
-                <div style="display: inline-flex; align-items: center; margin: 5px;">
-                    <div style="border: 2px solid #1877F2; background-color: #EAF3FF; padding: 10px; border-radius: 8px; ${highlight}">
-                        <div style="font-weight: bold;">${node.el}</div>
-                        <div style="font-size: 12px; color: #666;">Addr: ${node.address}</div>
+                <div class="node-box" style="${highlightStyle}">
+                    ${roleBadge}
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); border-bottom: 1px solid var(--border); padding-bottom: 2px; width: 100%;">
+                        ${node.address}
                     </div>
-                    ${index < linkedList.length - 1 ? '<span style="font-size: 24px; margin: 0 5px;">→</span>' : ''}
+                    <div style="font-size: 1.15rem; font-weight: 700; color: var(--primary-light); margin: 4px 0; font-family: var(--font-mono);">
+                        ${node.el}
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 2px; width: 100%;">
+                        Next: ${node.nx || 'NULL'}
+                    </div>
                 </div>
+                <span class="arrow">&rarr;</span>
             `;
         });
-        const lastNode = linkedList[linkedList.length - 1];
+
         listHTML += `
-    <span style="font-size: 24px; margin: 0 5px;">→</span>
-    <div style="display: inline-flex; align-items: center; margin: 5px;">
-        <div style="border: 2px dashed #1877F2; background-color: #F0F2F5; padding: 10px; border-radius: 8px;">
-            <div style="font-weight: bold; color: #1877F2;">NULL</div>
-            <div style="font-size: 12px; color: #666;">Next: ${lastNode.nx || 'null'}</div>
-        </div>
-    </div>
-`;
-        listHTML += `</div>`;
+            <div class="node-box" style="border: 1.5px dashed var(--border-strong); background-color: var(--bg-subtle);">
+                <span style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">TERMINAL</span>
+                <div style="font-weight: 700; color: var(--text-secondary); font-family: var(--font-mono); font-size: 1rem;">NULL</div>
+            </div>
+        `;
         display.innerHTML = listHTML;
     }
 }
 
 // Get the size of the list
 function getSize() {
-    const size = linkedList.length * 2; // Count both address and value
+    const size = linkedList.length;
     showMessage(`Current list size: ${size}`, 'blue');
 }
 
@@ -449,7 +448,7 @@ function replaceAddress() {
 
 // Update button states
 function updateButtonStates() {
-    const buttons = document.querySelectorAll('.operation-btn');
+    const buttons = document.querySelectorAll('button:not(#openBtn):not(#closeBtn)');
     const isMaxSizeSet = maxSizeSet;
     const isEmpty = linkedList.length === 0;
     const isFull = maxSize !== null && linkedList.length >= maxSize;
@@ -466,6 +465,8 @@ function updateButtonStates() {
             button.disabled = !isMaxSizeSet || isEmpty;
         } else if (['sortBtn', 'reverseBtn'].includes(button.id)) {
             button.disabled = !isMaxSizeSet || isEmpty || hasOnlyOneElement;
+        } else if (button.id === 'resetBtn') {
+            button.disabled = false;
         } else {
             button.disabled = !isMaxSizeSet;
         }

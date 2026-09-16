@@ -1,0 +1,37 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - button "×" [ref=f1e3] [cursor=pointer]
+    - link "Home" [ref=f1e4] [cursor=pointer]:
+      - /url: /
+    - link "Stack" [ref=f1e5] [cursor=pointer]:
+      - /url: /stack
+    - link "Regular Queue" [ref=f1e6] [cursor=pointer]:
+      - /url: /regular-queue
+    - link "Circular Queue" [ref=f1e7] [cursor=pointer]:
+      - /url: /circular-queue
+    - link "Priority Queue" [ref=f1e8] [cursor=pointer]:
+      - /url: /priority-queue
+    - link "Singly Linked List" [ref=f1e9] [cursor=pointer]:
+      - /url: /singly-linked-list
+    - link "Doubly Linked List" [ref=f1e10] [cursor=pointer]:
+      - /url: /doubly-linked-list
+    - link "Circular Linked List" [ref=f1e11] [cursor=pointer]:
+      - /url: /circular-linked-list
+    - link "AVL Tree" [ref=f1e12] [cursor=pointer]:
+      - /url: /avl-tree
+  - button "Open Menu" [ref=f1e13] [cursor=pointer]: ☰ Menu
+  - generic [ref=f1e14]:
+    - heading "Stack Data Structure" [level=1] [ref=f1e15]
+    - paragraph [ref=f1e16]: A stack is a linear data structure that follows the Last In, First Out (LIFO) principle, meaning the last element added to the stack will be the first one to be removed.
+    - generic [ref=f1e18]:
+      - generic [ref=f1e19]:
+        - button "Set Stack Capacity" [ref=f1e20] [cursor=pointer]
+        - button "Reset" [ref=f1e21] [cursor=pointer]
+      - generic [ref=f1e22]:
+        - button "Push" [disabled] [ref=f1e23]
+        - textbox "Enter a number" [disabled] [ref=f1e24]
+      - button "Pop" [disabled] [ref=f1e25]
+      - button "Peek" [disabled] [ref=f1e26]
+      - button "Is_Empty" [disabled] [ref=f1e27]
+      - button "Is_Full" [disabled] [ref=f1e28]
+      - button "Size" [disabled] [ref=f1e29]

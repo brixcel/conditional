@@ -1,64 +1,22 @@
-// Side Navbar Elements
-const sideNavbar = document.getElementById("sideNavbar");
-const openBtn = document.getElementById("openBtn");
-const closeBtn = document.getElementById("closeBtn");
-const overlay = document.getElementById("overlay");
-
-// Function to Open Menu
-function openMenu() {
-    sideNavbar.classList.add("active");
-    overlay.classList.add("active");
-    sideNavbar.setAttribute('aria-hidden', 'false');
-}
-
-// Function to Close Menu
-function closeMenu() {
-    sideNavbar.classList.remove("active");
-    overlay.classList.remove("active");
-    sideNavbar.setAttribute('aria-hidden', 'true');
-}
-
-// Event Listeners
-openBtn.addEventListener("click", openMenu);
-closeBtn.addEventListener("click", closeMenu);
-overlay.addEventListener("click", closeMenu);
-
-// Close menu when clicking outside
-document.addEventListener("click", function(event) {
-    if (!sideNavbar.contains(event.target) && event.target !== openBtn) {
-        closeMenu();
-    }
-});
-
-// Prevent clicks inside the menu from closing it
-sideNavbar.addEventListener("click", function(event) {
-    event.stopPropagation();
-});
-
-// Close sidebar on pressing 'Esc' key
-document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape" && sideNavbar.classList.contains("active")) {
-        closeMenu();
-    }
-});
-
 class TreeNode {
     constructor(value) {
         this.value = value;
         this.left = null;
         this.right = null;
-        this.parent = null; // Keep track of the parent node
+        this.parent = null;
+        this.height = 1;
     }
 }
 
-
 function toggleButtons() {
     const buttons = document.querySelectorAll("button");
-    const isTreeEmpty = !bst.root; // Check if the tree is empty
+    const isTreeEmpty = !bst || !bst.root;
 
     buttons.forEach(button => {
-    // Disable all buttons if the tree is empty, except for the "Enqueue" button
-        if (isTreeEmpty && button.textContent !== "Enqueue") {
+        // Keep menu buttons and Enqueue enabled even when empty
+        if (button.id === "openBtn" || button.id === "closeBtn" || button.textContent.trim() === "Enqueue" || button.getAttribute("onclick") === "enqueueNumber()") {
+            button.disabled = false;
+        } else if (isTreeEmpty) {
             button.disabled = true;
         } else {
             button.disabled = false;
@@ -66,233 +24,298 @@ function toggleButtons() {
     });
 }
 
-class BinarySearchTree {
+class AVLTree {
     constructor() {
         this.root = null;
     }
 
-    insert(node, value) {
-        if (!node) return new TreeNode(value);
+    getHeight(node) {
+        return node ? node.height : 0;
+    }
+
+    getBalance(node) {
+        return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
+    }
+
+    updateHeight(node) {
+        if (node) {
+            node.height = Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1;
+        }
+    }
+
+    rotateRight(y) {
+        const x = y.left;
+        if (!x) return y;
+        const T2 = x.right;
+
+        // Perform rotation
+        x.right = y;
+        x.parent = y.parent;
+        y.parent = x;
+
+        y.left = T2;
+        if (T2) T2.parent = y;
+
+        // Update heights
+        this.updateHeight(y);
+        this.updateHeight(x);
+
+        return x;
+    }
+
+    rotateLeft(x) {
+        const y = x.right;
+        if (!y) return x;
+        const T2 = y.left;
+
+        // Perform rotation
+        y.left = x;
+        y.parent = x.parent;
+        x.parent = y;
+
+        x.right = T2;
+        if (T2) T2.parent = x;
+
+        // Update heights
+        this.updateHeight(x);
+        this.updateHeight(y);
+
+        return y;
+    }
+
+    insert(node, value, parent = null) {
+        if (!node) {
+            const newNode = new TreeNode(value);
+            newNode.parent = parent;
+            return newNode;
+        }
 
         if (value < node.value) {
-            const leftChild = this.insert(node.left, value);
-            node.left = leftChild;
-            leftChild.parent = node; // Set parent
+            node.left = this.insert(node.left, value, node);
         } else if (value > node.value) {
-            const rightChild = this.insert(node.right, value);
-            node.right = rightChild;
-            rightChild.parent = node; // Set parent
+            node.right = this.insert(node.right, value, node);
         } else {
-            return node; // Duplicate values are not allowed
+            return node; // Duplicate values not allowed
+        }
+
+        this.updateHeight(node);
+        const balance = this.getBalance(node);
+
+        // LL Case (Left Left)
+        if (balance > 1 && value < node.left.value) {
+            this.lastRotationMessage = `[LL Rotation] Unbalance detected at Node ${node.value} (BF = +2). Executed Right Rotation around Node ${node.value}. Node ${node.left.value} is now parent.`;
+            return this.rotateRight(node);
+        }
+
+        // RR Case (Right Right)
+        if (balance < -1 && value > node.right.value) {
+            this.lastRotationMessage = `[RR Rotation] Unbalance detected at Node ${node.value} (BF = -2). Executed Left Rotation around Node ${node.value}. Node ${node.right.value} is now parent.`;
+            return this.rotateLeft(node);
+        }
+
+        // LR Case (Left Right)
+        if (balance > 1 && value > node.left.value) {
+            this.lastRotationMessage = `[LR Double Rotation] Unbalance at Node ${node.value} (BF = +2, Child BF = -1). Step 1: Left Rotate Child (${node.left.value}). Step 2: Right Rotate Parent (${node.value}).`;
+            node.left = this.rotateLeft(node.left);
+            if (node.left) node.left.parent = node;
+            return this.rotateRight(node);
+        }
+
+        // RL Case (Right Left)
+        if (balance < -1 && value < node.right.value) {
+            this.lastRotationMessage = `[RL Double Rotation] Unbalance at Node ${node.value} (BF = -2, Child BF = +1). Step 1: Right Rotate Child (${node.right.value}). Step 2: Left Rotate Parent (${node.value}).`;
+            node.right = this.rotateRight(node.right);
+            if (node.right) node.right.parent = node;
+            return this.rotateLeft(node);
         }
 
         return node;
     }
 
+    recalculateParents(node, parent = null) {
+        if (!node) return;
+        node.parent = parent;
+        this.updateHeight(node);
+        this.recalculateParents(node.left, node);
+        this.recalculateParents(node.right, node);
+    }
+
     enqueue(value) {
-        this.root = this.insert(this.root, value);
-        this.visualize(false); // No highlighting
+        if (this.findNode(this.root, value)) {
+            alert(`Node with value ${value} already exists in the tree.`);
+            return;
+        }
+
+        this.lastRotationMessage = null;
+        this.root = this.insert(this.root, value, null);
+        if (this.root) this.root.parent = null;
+        this.recalculateParents(this.root);
+        this.visualize(false);
+        
+        const out = document.getElementById('output');
+        if (out) {
+            if (this.lastRotationMessage) {
+                out.innerHTML = `<strong>Inserted ${value}</strong> &bull; ${this.lastRotationMessage}`;
+            } else {
+                out.innerText = `Node ${value} inserted directly. Tree remains balanced (|BF| &le; 1).`;
+            }
+        }
+        toggleButtons();
     }
 
     dequeue(value) {
-const targetNode = this.findNode(this.root, value);
+        const targetNode = this.findNode(this.root, value);
+        if (!targetNode) {
+            alert('Node to dequeue not found.');
+            return;
+        }
 
-if (!targetNode) {
-alert('Node to dequeue not found.');
-return;
-}
+        this.lastRotationMessage = null;
+        this.root = this.removeNode(this.root, value);
+        if (this.root) this.root.parent = null;
+        this.recalculateParents(this.root);
+        this.visualize(false);
+        
+        const out = document.getElementById('output');
+        if (out) {
+            if (this.lastRotationMessage) {
+                out.innerHTML = `<strong>Deleted ${value}</strong> &bull; ${this.lastRotationMessage}`;
+            } else {
+                out.innerText = `Node ${value} removed. AVL balance verified across all nodes.`;
+            }
+        }
+        toggleButtons();
+    }
 
-this.root = this.removeNode(this.root, value);
+    minValueNode(node) {
+        let current = node;
+        while (current && current.left) {
+            current = current.left;
+        }
+        return current;
+    }
 
-// Re-visualize the tree after the update
-this.visualize(false);
-document.getElementById('output').innerText = `Node with value ${value} removed.`;
-}
+    removeNode(node, value) {
+        if (!node) return null;
 
-removeNode(node, value) {
-// Base case: if the tree is empty
-if (!node) return node;
+        if (value < node.value) {
+            node.left = this.removeNode(node.left, value);
+            if (node.left) node.left.parent = node;
+        } else if (value > node.value) {
+            node.right = this.removeNode(node.right, value);
+            if (node.right) node.right.parent = node;
+        } else {
+            // Node found: handle 0, 1, or 2 children
+            if (!node.left || !node.right) {
+                const temp = node.left ? node.left : node.right;
+                if (!temp) {
+                    node = null;
+                } else {
+                    node = temp;
+                }
+            } else {
+                // Two children: get in-order successor
+                const temp = this.minValueNode(node.right);
+                node.value = temp.value;
+                node.right = this.removeNode(node.right, temp.value);
+                if (node.right) node.right.parent = node;
+            }
+        }
 
-// Recursive case: traverse the tree to find the node to delete
-if (value < node.value) {
-node.left = this.removeNode(node.left, value);
-} else if (value > node.value) {
-node.right = this.removeNode(node.right, value);
-} else {
-// Case 1: Node with only one child or no child
-if (!node.left) {
-    return node.right;
-} else if (!node.right) {
-    return node.left;
-}
+        if (!node) return null;
 
-// Case 2: Node with two children
-// Get the inorder successor (smallest in the right subtree)
-node.value = this.minValueNode(node.right).value;
+        this.updateHeight(node);
+        const balance = this.getBalance(node);
 
-// Delete the inorder successor
-node.right = this.removeNode(node.right, node.value);
-}
+        // AVL Rebalancing
+        // LL Case
+        if (balance > 1 && this.getBalance(node.left) >= 0) {
+            return this.rotateRight(node);
+        }
 
-return node;
-}
+        // LR Case
+        if (balance > 1 && this.getBalance(node.left) < 0) {
+            node.left = this.rotateLeft(node.left);
+            if (node.left) node.left.parent = node;
+            return this.rotateRight(node);
+        }
 
-minValueNode(node) {
-let current = node;
-// Loop down to find the leftmost leaf
-while (current.left) {
-current = current.left;
-}
-return current;
-}
+        // RR Case
+        if (balance < -1 && this.getBalance(node.right) <= 0) {
+            return this.rotateLeft(node);
+        }
 
+        // RL Case
+        if (balance < -1 && this.getBalance(node.right) > 0) {
+            node.right = this.rotateRight(node.right);
+            if (node.right) node.right.parent = node;
+            return this.rotateLeft(node);
+        }
+
+        return node;
+    }
 
     clear() {
         this.root = null;
-        this.visualize(false); // No highlighting
+        this.visualize(false);
+        const out = document.getElementById('output');
+        if (out) out.innerText = 'Tree cleared.';
+        toggleButtons();
     }
-    visualize(highlightRoot = false) {
-const canvas = document.getElementById('bstCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth * 0.8;
-canvas.height = window.innerHeight * 0.8; // Increase canvas height for better spacing
-
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-if (!this.root) return;
-
-const positions = new Map();
-
-// Function to calculate positions of the nodes
-const calculatePositions = (node, x, y, depth, minGap) => {
-if (!node) return;
-
-positions.set(node, { x, y });
-
-const gap = minGap / Math.pow(2, depth);
-if (node.left) {
-    calculatePositions(node.left, x - gap, y + 100, depth + 1, minGap); // Increase vertical gap for better spacing
-}
-if (node.right) {
-    calculatePositions(node.right, x + gap, y + 100, depth + 1, minGap);
-}
-};
-
-calculatePositions(this.root, canvas.width / 2, 100, 0, canvas.width / 4); // Start y at 100 to leave space at the top
-
-// Draw lines between nodes
-for (const [node, pos] of positions) {
-if (node.left) {
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    ctx.lineTo(positions.get(node.left).x, positions.get(node.left).y);
-    ctx.stroke();
-}
-if (node.right) {
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    ctx.lineTo(positions.get(node.right).x, positions.get(node.right).y);
-    ctx.stroke();
-}
-}
-
-// Draw nodes
-for (const [node, pos] of positions) {
-ctx.fillStyle = (highlightRoot && node === this.root) ? 'yellow' : '#007BFF'; // Highlight root node if specified
-ctx.beginPath();
-ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-ctx.fill();
-ctx.fillStyle = '#FFFFFF';
-ctx.fillText(node.value, pos.x - 10, pos.y + 5);
-}
-}
-
-
-// Helper function to get the maximum depth of the tree
-getMaxDepth(node) {
-if (!node) return 0;
-return Math.max(this.getMaxDepth(node.left), this.getMaxDepth(node.right)) + 1;
-}
-
 
     getTreeHeight(node) {
-        if (!node) return 0;
-        return Math.max(this.getTreeHeight(node.left), this.getTreeHeight(node.right)) + 1;
+        return this.getHeight(node);
     }
 
     showTreeHeight() {
         const height = this.getTreeHeight(this.root);
-        document.getElementById('output').innerText = `Tree Height: ${height}`;
+        const out = document.getElementById('output');
+        if (out) out.innerText = `Tree Height: ${height}`;
     }
 
     balanceTree() {
-        const nodes = this.getSortedNodes(this.root);
-        this.clear();
-        this.root = this.buildBalancedTree(nodes);
-        this.visualize(false); // No highlighting
-        document.getElementById('output').innerText = 'Tree has been rebalanced.';
-    }
-
-    getSortedNodes(node) {
-        if (!node) return [];
-        const leftNodes = this.getSortedNodes(node.left);
-        const rightNodes = this.getSortedNodes(node.right);
-        return [...leftNodes, node.value, ...rightNodes];
-    }
-
-    buildBalancedTree(values) {
-        if (values.length === 0) return null;
-
-        const mid = Math.floor(values.length / 2);
-        const root = new TreeNode(values[mid]);
-
-        root.left = this.buildBalancedTree(values.slice(0, mid));
-        root.right = this.buildBalancedTree(values.slice(mid + 1));
-
-        return root;
+        // AVL tree self-balances on every insert/delete.
+        // We re-verify heights and balance factors.
+        this.recalculateParents(this.root);
+        this.visualize(false);
+        const out = document.getElementById('output');
+        if (out) out.innerText = 'Tree is already self-balancing (AVL invariant maintained).';
     }
 
     peekRoot() {
+        const out = document.getElementById('output');
         if (this.root) {
-            document.getElementById('output').innerText = `Root Node: ${this.root.value}`;
-            this.visualize(true); // Highlight the root node
+            if (out) out.innerText = `Root Node: ${this.root.value} (Height: ${this.root.height}, Balance Factor: ${this.getBalance(this.root)})`;
+            this.visualize(true);
         } else {
-            document.getElementById('output').innerText = 'The tree is empty.';
+            if (out) out.innerText = 'The tree is empty.';
         }
     }
 
     peekChildren() {
         const childrenInfo = this.collectChildren(this.root);
-        document.getElementById('output').innerText = childrenInfo.length > 0 ? `Children: ${childrenInfo.join(', ')}` : 'No children found.';
+        const out = document.getElementById('output');
+        if (out) out.innerText = childrenInfo.length > 0 ? `Children: ${childrenInfo.join(', ')}` : 'No children found.';
     }
 
     collectChildren(node) {
         if (!node) return [];
         const children = [];
-        if (node !== this.root) { // Exclude the root node
-            const childValues = [];
-            if (node.left) childValues.push(node.left.value);
-            if (node.right) childValues.push(node.right.value);
-            if (childValues.length > 0) {
-                children.push(`(${childValues.join(', ')})`);
-            }
+        const childValues = [];
+        if (node.left) childValues.push(`L:${node.left.value}`);
+        if (node.right) childValues.push(`R:${node.right.value}`);
+        if (childValues.length > 0) {
+            children.push(`${node.value} -> (${childValues.join(', ')})`);
         }
         return [...children, ...this.collectChildren(node.left), ...this.collectChildren(node.right)];
     }
 
     collectLeafNodes(node) {
         if (!node) return [];
-
-        const leafNodes = [];
-
-        // Check if the current node is a leaf (no left or right child)
         if (!node.left && !node.right) {
-            leafNodes.push(node.value);
+            return [node.value];
         }
-
-        // Recursively check left and right subtrees
         return [
-            ...leafNodes,
             ...this.collectLeafNodes(node.left),
             ...this.collectLeafNodes(node.right)
         ];
@@ -300,48 +323,43 @@ return Math.max(this.getMaxDepth(node.left), this.getMaxDepth(node.right)) + 1;
 
     peekLeafNodes() {
         const leafNodes = this.collectLeafNodes(this.root);
-        document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
+        const out = document.getElementById('output');
+        if (out) out.innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
         this.visualize(true);
     }
 
     collectParentNodes(node) {
         if (!node) return [];
-
         const parentNodes = [];
-
-        if (node !== this.root && (node.left || node.right)) {
-            parentNodes.push(node.value); // Add node to parent nodes if it has at least one child
+        if (node.left || node.right) {
+            parentNodes.push(node.value);
         }
-
-        // Recursively collect parents from left and right children
         return [
-        ...parentNodes,
-        ...this.collectParentNodes(node.left),
-        ...this.collectParentNodes(node.right)
-    ];
-}
+            ...parentNodes,
+            ...this.collectParentNodes(node.left),
+            ...this.collectParentNodes(node.right)
+        ];
+    }
 
     peekParentNodes() {
         const parentNodes = this.collectParentNodes(this.root);
+        const out = document.getElementById('output');
         if (parentNodes.length > 0) {
-            document.getElementById('output').innerText = `Parent Nodes: (${parentNodes.join(', ')})`;
+            if (out) out.innerText = `Parent Nodes: (${parentNodes.join(', ')})`;
             this.visualize(true);
-    } else {
-        document.getElementById('output').innerText = 'No parent nodes found.';
+        } else {
+            if (out) out.innerText = 'No parent nodes found.';
+        }
     }
-}
 
     collectSubtrees(node, isRoot = true) {
         if (!node) return [];
-
         const subtrees = [];
-
-        // Skip root node and its immediate children
-        if (!isRoot && node.left && node.right) {
-            subtrees.push(`(${node.value}, ${node.left.value}, ${node.right.value})`);
+        if (!isRoot && (node.left || node.right)) {
+            const leftVal = node.left ? node.left.value : 'null';
+            const rightVal = node.right ? node.right.value : 'null';
+            subtrees.push(`(${node.value}: L=${leftVal}, R=${rightVal})`);
         }
-
-        // Recursively collect subtrees from children
         return [
             ...subtrees,
             ...this.collectSubtrees(node.left, false),
@@ -349,178 +367,224 @@ return Math.max(this.getMaxDepth(node.left), this.getMaxDepth(node.right)) + 1;
         ];
     }
 
-    updateNode() {
-const input = document.getElementById('numberInput');
-const newValue = parseInt(input.value);
-
-// Check if the new value is a valid number
-if (isNaN(newValue)) {
-alert('Please enter a valid number.');
-return;
-}
-
-const targetValue = parseInt(prompt("Enter the value of the node to update:"));
-
-// Check if the target value is a valid number
-if (isNaN(targetValue)) {
-alert('Please enter a valid target value.');
-return;
-}
-
-// Find the target node to update
-const targetNode = this.findNode(this.root, targetValue);
-
-// If the node is not found, alert the user and exit
-if (!targetNode) {
-alert('Node to update not found.');
-return;
-}
-
-// Ensure the new value is not already in the tree
-if (this.findNode(this.root, newValue)) {
-alert('Cannot update: The new value already exists in the tree.');
-return;
-}
-
-// Validate the left and right child relationships
-if (targetNode.parent) {
-// If the node is the left child, it must be smaller than the parent
-if (targetNode === targetNode.parent.left && newValue >= targetNode.parent.value) {
-    alert('Cannot update: New value for left child must be smaller than the parent value.');
-    return;
-}
-
-// If the node is the right child, it must be greater than the parent
-if (targetNode === targetNode.parent.right && newValue <= targetNode.parent.value) {
-    alert('Cannot update: New value for right child must be greater than the parent value.');
-    return;
-}
-}
-
-// Validate that the left node value is smaller than the right node (if applicable)
-if (targetNode.left && targetNode.right) {
-if (newValue >= targetNode.right.value) {
-    alert('Cannot update: New left node value must be smaller than its right node.');
-    return;
-}
-}
-
-// Perform the update (update the value of the node)
-targetNode.value = newValue;
-
-// Re-visualize the tree after the update
-this.visualize(false);
-
-// Display the success message
-document.getElementById('output').innerText = `Node with value ${targetValue} updated to ${newValue}.`;
-}
-
-
-
-
-// Helper function to find a node by value
-findNode(node, value) {
-if (!node) return null;
-if (node.value === value) return node;
-if (value < node.value) return this.findNode(node.left, value);
-return this.findNode(node.right, value);
-}
-
-
-collectSiblings(node) {
-if (!node || !node.parent) return []; // If node or parent doesn't exist, no siblings
-
-const siblings = [];
-const parent = node.parent;
-
-// Check for siblings in the parent's left and right children
-if (parent.left && parent.left !== node) {
-siblings.push(parent.left.value); // Add left sibling
-}
-if (parent.right && parent.right !== node) {
-siblings.push(parent.right.value); // Add right sibling
-}
-
-return siblings;
-}
-
-// Function to display the siblings of a selected node
-peekSiblings() {
-const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
-const node = this.findNode(this.root, nodeValue);
-
-if (!node) {
-document.getElementById('output').innerText = 'Node not found.';
-return;
-}
-
-// Find siblings for the selected node
-const siblingsInfo = this.collectSiblings(node);
-if (siblingsInfo.length > 0) {
-document.getElementById('output').innerText = `Node ${node.value} has siblings: ${siblingsInfo.join(', ')}`;
-} else {
-document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
-}
-}
-
-
-
-// Function to display the siblings of a selected node
-peekSiblings() {
-const nodeValue = parseInt(prompt("Enter the value of the node to find siblings for:"));
-const node = this.findNode(this.root, nodeValue);
-
-if (!node) {
-document.getElementById('output').innerText = 'Node not found.';
-return;
-}
-
-// Find siblings for the selected node
-const siblingsInfo = this.collectSiblings(node);
-
-// Include the node's value in the output
-const outputValue = siblingsInfo.length > 0 ? `[${node.value}, ${siblingsInfo.join(', ')}]` : `[${node.value}]`;
-
-if (siblingsInfo.length > 0) {
-document.getElementById('output').innerText = `Node ${node.value} has siblings: ${outputValue}`;
-} else {
-document.getElementById('output').innerText = `Node ${node.value} has no siblings.`;
-}
-}
-
     showSubtree() {
         const subtreeInfo = this.collectSubtrees(this.root);
         const formattedSubtree = subtreeInfo.length > 0
             ? `Subtrees: ${subtreeInfo.join(', ')}`
-            : 'No subtrees found with both left and right children.';
+            : 'No non-root subtrees found.';
+        const out = document.getElementById('output');
+        if (out) out.innerText = formattedSubtree;
+    }
 
-        document.getElementById('output').innerText = formattedSubtree;
+    updateNode() {
+        const input = document.getElementById('numberInput');
+        if (!input || input.value.trim() === '') {
+            alert('Please enter a new value in the input field first.');
+            return;
+        }
+
+        const newValue = parseInt(input.value.trim(), 10);
+        if (isNaN(newValue) || newValue <= 0) {
+            alert('Please enter a valid positive number for the new value.');
+            return;
+        }
+
+        const targetPrompt = prompt("Enter the value of the node to update:");
+        if (targetPrompt === null || targetPrompt.trim() === '') {
+            return;
+        }
+
+        const targetValue = parseInt(targetPrompt.trim(), 10);
+        if (isNaN(targetValue)) {
+            alert('Please enter a valid target value.');
+            return;
+        }
+
+        const targetNode = this.findNode(this.root, targetValue);
+        if (!targetNode) {
+            alert('Node to update not found.');
+            return;
+        }
+
+        if (newValue !== targetValue && this.findNode(this.root, newValue)) {
+            alert('Cannot update: The new value already exists in the tree.');
+            return;
+        }
+
+        // To maintain AVL tree invariant strictly, we remove the target and insert the new value
+        this.root = this.removeNode(this.root, targetValue);
+        this.root = this.insert(this.root, newValue, null);
+        if (this.root) this.root.parent = null;
+        this.recalculateParents(this.root);
+        this.visualize(false);
+        input.value = '';
+        const out = document.getElementById('output');
+        if (out) out.innerText = `Node with value ${targetValue} updated to ${newValue} (AVL balanced).`;
+        toggleButtons();
+    }
+
+    findNode(node, value) {
+        if (!node) return null;
+        if (node.value === value) return node;
+        if (value < node.value) return this.findNode(node.left, value);
+        return this.findNode(node.right, value);
+    }
+
+    collectSiblings(node) {
+        if (!node || !node.parent) return [];
+        const siblings = [];
+        const parent = node.parent;
+
+        if (parent.left && parent.left !== node) {
+            siblings.push(parent.left.value);
+        }
+        if (parent.right && parent.right !== node) {
+            siblings.push(parent.right.value);
+        }
+
+        return siblings;
+    }
+
+    peekSiblings() {
+        const input = prompt("Enter the value of the node to find siblings for:");
+        if (input === null || input.trim() === '') {
+            return;
+        }
+
+        const nodeValue = parseInt(input.trim(), 10);
+        if (isNaN(nodeValue)) {
+            alert('Please enter a valid number.');
+            return;
+        }
+
+        const node = this.findNode(this.root, nodeValue);
+        const out = document.getElementById('output');
+
+        if (!node) {
+            if (out) out.innerText = `Node ${nodeValue} not found in the tree.`;
+            return;
+        }
+
+        const siblingsInfo = this.collectSiblings(node);
+        if (siblingsInfo.length > 0) {
+            if (out) out.innerText = `Node ${node.value} has sibling(s): ${siblingsInfo.join(', ')}`;
+        } else {
+            if (out) out.innerText = `Node ${node.value} has no siblings.`;
+        }
+    }
+
+    visualize(highlightRoot = false) {
+        const canvas = document.getElementById('bstCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = Math.max(600, Math.min(window.innerWidth * 0.85, 1100));
+        canvas.height = Math.max(400, Math.min(window.innerHeight * 0.65, 700));
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!this.root) {
+            ctx.fillStyle = '#666';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Tree is empty. Enter a positive number and click Enqueue.', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+
+        const positions = new Map();
+
+        const calculatePositions = (node, x, y, depth, minGap) => {
+            if (!node) return;
+
+            positions.set(node, { x, y });
+
+            const gap = minGap / Math.pow(1.8, depth);
+            if (node.left) {
+                calculatePositions(node.left, x - gap, y + 80, depth + 1, minGap);
+            }
+            if (node.right) {
+                calculatePositions(node.right, x + gap, y + 80, depth + 1, minGap);
+            }
+        };
+
+        calculatePositions(this.root, canvas.width / 2, 60, 0, canvas.width / 3.8);
+
+        // Draw edges
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 2;
+        for (const [node, pos] of positions) {
+            if (node.left && positions.has(node.left)) {
+                const childPos = positions.get(node.left);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(childPos.x, childPos.y);
+                ctx.stroke();
+            }
+            if (node.right && positions.has(node.right)) {
+                const childPos = positions.get(node.right);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(childPos.x, childPos.y);
+                ctx.stroke();
+            }
+        }
+
+        // Draw node circles and text
+        for (const [node, pos] of positions) {
+            const isRootNode = node === this.root;
+            ctx.fillStyle = (highlightRoot && isRootNode) ? '#FFD700' : '#1877F2';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#0B4A9E';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Value text
+            ctx.fillStyle = (highlightRoot && isRootNode) ? '#000000' : '#FFFFFF';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.value, pos.x, pos.y);
+
+            // Height and Balance Factor badge
+            const bf = this.getBalance(node);
+            ctx.font = 'bold 11px monospace';
+            ctx.fillStyle = Math.abs(bf) <= 1 ? '#059669' : '#DC2626';
+            ctx.fillText(`h:${node.height} | bf:${bf > 0 ? '+' + bf : bf}`, pos.x, pos.y + 34);
+        }
     }
 }
 
-const bst = new BinarySearchTree();
+// Instantiate global AVL tree
+const bst = new AVLTree();
 
 function enqueueNumber() {
     const input = document.getElementById('numberInput');
-    const value = parseInt(input.value);
-
-    // Check if the value is 0 or negative
-    if (value <= 0) {
-    alert('Only positive numbers greater than zero are allowed.');
-    input.value = '';  // Clear the input field
-    return;
+    if (!input || input.value.trim() === '') {
+        alert('Please enter a number.');
+        return;
     }
 
-    if (!isNaN(value)) {
+    const value = parseInt(input.value.trim(), 10);
+    if (isNaN(value) || value <= 0) {
+        alert('Only positive numbers greater than zero are allowed.');
+        input.value = '';
+        return;
+    }
+
     bst.enqueue(value);
-    input.value = '';  // Clear the input field
-    }
+    input.value = '';
 }
 
 function dequeueNode() {
-    const value = parseInt(prompt("Enter the value of the node to dequeue:"));
+    const input = prompt("Enter the value of the node to dequeue:");
+    if (input === null || input.trim() === '') {
+        return;
+    }
 
-    if (!value || isNaN(value)) {
+    const value = parseInt(input.trim(), 10);
+    if (isNaN(value)) {
         alert('Please enter a valid number.');
         return;
     }
@@ -530,7 +594,6 @@ function dequeueNode() {
 
 function clearTree() {
     bst.clear();
-    document.getElementById('output').innerText = 'Tree cleared.';
 }
 
 function showTreeHeight() {
@@ -554,18 +617,27 @@ function peekParentNodes() {
 }
 
 function peekLeafNodes() {
-    const leafNodes = bst.collectLeafNodes(bst.root);
-    document.getElementById('output').innerText = leafNodes.length > 0 ? `Leaf Nodes: ${leafNodes.join(', ')}` : 'No leaf nodes found.';
+    bst.peekLeafNodes();
 }
 
 function updateNode() {
-    bst.updateNode() ;
+    bst.updateNode();
 }
 
-function peekSiblings(){
-    bst.peekSiblings() ;
+function peekSiblings() {
+    bst.peekSiblings();
 }
 
 function showSubtree() {
     bst.showSubtree();
 }
+
+// Initialize on DOM load
+window.addEventListener('DOMContentLoaded', () => {
+    toggleButtons();
+    bst.visualize(false);
+});
+
+window.addEventListener('resize', () => {
+    if (bst) bst.visualize(false);
+});

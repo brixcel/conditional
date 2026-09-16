@@ -1,0 +1,58 @@
+- generic [active] [ref=f3e1]:
+  - button "☰ Menu" [ref=f3e2] [cursor=pointer]
+  - generic [ref=f3e3]:
+    - link "Home" [ref=f3e4] [cursor=pointer]:
+      - /url: /
+    - link "Stack" [ref=f3e5] [cursor=pointer]:
+      - /url: /stack
+    - link "Regular Queue" [ref=f3e6] [cursor=pointer]:
+      - /url: /regular-queue
+    - link "Circular Queue" [ref=f3e7] [cursor=pointer]:
+      - /url: /circular-queue
+    - link "Priority Queue" [ref=f3e8] [cursor=pointer]:
+      - /url: /priority-queue
+    - link "Singly Linked List" [ref=f3e9] [cursor=pointer]:
+      - /url: /singly-linked-list
+    - link "Doubly Linked List" [ref=f3e10] [cursor=pointer]:
+      - /url: /doubly-linked-list
+    - link "Circular Linked List" [ref=f3e11] [cursor=pointer]:
+      - /url: /circular-linked-list
+    - link "AVL Tree" [ref=f3e12] [cursor=pointer]:
+      - /url: /avl-tree
+  - generic [ref=f3e13]:
+    - banner [ref=f3e14]:
+      - heading "Doubly Linked List" [level=1] [ref=f3e15]
+      - paragraph [ref=f3e16]: A doubly linked list is a data structure that consists of a set of nodes, each of which contains a value and two pointers, one pointing to the previous node in the list and one pointing to the next node in the list.
+    - generic [ref=f3e17]:
+      - text: "Set Limit:"
+      - spinbutton "Set Limit:" [ref=f3e18] [cursor=pointer]
+      - button "Set Limit" [ref=f3e19] [cursor=pointer]
+      - button "Reset"
+      - textbox "Value or New Value"
+      - spinbutton "Index"
+      - textbox "Address"
+      - textbox "New Address"
+      - button "Prepend"
+      - button "Append"
+      - button "Insert"
+      - button "Delete Head"
+      - button "Delete Tail"
+      - button "Delete Index"
+      - button "Update"
+      - button "Replace"
+      - button "Clear"
+      - button "Reverse"
+      - button "Sort"
+      - button "Size"
+      - button "Is Empty"
+      - button "Is Full"
+      - button "Head"
+      - button "Tail"
+      - button "Find"
+    - generic [ref=f3e21]:
+      - generic [ref=f3e22]:
+        - heading "Linked List Operations" [level=5] [ref=f3e23]
+        - paragraph [ref=f3e24]: "1. Append - Add Element at the tail (last) 2. Prepend - Add Element at the head (top) 3. Insert - Insert Element on specific Index 4. Head - Return the head element 5. Tail - Return the tail element 6. Delete Tail - Delete the last element 7. Delete Head - Delete the top element 8. Delete Index - Delete the element by index # 9. Update - Update the element value using the address 10. Replace - Update the element value and address 11. Clear - Delete entire linked list 12. Display - Return the linked list 13. Size - Display the linked list size 14. Reverse - Reverse the order of Linked List 15. Find - Search the element using the address and return the value 16. Sort - Sort the linked list from lowest to highest (or from A-B) 17. isEmpty - Return True / False 18. isFull - Return True / False"
+      - generic [ref=f3e25]:
+        - heading "Necessary Data to Input" [level=5] [ref=f3e26]
+        - paragraph [ref=f3e27]: "1. Append input: (Value) 2. Prepend input: (Value) 3. Insert input: (New Value, Index) 4. Head input: None 5. Tail input: None 6. Delete Tail input: None 7. Delete Head input: None 8. Delete Index input: (Index) 9. Update input: (New Value, Address) 10.Replace input: (Address, New Value, New Address) 11. Clear input: None 12. Display input: None 13. Size input: None 14. Reverse input: None 15. Find input: (Address) 16. Sort input: None 17. isEmpty input: None 18. isFull input: None"

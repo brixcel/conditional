@@ -1,369 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AVL Tree Visualization</title>
-        <link rel="stylesheet" href="avl.css" />
-        <style>
-            body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f9;
-    color: #333;
-    line-height: 1.6;
-    padding: 20px;
-}
-h1 {
-    text-align: center;
-    font-size: 2.5em;
-    color: #333;
-    margin-bottom: 20px;
-}
-.check {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-}
-.check h2 {
-    margin: 0;
-    color: #007BFF;
-}
-.check p {
-    margin: 5px 0;
-}
-p {
-    font-size: 1.2em;
-    max-width: 900px;
-    margin: 20px auto;
-    text-align: justify;
-    line-height: 1.5;
-}
-input[type="number"] {
-    font-size: 1.1em;
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 150px;
-}
-button {
-    font-size: 1.1em;
-    padding: 10px 15px;
-    margin: 10px 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #1877f2;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-button:hover {
-    background-color: #155c8a;
-}
-#button-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 20px;
-}
-#avlTreeCanvas {
-    display: block;
-    margin: 30px auto;
-    background-color: #fff;
-    border: 2px solid #ddd;
-    max-width: 100%;
-    height: auto;
-}
-#output {
-    font-size: 1.2em;
-    color: #333;
-    margin-top: 20px;
-    text-align: center;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    max-width: 900px;
-    margin: 30px auto;
-}
-
-/* Side Navbar Styles */
-.side-navbar {
-    width: 250px;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: -250px; /* Hidden by default */
-    background: #1877F2;
-    overflow-y: auto;
-    transition: left 0.3s ease-in-out;
-    padding-top: 60px;
-    z-index: 1000;
-}
-
-.side-navbar.active {
-    left: 0; /* Slide in */
-}
-
-.side-navbar a {
-    padding: 12px 20px;
-    font-size: 18px;
-    color: #FFFFFF;
-    display: block;
-    transition: background-color 0.3s ease;
-    text-decoration: none;
-    text-align: center;
-}
-
-.side-navbar a:hover {
-    background-color: #145DBF;
-}
-
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    padding: 5px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-}
-
-.open-btn {
-    font-size: 24px;
-    background: none;
-    border: none;
-    color: #1C1E21;
-    cursor: pointer;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1001;
-}
-
-.overlay {
-    display: none; /* Hidden by default */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    transition: opacity 0.3s ease;
-}
-
-/* Show overlay when active */
-.overlay.active {
-    display: block;
-}
-
-/* Media Queries */
-
-/* For tablets and larger screens */
-@media (min-width: 768px) {
-    body {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    #button-container {
-        justify-content: space-between;
-    }
-}
-
-/* For small devices */
-@media (max-width: 767px) {
-    h1 {
-        font-size: 2em;
-    }
-    input[type="number"], button {
-        font-size: 1em;
-    }
-    #button-container {
-        flex-direction: column;
-        align-items: center;
-    }
-    #output {
-        font-size: 1em;
-    }
-}
-
-/* For mobile devices */
-@media (max-width: 480px) {
-    body {
-        padding: 0;
-    }
-    .side-navbar {
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        top: 0;
-        left: -100%; /* Hide sidebar completely */
-        bottom: 0;
-        right: 0;
-        z-index: 1000;
-        overflow-y: auto;
-    }
-    .side-navbar.active {
-        left: 0; /* Slide in fully */
-    }
-    .side-navbar a {
-        font-size: 1.5em;
-    }
-    #button-container {
-        margin-top: 10px;
-    }
-    #output {
-        margin-top: 10px;
-    }
-}
-        </style>
-    </head>
-    <body>
-        <div class="overlay" id="overlay"></div>
-        <div class="side-navbar" id="sideNavbar">
-            <button class="close-btn" id="closeBtn">&times;</button>
-            <a href="index.html">Home</a>
-            <a href="stack.html">Stack</a>
-            <a href="regular-queue.html">Regular Queue</a>
-            <a href="circular-queue.html">Circular Queue</a>
-            <a href="priority-queue.html">Priority Queue</a>
-            <a href="singly-linked-list.html">Singly Linked List</a>
-            <a href="doubly-linked-list.html">Doubly Linked List</a>
-            <a href="circular-linked-list.html">Circular Linked List</a>
-            <a href="avl-tree.html">AVL Tree</a>
-        </div>
-        <button class="open-btn" id="openBtn" aria-label="Open Menu">
-            ☰ Menu
-        </button>
-        <h1>Avl Tree Visualization</h1>
-        <p style="font-size: 1.2em; max-width: 800px; margin: 10px auto">
-            A <strong>AVL TREE</strong> is defined as a self-balancing Binary
-            Search Tree (BST) where the difference between heights of left and
-            right subtrees for any node cannot be more than one.
-        </p>
-
-        <input type="number" id="numberInput" placeholder="Enter a number" />
-        <button onclick="enqueueNumber()">Enqueue</button>
-        <button onclick="dequeueNode()">Dequeue</button>
-        <button onclick="clearTree()">Delete all</button>
-        <button onclick="showTreeHeight()">Show Height</button>
-        <button onclick="balanceTree()">Balance Tree</button>
-        <button onclick="peekRoot()">Root</button>
-        <button onclick="peekParentNodes()">Parents</button>
-        <button onclick="peekChildren()">Children</button>
-        <button onclick="peekLeafNodes()">Leaf Nodes</button>
-        <button onclick="peekSiblings()">Show Siblings</button>
-        <button onclick="updateNode()">Update Node</button>
-        <button onclick="showSubtree()">Show Subtree</button>
-        
-
-        <canvas
-            id="bstCanvas"
-            style="border: 1px solid #000; margin-top: 20px"
-        ></canvas>
-        <p
-            id="output"
-            style="margin-top: 20px; font-size: 1.2em; color: #333"
-        ></p>
-
-        <h2>Check Descriptions</h2>
-        <div class="check">
-            <h2>Enqueue</h2>
-            <p>
-                Inserts a new value into the binary search tree while
-                maintaining its order. It updates the tree structure and
-                visualizes the changes.
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AVL Tree (Self-Balancing BST) - DSA Visualizer</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge badge-tree">Non-Linear Tree Structure</div>
+            <h1 class="page-title">AVL Tree Visualization</h1>
+            <p class="page-desc">
+                A height-balanced <strong>Binary Search Tree (BST)</strong> named after inventors Adelson-Velsky and Landis.
+                The difference between subtree heights (<em>Balance Factor</em>) for any node cannot exceed &plusmn;1.
             </p>
-        </div>
-        <div class="check">
-            <h2>Denqueue</h2>
-            <p>
-                used to delete a node. It updates the tree structure and
-                visualizes the changes.
+        </header>
+
+        <!-- Concept Card -->
+        <div class="concept-card">
+            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <p class="concept-body">
+                Standard BSTs can degenerate into O(n) skewed lines. AVL Trees prevent skewing by calculating the 
+                <strong>Balance Factor (BF = Height(Left) - Height(Right))</strong> on every mutation and executing 
+                rotations (LL, RR, LR, RL) to maintain guaranteed <strong>O(log n)</strong> search, insertion, and deletion.
             </p>
-        </div>
-        <div class="check">
-            <h2>Clear Tree</h2>
-            <p>
-                Removes all nodes from the binary search tree, effectively
-                clearing the tree. The visualization is updated to show an empty
-                tree.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Show Tree Height</h2>
-            <p>
-                Displays the height of the binary search tree, which is the
-                number of edges from the root to the deepest leaf node. This
-                function helps understand the depth of the tree.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Balance Tree</h2>
-            <p>
-                Rebalances the binary search tree by sorting the nodes in
-                ascending order and reconstructing the tree to ensure it is
-                balanced. The visualization is updated after the tree is
-                rebalanced.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Peek Root</h2>
-            <p>
-                Displays the root node of the binary search tree, highlighting
-                it visually on the canvas. If the tree is empty, it notifies the
-                user that no root node exists.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Peek Parent Nodes</h2>
-            <p>
-                Displays all the nodes that are parents (i.e., nodes with at
-                least one child). The list of parent nodes is presented, and if
-                there are no such nodes, a message is shown.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Peek Leaf Nodes</h2>
-            <p>
-                Displays all the leaf nodes of the tree (nodes that have no left
-                or right children). If there are no leaf nodes, it will notify
-                the user.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Peek Siblings</h2>
-            <p>
-                Displays the siblings of the root node. If the root node has no
-                siblings (because it’s the only node in the tree), it will
-                notify the user.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Update Node</h2>
-            <p>
-                Allows the user to update the value of an existing node in the
-                tree, with checks to ensure that the new value adheres to the
-                binary search tree properties. The tree will be re-visualized
-                after the update. If the node to be updated is not found, or if
-                the new value violates the rules, the user is alerted.
-            </p>
-        </div>
-        <div class="check">
-            <h2>Show Subtree</h2>
-            <p>
-                Displays all subtrees in the tree where each subtree contains at
-                least one node with both a left and a right child. This helps to
-                visualize parts of the tree that have both child nodes.
-            </p>
+            <div class="concept-props">
+                <div class="prop-item">
+                    <div class="prop-label">Invariant</div>
+                    <div class="prop-value">|BF| &le; 1 for all nodes</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Search / Insert / Delete</div>
+                    <div class="prop-value">O(log n) Guaranteed</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Rebalancing</div>
+                    <div class="prop-value">4 Rotation Types (LL, RR, LR, RL)</div>
+                </div>
+            </div>
         </div>
 
-        <script src="avl-tree.js"></script>
-    </body>
+        <!-- Operations & Controls -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Operations Panel</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Insertions, Deletions &amp; Rebalancing</div>
+                <div class="controls-row">
+                    <input type="number" id="numberInput" placeholder="Enter integer key" style="width: 180px;" />
+                    <button onclick="enqueueNumber()" class="btn" data-tooltip="Insert key & balance">Insert / Enqueue</button>
+                    <button onclick="dequeueNode()" class="btn btn-danger" data-tooltip="Delete selected key">Delete / Dequeue</button>
+                    <button onclick="clearTree()" class="btn btn-danger" data-tooltip="Clear entire tree">Delete All</button>
+                    <button onclick="balanceTree()" class="btn btn-success" data-tooltip="Balance BST structure">Balance Tree</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">2. Tree Queries &amp; Node Inspection</div>
+                <div class="controls-row">
+                    <button onclick="showTreeHeight()" class="btn btn-secondary" data-tooltip="Calculate tree height">Tree Height</button>
+                    <button onclick="peekRoot()" class="btn btn-secondary" data-tooltip="Highlight root node">Root</button>
+                    <button onclick="peekParentNodes()" class="btn btn-secondary" data-tooltip="Highlight parent nodes">Parents</button>
+                    <button onclick="peekChildren()" class="btn btn-secondary" data-tooltip="Highlight children nodes">Children</button>
+                    <button onclick="peekLeafNodes()" class="btn btn-secondary" data-tooltip="Highlight leaf nodes (degree 0)">Leaf Nodes</button>
+                    <button onclick="peekSiblings()" class="btn btn-secondary" data-tooltip="Highlight sibling nodes">Show Siblings</button>
+                    <button onclick="updateNode()" class="btn btn-secondary" data-tooltip="Update existing node value">Update Node</button>
+                    <button onclick="showSubtree()" class="btn btn-secondary" data-tooltip="Highlight branching subtrees">Show Subtree</button>
+                </div>
+            </div>
+
+            <!-- Visualization Stage -->
+            <div class="viz-stage">
+                <span class="viz-stage-label">Self-Balancing Binary Search Tree Canvas</span>
+                <canvas id="bstCanvas" width="900" height="400" class="avl-canvas"></canvas>
+            </div>
+
+            <!-- Output Monitor -->
+            <div id="output" class="output-box">Perform an operation to inspect tree state and balance factors</div>
+        </div>
+
+        <!-- Educational Reference -->
+        <div class="card">
+            <h2 class="card-title">Educational Reference: Rotations &amp; Balancing</h2>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Left-Left (LL) Rotation &rarr; Right Rotation</h2>
+                    <p>Triggered when a node is inserted into the left subtree of the left child (BF = +2, Child BF = +1). Resolved with a single <b>Right Rotation</b> around the unbalanced node.</p>
+                </div>
+                <div class="check">
+                    <h2>Right-Right (RR) Rotation &rarr; Left Rotation</h2>
+                    <p>Triggered when a node is inserted into the right subtree of the right child (BF = -2, Child BF = -1). Resolved with a single <b>Left Rotation</b> around the unbalanced node.</p>
+                </div>
+                <div class="check">
+                    <h2>Left-Right (LR) Double Rotation</h2>
+                    <p>Triggered when a node is inserted into the right subtree of the left child (BF = +2, Child BF = -1). Resolved via a <b>Left Rotation on Child</b> followed by a <b>Right Rotation on Parent</b>.</p>
+                </div>
+                <div class="check">
+                    <h2>Right-Left (RL) Double Rotation</h2>
+                    <p>Triggered when a node is inserted into the left subtree of the right child (BF = -2, Child BF = +1). Resolved via a <b>Right Rotation on Child</b> followed by a <b>Left Rotation on Parent</b>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="avl-tree.js"></script>
+</body>
 </html>

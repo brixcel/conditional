@@ -3,180 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Priority Queue Visualization</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Priority Queue - DSA Visualizer</title>
     <link rel="stylesheet" href="main.css">
-    <style>
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-        .queue-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-            justify-content: center;
-            min-height: 100px;
-        }
-        .queue-item {
-            width: 40px;
-            height: 40px;
-            text-align: center;
-            color: white;
-            font-size: 14px;
-            line-height: 40px;
-            border-radius: 4px;
-            background-color: #4A90E2;
-            position: relative;
-        }
-        .queue-item-priority {
-            background-color: #F59E0B;
-        }
-        .priority-label {
-            position: absolute;
-            top: -20px;
-            font-size: 12px;
-            color: #4A90E2;
-            font-weight: bold;
-        }
-        .priority-highlight {
-            background-color: #F3F4F6;
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #4A90E2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        .priority-highlight input {
-            accent-color: #4A90E2;
-        }
-        .btn-disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
-        <a href="index.html">Home</a>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
-    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
-    <div class="container p-4 space-y-8 max-w-4xl w-full bg-white rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold text-blue-600 text-center">Priority Queue Visualization</h1>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Linear Data Structure</div>
+            <h1 class="page-title">Priority Queue Visualization</h1>
+            <p class="page-desc">
+                An extended queue abstract data type where each element possesses an associated priority level. 
+                Elements with higher priority are dequeued ahead of lower priority items.
+            </p>
+        </header>
 
-        <div class="bg-white rounded-lg p-6 space-y-6">
-            <p class="text-gray-700 text-center">A Priority Queue is a special type of queue in which each element has a priority. 
-                Elements are dequeued based on their priority: higher priority elements are dequeued first.
-                In this visualization, the priority elements are inserted at the front of the queue, 
-                while lower priority elements are placed at the end.</p>
+        <!-- Concept Card -->
+        <div class="concept-card">
+            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <p class="concept-body">
+                Unlike standard FIFO queues where arrival sequence dictates service order, priority queues service critical tasks first.
+                Fundamental applications include Dijkstra's Shortest Path, A* Search, Prim's MST, and OS real-time process interrupt handlers.
+            </p>
+            <div class="concept-props">
+                <div class="prop-item">
+                    <div class="prop-label">Service Order</div>
+                    <div class="prop-value">Highest Priority First</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Priority Mechanism</div>
+                    <div class="prop-value">Precedence Insertion</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Primary Operation</div>
+                    <div class="prop-value">Extract-Max / Dequeue</div>
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
-            <div class="flex space-x-2 justify-center">
-                <input type="text" id="maxSize" placeholder="Enter max size" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="setMaxSize()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Set Max Size</button>
-                <button onclick="resetQueue()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Reset</button>
+        <!-- Controls & Operations Panel -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Operations Panel</h2>
             </div>
-            <p class="text-center text-sm text-gray-500 mt-2">Set the maximum size for the priority queue.</p>
 
-            <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
-                <div class="flex-grow flex space-x-2">
-                    <input type="text" id="enqueueValue" placeholder="Enter positive number to enqueue" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="enqueue()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Enqueue</button>
-                </div>
-                <p class="text-center text-sm text-gray-500 mt-2">Add an element to the queue. Check "Priority" for high-priority elements.</p>
-
-                <div class="priority-highlight">
-                    <input type="checkbox" id="priority" class="rounded text-blue-600 focus:ring-blue-500">
-                    <label for="priority" class="ml-2 text-sm text-gray-700">Priority</label>
+            <div class="control-section">
+                <div class="control-section-title">1. Queue Capacity Configuration</div>
+                <div class="controls-row">
+                    <input type="text" id="maxSize" placeholder="Max queue size (e.g. 5)" style="width: 200px;">
+                    <button onclick="setMaxSize()" class="btn">Allocate Queue</button>
+                    <button onclick="resetQueue()" class="btn btn-danger">Reset Queue</button>
                 </div>
             </div>
 
-            <div class="flex space-x-2 justify-center">
-                <input type="text" id="dequeueValue" placeholder="Enter value to dequeue" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="dequeue()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Dequeue</button>
-            </div>
-            <p class="text-center text-sm text-gray-500 mt-2">Remove an element from the queue. Enter the value to remove.</p>
+            <div class="control-section">
+                <div class="control-section-title">2. Mutation Operations</div>
+                <div class="controls-row">
+                    <input type="text" id="enqueueValue" placeholder="Positive integer value" style="width: 200px;">
+                    <div class="priority-highlight">
+                        <input type="checkbox" id="priority">
+                        <label for="priority" style="cursor: pointer; font-size: 0.9rem;">High Priority (P)</label>
+                    </div>
+                    <button onclick="enqueue()" class="btn">Enqueue Item</button>
+                </div>
 
-            <div class="flex flex-col space-y-4">
-                <div class="flex items-center space-x-4">
-                    <button onclick="peek()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Peek</button>
-                    <p class="text-sm text-gray-500">View the first element in the queue without removing it.</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="rear()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Rear</button>
-                    <p class="text-sm text-gray-500">View the last element in the queue without removing it.</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="isEmpty()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Empty</button>
-                    <p class="text-sm text-gray-500">Check if the queue is empty.</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="isFull()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Is Full</button>
-                    <p class="text-sm text-gray-500">Check if the queue has reached its maximum size.</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="size()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Size</button>
-                    <p class="text-sm text-gray-500">Get the current number of elements in the queue.</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="display()" class="w-24 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Display</button>
-                    <p class="text-sm text-gray-500">Show all elements currently in the queue.</p>
+                <div class="controls-row" style="margin-top: 8px;">
+                    <input type="text" id="dequeueValue" placeholder="Confirm front value to dequeue" style="width: 240px;">
+                    <button onclick="dequeue()" class="btn btn-danger">Dequeue Front</button>
                 </div>
             </div>
 
-            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
-                <p id="output" class="font-mono whitespace-pre-wrap">No actions performed yet</p>
-            </div>
-
-            <div id="fullAlert" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
-                <p class="font-mono">Queue is full!</p>
-            </div>
-
-            <div class="flex items-center justify-center space-x-8">
-                <span class="text-gray-600">FRONT</span>
-                <div id="queueDisplay" class="queue-container">
-                    <p class="text-gray-500">Queue is empty</p>
+            <div class="control-section">
+                <div class="control-section-title">3. Queue Inspection &amp; Queries</div>
+                <div class="controls-row">
+                    <button onclick="peek()" class="btn btn-secondary">Peek (Front)</button>
+                    <button onclick="rear()" class="btn btn-secondary">Rear (Back)</button>
+                    <button onclick="isEmpty()" class="btn btn-secondary">isEmpty?</button>
+                    <button onclick="isFull()" class="btn btn-secondary">isFull?</button>
+                    <button onclick="size()" class="btn btn-secondary">Size</button>
+                    <button onclick="display()" class="btn btn-secondary">Display List</button>
                 </div>
-                <span class="text-gray-600">BACK</span>
+            </div>
+
+            <!-- Visualization Stage -->
+            <div class="viz-stage">
+                <span class="viz-stage-label">Priority Order Pipeline</span>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
+                    <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted);">FRONT (Highest)</span>
+                    <div id="queueDisplay" class="queue-container">
+                        <p style="color: var(--text-muted); font-style: italic;">Queue is empty</p>
+                    </div>
+                    <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted);">BACK (Lowest)</span>
+                </div>
+            </div>
+
+            <!-- Output Message Banner -->
+            <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
+        </div>
+
+        <!-- Educational Reference -->
+        <div class="card">
+            <h2 class="card-title">Educational Reference</h2>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Priority Partitioning</h2>
+                    <p>High-priority items (marked with <b>P</b>) are maintained ahead of standard items, guaranteeing expedited service.</p>
+                </div>
+                <div class="check">
+                    <h2>FIFO Within Same Priority</h2>
+                    <p>Elements sharing equal priority maintain relative FIFO ordering among themselves.</p>
+                </div>
+                <div class="check">
+                    <h2>Heap vs Array Implementation</h2>
+                    <p>While implemented here as an ordered array, production systems typically utilize Binary Heaps to achieve O(log n) enqueue.</p>
+                </div>
+                <div class="check">
+                    <h2>Common Applications</h2>
+                    <p>Network packet routing (QoS), emergency room triaging, discrete event simulation, and bandwidth throttling.</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="shared.js"></script>
     <script>
-        const sideNavbar = document.getElementById("sideNavbar");
-        const openBtn = document.getElementById("openBtn");
-        const closeBtn = document.getElementById("closeBtn");
-        const mainContent = document.querySelector(".main-content");
-
-        openBtn.addEventListener("click", () => {
-            sideNavbar.classList.add("active");
-            mainContent.classList.add("shifted");
-        });
-
-        closeBtn.addEventListener("click", () => {
-            sideNavbar.classList.remove("active");
-            mainContent.classList.remove("shifted");
-        });
-
         class QueueItem {
             constructor(id, value, priority) {
                 this.id = id;
@@ -268,9 +217,9 @@
                 return;
             }
 
-            const size = parseInt(maxSize);
-            queue = new PriorityQueue(size);
-            setOutput(`Queue initialized with max size: ${size}`);
+            const sizeVal = parseInt(maxSize, 10);
+            queue = new PriorityQueue(sizeVal);
+            setOutput(`Queue initialized with max size: ${sizeVal}`);
             updateQueueDisplay();
             enableButtons();
         }
@@ -278,15 +227,15 @@
         function disableButtons() {
             const buttons = document.querySelectorAll('button:not([onclick="setMaxSize()"]):not([onclick="resetQueue()"]):not(#openBtn):not(#closeBtn)');
             buttons.forEach(button => {
-                button.classList.add('btn-disabled');
+                button.classList.add('disabled');
                 button.disabled = true;
             });
         }
 
         function enableButtons() {
-            const buttons = document.querySelectorAll('.btn-disabled');
+            const buttons = document.querySelectorAll('.disabled, button:disabled');
             buttons.forEach(button => {
-                button.classList.remove('btn-disabled');
+                button.classList.remove('disabled');
                 button.disabled = false;
             });
         }
@@ -304,8 +253,11 @@
 
         window.onload = function() {
             disableButtons();
-            document.querySelector('button[onclick="resetQueue()"]').disabled = false;
-            document.querySelector('button[onclick="resetQueue()"]').classList.remove('btn-disabled');
+            const resetBtn = document.querySelector('button[onclick="resetQueue()"]');
+            if (resetBtn) {
+                resetBtn.disabled = false;
+                resetBtn.classList.remove('disabled');
+            }
         };
 
         function enqueue() {
@@ -332,7 +284,7 @@
             const success = queue.enqueue(value, isPriority);
 
             if (!success) {
-                setOutput('Error: Unable to enqueue the item.');
+                setOutput('Error: Unable to enqueue the item (value may already exist in queue).');
                 return;
             }
 
@@ -381,7 +333,7 @@
             }
 
             const emptyStatus = queue.isEmpty();
-            setOutput(emptyStatus ? 'Queue is empty.' : 'Queue is not empty.');
+            setOutput(emptyStatus ? 'Queue is empty (TRUE).' : 'Queue is not empty (FALSE).');
         }
 
         function isFull() {
@@ -391,7 +343,7 @@
             }
 
             const fullStatus = queue.isFull();
-            setOutput(fullStatus ? 'Queue is full.' : 'Queue is not full.');
+            setOutput(fullStatus ? 'Queue is full (TRUE).' : 'Queue is not full (FALSE).');
         }
 
         function size() {
@@ -430,7 +382,7 @@
             }
 
             const items = queue.display();
-            setOutput('Queue Items: ' + items.map(item => `${item.value}`).join(', ') || 'Queue is empty.');
+            setOutput('Queue Items: ' + (items.map(item => `${item.value}${item.priority ? ' (P)' : ''}`).join(', ') || 'Queue is empty.'));
         }
 
         function setOutput(message) {
@@ -442,7 +394,7 @@
             queueDiv.innerHTML = '';
 
             if (!queue || queue.isEmpty()) {
-                queueDiv.innerHTML = '<p class="text-gray-500">Queue is empty</p>';
+                queueDiv.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Queue is empty</p>';
                 return;
             }
 
@@ -464,4 +416,3 @@
     </script>
 </body>
 </html>
-

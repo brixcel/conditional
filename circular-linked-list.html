@@ -3,121 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linked List Visualization</title>
+    <title>Circular Linked List - DSA Visualizer</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Linked List Structure</div>
+            <h1 class="page-title">Circular Linked List Visualization</h1>
+            <p class="page-desc">
+                A variation of the linked list where the successor pointer of the final node (<strong>Tail</strong>) 
+                is linked directly back to the initial node (<strong>Head</strong>), creating an unbroken circular continuum.
+            </p>
+        </header>
 
-    <div class="side-navbar" id="sideNavbar">
-        <button class="cLL-close-btn" id="closeBtn">&times;</button>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
-
-    <!-- Open Navbar Button -->
-    <button class="open-btn" id="openBtn">☰ Menu</button>
-    <div class="cLL-container">
-        <h2 class="cLL-title">Circular Linked List</h2>
-        <div class="cLL-current-list-section">
-            <div class="cLL-visualization-container">
-                <div class="cLL-visualization" id="currentList">
-                    <!-- Linked list nodes will appear here -->
+        <!-- Concept Card -->
+        <div class="concept-card">
+            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <p class="concept-body">
+                Because there are no <code>NULL</code> references, traversal starting from any node can seamlessly visit every node in the cycle.
+                Widely applied in multi-player turn-based games, round-robin CPU scheduling, and repeat-loop audio playlist engines.
+            </p>
+            <div class="concept-props">
+                <div class="prop-item">
+                    <div class="prop-label">Topology</div>
+                    <div class="prop-value">Closed Cyclic Loop</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Terminal Pointer</div>
+                    <div class="prop-value">Tail.next &rarr; Head (No NULL)</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Applications</div>
+                    <div class="prop-value">Round-Robin Scheduling</div>
                 </div>
             </div>
         </div>
 
-        <div class="cLL-max-size-section">
-            <label for="maxSizeInput">Enter Maximum Size:</label>
-            <input type="number" id="maxSizeInput" class="cLL-max-size-input" placeholder="Enter Max Size" min="1">
-            <button id="setMaxSizeButton" class="cLL-btn" onclick="setMaxSize()">Set Max Size</button>
-            <div id="sizeReminder" class="cLL-success-message">Please set the maximum size first!</div>
+        <!-- Operations & Controls -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Operations Panel</h2>
+            </div>
+
+            <!-- Section 1: Capacity -->
+            <div class="control-section">
+                <div class="control-section-title">1. List Capacity</div>
+                <div class="controls-row">
+                    <label for="maxSizeInput" style="font-weight: 600; font-size: 0.9rem;">Maximum Size:</label>
+                    <input type="number" id="maxSizeInput" placeholder="Max Size (e.g. 8)" min="1" style="width: 160px;">
+                    <button id="setMaxSizeButton" class="btn" onclick="setMaxSize()">Set Max Size</button>
+                </div>
+                <div id="sizeReminder" class="alert-banner alert-warning" style="display: block;">Please allocate the maximum list capacity to begin.</div>
+            </div>
+
+            <!-- Section 2: Inputs -->
+            <div class="control-section">
+                <div class="control-section-title">2. Input Parameters</div>
+                <div class="controls-row">
+                    <input type="number" id="valueInput" placeholder="Value (min 1)" min="1" style="width: 160px;">
+                    <input type="number" id="indexInput" placeholder="Index # (Insert/Delete)" min="1" style="width: 180px;">
+                </div>
+
+                <div id="addressInputContainer" class="controls-row" style="display:none; background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md);">
+                    <label for="nodeAddress" style="font-weight: 600; font-size: 0.9rem;">Target Address:</label>
+                    <input type="text" id="nodeAddress" placeholder="e.g. ABC001" style="width: 160px;">
+                    <button class="btn" onclick="submitAddressUpdate()">Submit Update</button>
+                    <button class="btn btn-secondary" onclick="closeAddressInput()">Close</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Grouped Operations -->
+            <div class="control-section">
+                <div class="control-section-title">3. Insertions &amp; Deletions</div>
+                <div class="controls-row">
+                    <button class="btn" onclick="append()" data-tooltip="Add element at tail">Append</button>
+                    <button class="btn" onclick="prepend()" data-tooltip="Add element at head">Prepend</button>
+                    <button class="btn" onclick="insertAtIndex()" data-tooltip="Insert element at specified index">Insert at Index</button>
+                    <button class="btn btn-danger" onclick="deleteHead()" data-tooltip="Remove head node">Delete Head</button>
+                    <button class="btn btn-danger" onclick="deleteTail()" data-tooltip="Remove tail node">Delete Tail</button>
+                    <button class="btn btn-danger" onclick="deleteByIndex()" data-tooltip="Remove node at index">Delete by Index</button>
+                    <button class="btn btn-danger" onclick="clearList()" data-tooltip="Clear entire list">Clear List</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">4. Search, Traversal &amp; Inspection</div>
+                <div class="controls-row">
+                    <button class="btn btn-secondary" onclick="size()" data-tooltip="Query current node count">Size</button>
+                    <button class="btn btn-secondary" onclick="showHead()" data-tooltip="Return head node">Head</button>
+                    <button class="btn btn-secondary" onclick="showTail()" data-tooltip="Return tail node">Tail</button>
+                    <button class="btn btn-secondary" onclick="reverseList()" data-tooltip="Reverse cyclic pointers">Reverse</button>
+                    <button class="btn btn-secondary" onclick="sortList()" data-tooltip="Sort nodes ascending">Sort</button>
+                    <button class="btn btn-secondary" onclick="find()" data-tooltip="Find node by value">Find</button>
+                    <button class="btn btn-secondary" onclick="update()" data-tooltip="Update element value">Update</button>
+                    <button class="btn btn-secondary" onclick="replace()" data-tooltip="Replace element at index">Replace</button>
+                    <button class="btn btn-secondary" onclick="checkIfEmpty()" data-tooltip="Check if size == 0">Is Empty?</button>
+                    <button class="btn btn-secondary" onclick="checkIfFull()" data-tooltip="Check if size == max">Is Full?</button>
+                </div>
+            </div>
+
+            <!-- Visualization Stage -->
+            <div class="viz-stage">
+                <span class="viz-stage-label">Cyclic Node Chain (Tail &rarr; Head Loop)</span>
+                <div class="scroll-box" style="margin: 0; background: transparent; border: none;">
+                    <div class="node-container" id="currentList">
+                        <span style="color: var(--text-muted); font-style: italic; margin: auto;">List is empty</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operation Log -->
+            <div id="operationsLogContainer" class="log-container">
+                <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Activity Log</div>
+                <div id="operationsLog" class="log-content">No operations yet.</div>
+            </div>
         </div>
-        
 
-        <div class="cLL-operations-section">
-            <div class="cLL-input-group">
-                <input type="number" id="valueInput" class="cLL-input-field" placeholder="Enter value" min="1">
-                <input type="number" id="indexInput" class="cLL-input-field" placeholder="Enter Index (for Insert/Delete)" min="1">
-            </div>
-
-            <div id="addressInputContainer" style="display:none;">
-                <label for="nodeAddress">Enter Address to Update:</label>
-                <input type="text" id="nodeAddress" class="cLL-input-field" placeholder="Enter address to update">
-                <button class="cLL-btn" onclick="submitAddressUpdate()">Submit Update</button>
-                <button class="cLL-btn" onclick="closeAddressInput()">Close</button>
-            </div>
-
-            <div id="operationsLogContainer" class="cLL-operations-log-container">
-                <h4>Operation Log</h4>
-                <div id="operationsLog" class="cLL-operations-log">No operations yet.</div>
-            </div>
-            
-            <h3 id="operations" class="cLL-title">Perform Operations</h3>
-            <div class="buttons-grid">
-                <button class="cLL-tooltip-btn" onclick="append()">
-                    Append
-                    <span class="cLL-tooltip-text">Add Element at the tail</span>
-                </button>
-                
-                <button class="cLL-tooltip-btn" onclick="prepend()">
-                    Prepend
-                    <span class="cLL-tooltip-text">Add Element at the head</span>
-                </button>
-                
-                <button class="cLL-tooltip-btn" onclick="insertAtIndex()">Insert at Index
-                    <span class="cLL-tooltip-text">Insert a new element at the specified index</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="deleteHead()">Delete Head
-                    <span class="cLL-tooltip-text">Remove the first element (head)</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="deleteTail()">Delete Tail
-                    <span class="cLL-tooltip-text">Remove the last element (tail)</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="deleteByIndex()">Delete by Index
-                    <span class="cLL-tooltip-text">Remove an element at the specified index</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="clearList()">Clear List
-                    <span class="cLL-tooltip-text">Clear all elements in the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="size()">Size
-                    <span class="cLL-tooltip-text">Get the current size of the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="reverseList()">Reverse
-                    <span class="cLL-tooltip-text">Reverse the order of elements in the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="find()">Find
-                    <span class="cLL-tooltip-text">Find an element in the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="showHead()">Head
-                    <span class="cLL-tooltip-text">Show the first element (head) of the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="showTail()">Tail
-                    <span class="cLL-tooltip-text">Show the last element (tail) of the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="checkIfEmpty()">Is Empty
-                    <span class="cLL-tooltip-text">Check if the list is empty</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="checkIfFull()">Is Full
-                    <span class="cLL-tooltip-text">Check if the list is full</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="sortList()">Sort
-                    <span class="cLL-tooltip-text">Sort the elements in the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="update()">Update
-                    <span class="cLL-tooltip-text">Update an existing element in the list</span>
-                </button>
-                <button class="cLL-tooltip-btn" onclick="replace()">Replace
-                    <span class="cLL-tooltip-text">Replace an element at the specified index</span>
-                </button>
+        <!-- Educational Reference -->
+        <div class="card">
+            <h2 class="card-title">Educational Reference</h2>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Infinite Loop Prevention</h2>
+                    <p>Traversals must track the initial visited node (e.g. <code>head</code>) or utilize a counter to avoid executing indefinite loops.</p>
+                </div>
+                <div class="check">
+                    <h2>Tail-Based O(1) Prepend &amp; Append</h2>
+                    <p>If maintained with a single <code>tail</code> reference, both prepend and append run in O(1) because <code>tail.next</code> directly accesses head.</p>
+                </div>
+                <div class="check">
+                    <h2>Single Node Edge Case</h2>
+                    <p>When the list contains exactly one node, its <code>next</code> pointer references itself (<code>node.next = node</code>).</p>
+                </div>
+                <div class="check">
+                    <h2>Operating System Task Scheduling</h2>
+                    <p>Round-robin schedulers utilize circular linked lists to continuously cycle CPU timeslices among running threads.</p>
+                </div>
             </div>
         </div>
     </div>
+
+    <script src="shared.js"></script>
     <script src="circLL.js"></script>
 </body>
 </html>

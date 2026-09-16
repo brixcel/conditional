@@ -3,56 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Structures and Algorithms</title>
+    <title>DSA Visualizer — Academic Workbench</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <!-- Right-Side Navbar -->
-<<<<<<< HEAD
-    <!-- yowmn -->
-=======
-    
->>>>>>> origin/brex
-    
-    <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn">&times;</button>
-        <a href="index.html">Home</a>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Computer Science Education</div>
+            <h1 class="page-title">Data Structures & Algorithms Workbench</h1>
+            <p class="page-desc">
+                An interactive academic visualization suite developed to demonstrate fundamental abstract data types, 
+                memory layouts, algorithmic operations, and asymptotic behavior.
+            </p>
+        </header>
 
-    <!-- Open Navbar Button -->
-    <button class="open-btn" id="openBtn">☰ Menu</button>
+        <div class="concept-card">
+            <h2 class="concept-title">📘 Educational Overview</h2>
+            <p class="concept-body">
+                Data structures provide structured formats for organizing, processing, retrieving, and storing data in computer memory. 
+                Selecting the optimal data structure directly impacts algorithm efficiency, execution time, and spatial memory footprint.
+            </p>
+            <div class="concept-props">
+                <div class="prop-item">
+                    <div class="prop-label">Institution</div>
+                    <div class="prop-value">URS Antipolo Campus</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Subject Area</div>
+                    <div class="prop-value">CS / IT Core DSA</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Interactive Modules</div>
+                    <div class="prop-value">8 Structures</div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Header -->
-    <div class="header">
-        <h1>DATA STRUCTURES AND ALGORITHMS</h1>
-        <p>University of Rizal System Antipolo Campus</p>
-    </div>
-    <div class="main-content">
-        <section class="intro">
-            <h2>Learn Data Structures and Algorithms</h2>
-            <p>
-                Data Structures and Algorithms (DSA) is a fundamental part of Computer Science that teaches 
-                you how to think and solve complex problems systematically.
-            </p>
-            <p>
-                Using the right data structure and algorithm makes your program run faster, especially when 
-                working with large amounts of data.
-            </p>
-            <p>
-                Knowing DSA can help you perform better in job interviews and land great jobs in tech companies.
-            </p>
+        <section>
+            <h2 class="card-title" style="margin-bottom: 4px;">Explore Visualization Modules</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Select a data structure to interact with its runtime memory model and operations:</p>
+
+            <div class="dashboard-grid">
+                <!-- Stack -->
+                <a href="stack.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">📚</div>
+                        <h3 class="topic-card-title">Stack</h3>
+                        <p class="topic-card-desc">Linear LIFO container supporting constant time Push, Pop, and Peek operations.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>LIFO Model</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Regular Queue -->
+                <a href="regular-queue.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">🚶</div>
+                        <h3 class="topic-card-title">Regular Queue</h3>
+                        <p class="topic-card-desc">First-In, First-Out sequential pipeline for FIFO buffering and scheduling.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>FIFO Model</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Circular Queue -->
+                <a href="circular-queue.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">🔄</div>
+                        <h3 class="topic-card-title">Circular Queue</h3>
+                        <p class="topic-card-desc">Ring buffer design connecting the last slot to the first to prevent memory fragmentation.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Ring Buffer</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Priority Queue -->
+                <a href="priority-queue.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">⭐</div>
+                        <h3 class="topic-card-title">Priority Queue</h3>
+                        <p class="topic-card-desc">Ordered queue dispatching high-priority elements ahead of standard elements.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Priority Order</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Singly Linked List -->
+                <a href="singly-linked-list.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">➡️</div>
+                        <h3 class="topic-card-title">Singly Linked List</h3>
+                        <p class="topic-card-desc">Unidirectional node chain linked via pointer addresses with dynamic memory sizing.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Head &rarr; Null</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Doubly Linked List -->
+                <a href="doubly-linked-list.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">↔️</div>
+                        <h3 class="topic-card-title">Doubly Linked List</h3>
+                        <p class="topic-card-desc">Bidirectional node chain maintaining both forward (next) and backward (prev) links.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Prev &harr; Next</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Circular Linked List -->
+                <a href="circular-linked-list.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">🔁</div>
+                        <h3 class="topic-card-title">Circular Linked List</h3>
+                        <p class="topic-card-desc">Continuous node loop where the tail pointer links directly back to the head node.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Tail &rarr; Head</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- AVL Tree -->
+                <a href="avl-tree.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">🌲</div>
+                        <h3 class="topic-card-title">AVL Tree</h3>
+                        <p class="topic-card-desc">Self-balancing Binary Search Tree enforcing Balance Factor &isin; {-1, 0, +1} via rotations.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>Height-Balanced</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+            </div>
         </section>
     </div>
-    <!-- new -->
 
-    <script src="regularqueue.js"></script>
+    <script src="shared.js"></script>
 </body>
 </html>

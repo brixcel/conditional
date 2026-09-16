@@ -3,78 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queue Visualization</title>
+    <title>Regular Queue (FIFO) - DSA Visualizer</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <!-- Side Navbar -->
-    <div class="side-navbar" id="sideNavbar">
-        <button class="close-btn" id="closeBtn" aria-label="Close Menu">&times;</button>
-        <a href="index.html">Home</a>
-        <a href="stack.html">Stack</a>
-        <a href="regular-queue.html">Regular Queue</a>
-        <a href="circular-queue.html">Circular Queue</a>
-        <a href="priority-queue.html">Priority Queue</a>
-        <a href="singly-linked-list.html">Singly Linked List</a>
-        <a href="doubly-linked-list.html">Doubly Linked List</a>
-        <a href="circular-linked-list.html">Circular Linked List</a>
-        <a href="avl-tree.html">AVL Tree</a>
-    </div>
-    <button class="open-btn" id="openBtn" aria-label="Open Menu">☰ Menu</button>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Message Display at the Top -->
-        <div id="queueMessage" class="queue-message" role="alert"></div>
-
-        <div class="queue-app-container">
-            <h1 class="queue-app-title">Regular Queue Visualization</h1>
-            
-            <!-- Description of Regular Queue -->
-            <p class="queue-description">
-                A regular queue is a linear data structure that follows the First In, First Out (FIFO) principle. 
-                This means that the first element added to the queue will be the first one to be removed. 
-                Operations include enqueue, dequeue, peek, and checking if the queue is empty or full.
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Linear Data Structure</div>
+            <h1 class="page-title">Regular Queue Visualization</h1>
+            <p class="page-desc">
+                A linear sequential collection governed by the <strong>First-In, First-Out (FIFO)</strong> principle.
+                Elements enter at the rear (tail) and depart from the front (head).
             </p>
+        </header>
 
-            <!-- Queue Size Control -->
-            <div class="queue-controls">
-                <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
-                <button id="setQueueSizeBtn" aria-label="Set Queue Size">Set Queue Size</button>
-                <button id="resetQueueSizeBtn" aria-label="Reset Queue Size">Reset Queue Size</button>
+        <!-- Concept Card -->
+        <div class="concept-card">
+            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <p class="concept-body">
+                Queues emulate standard waiting lines: arrival occurs strictly at the back, while service takes place at the front.
+                Core real-world applications include OS process scheduling (CPU ready queue), IO buffering, print spooling, and BFS graph traversal.
+            </p>
+            <div class="concept-props">
+                <div class="prop-item">
+                    <div class="prop-label">Discipline</div>
+                    <div class="prop-value">FIFO (First-In, First-Out)</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Enqueue / Dequeue</div>
+                    <div class="prop-value">O(1) Constant Time</div>
+                </div>
+                <div class="prop-item">
+                    <div class="prop-label">Pointers</div>
+                    <div class="prop-value">Front (Head) &amp; Rear (Tail)</div>
+                </div>
             </div>
-            
-            <!-- Queue Display Area -->
-            <div class="queue-display-area">
+        </div>
+
+        <!-- Notification Banner -->
+        <div id="queueMessage" class="alert-banner" role="alert"></div>
+
+        <!-- Controls & Operations -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Operations Panel</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Queue Sizing &amp; Reset</div>
+                <div class="controls-row">
+                    <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" style="width: 200px;" required>
+                    <button id="setQueueSizeBtn" class="btn" aria-label="Set Queue Size">Set Queue Size</button>
+                    <button id="resetQueueSizeBtn" class="btn btn-danger" aria-label="Reset Queue Size">Reset Queue</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">2. Enqueue / Dequeue Mutations</div>
+                <div class="controls-row">
+                    <input id="queueInput" type="text" placeholder="Enter integer element" style="width: 200px;">
+                    <button id="enqueueBtn" class="btn" aria-label="Enqueue Element" disabled>Enqueue (Rear)</button>
+                    <button id="dequeueBtn" class="btn btn-danger" aria-label="Dequeue Element" disabled>Dequeue (Front)</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">3. Queue Inspection</div>
+                <div class="controls-row">
+                    <button id="peekBtn" class="btn btn-secondary" aria-label="Peek Front Element" disabled>Peek (Front)</button>
+                    <button id="rearBtn" class="btn btn-secondary" aria-label="View Rear Element" disabled>Rear (Tail)</button>
+                    <button id="isEmptyBtn" class="btn btn-secondary" aria-label="Check If Queue is Empty" disabled>isEmpty?</button>
+                    <button id="isFullBtn" class="btn btn-secondary" aria-label="Check If Queue is Full" disabled>isFull?</button>
+                    <button id="clearQueueBtn" class="btn btn-danger" aria-label="Clear Queue" disabled>Clear All</button>
+                </div>
+            </div>
+
+            <!-- Visualization Stage -->
+            <div class="viz-stage">
+                <span class="viz-stage-label">FIFO Buffer Stage (Front &rarr; Rear)</span>
                 <div id="queue" class="queue-display"></div>
             </div>
-            
-            <!-- Queue Operation Controls -->
-            <div class="queue-controls">
-                <input id="queueInput" type="text" placeholder="Enter element">
-                <button id="enqueueBtn" aria-label="Enqueue Element" disabled>Enqueue</button>
-                <button id="dequeueBtn" aria-label="Dequeue Element" disabled>Dequeue</button>
-                <button id="peekBtn" aria-label="Peek Front Element" disabled>Peek</button>
-                <button id="rearBtn" aria-label="View Rear Element" disabled>Rear</button>
-                <button id="isEmptyBtn" aria-label="Check If Queue is Empty" disabled>isEmpty</button>
-                <button id="isFullBtn" aria-label="Check If Queue is Full" disabled>isFull</button>
-            </div>
-            
-            <!-- Queue Operations Description -->
-            <div class="queue-controls-description">
-                <p>Queue Operations:</p>
-                <ul>
-                    <li><b>Enqueue</b>: Adds an element to the end of the queue.</li>
-                    <li><b>Dequeue</b>: Removes an element from the front of the queue.</li>
-                    <li><b>Peek</b>: Returns the element at the front of the queue without removing it.</li>
-                    <li><b>Rear</b>: Returns the element at the end of the queue without removing it.</li>
-                    <li><b>isEmpty</b>: Checks if the queue is empty.</li>
-                    <li><b>isFull</b>: Checks if the queue is full.</li>
-                </ul>
+        </div>
+
+        <!-- Educational Reference -->
+        <div class="card">
+            <h2 class="card-title">Educational Reference</h2>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Enqueue(x)</h2>
+                    <p>Appends value <code>x</code> to the rear end of the queue. Fails if maximum allocated capacity is reached.</p>
+                </div>
+                <div class="check">
+                    <h2>Dequeue()</h2>
+                    <p>Removes and returns the front element. Fails with an underflow error if the queue is empty.</p>
+                </div>
+                <div class="check">
+                    <h2>Peek() / Rear()</h2>
+                    <p>Read-only inspections of the extreme elements (front index 0 or rear index n-1) without mutation.</p>
+                </div>
+                <div class="check">
+                    <h2>Array Limitations</h2>
+                    <p>Linear static array queues without cyclic wrap-around can cause wasted space after repeated dequeues.</p>
+                </div>
             </div>
         </div>
     </div>
     
+    <script src="shared.js"></script>
     <script src="regularqueue.js"></script>
 </body>
 </html>

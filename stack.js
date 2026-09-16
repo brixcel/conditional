@@ -1,30 +1,12 @@
 // Initialize stack capacity and size
 let stackCapacity = 0;
 let stackSize = 0;
-// Side Navbar Elements
-const sideNavbar = document.getElementById("sideNavbar");
-const openBtn = document.getElementById("openBtn");
-const closeBtn = document.getElementById("closeBtn");
-const mainContent = document.querySelector(".main-content");
-
-// Open and close the side navbar
-openBtn.addEventListener("click", () => {
-    sideNavbar.classList.add("active");
-    mainContent.classList.add("shifted");
-});
-
-closeBtn.addEventListener("click", () => {
-    sideNavbar.classList.remove("active");
-    mainContent.classList.remove("shifted");
-});
 
 // Function to disable the textbox if the stack capacity is not set
 function disableTextbox() {
     const numberInput = document.getElementById('stack-numberInput');
-    if (stackCapacity <= 0) {
-        numberInput.disabled = true;
-    } else {
-        numberInput.disabled = false;
+    if (numberInput) {
+        numberInput.disabled = (stackCapacity <= 0);
     }
 }
 
@@ -37,21 +19,21 @@ function setStackCapacity() {
 
     // Validate that the input is a positive whole number
     if (capacity !== null) {
-        capacity = capacity.trim();  // Remove any extra spaces
-        
-        // Check if capacity is a valid positive whole number
-        if (capacity && !isNaN(capacity) && parseInt(capacity) > 0 && 
+        capacity = capacity.trim();
+
+        if (capacity && !isNaN(capacity) && parseInt(capacity, 10) > 0 && 
             !capacity.startsWith('0') && Number.isInteger(Number(capacity))) {
             stackCapacity = parseInt(capacity, 10);
-            stackSize = 0;  // Reset stack size when setting capacity
-            alert(`Stack capacity set to ${stackCapacity}`);
+            stackSize = 0;
 
-            // Enable other buttons after setting the capacity
+            if (window.DSA_UI) {
+                window.DSA_UI.showToast(`Stack capacity set to ${stackCapacity}`, "success");
+            } else {
+                alert(`Stack capacity set to ${stackCapacity}`);
+            }
+
             enableActionButtons();
-            // Call disableTextbox to enable the input field
             disableTextbox();
-            
-            // Disable the Set Stack Capacity button
             document.getElementById('stack-setCapacityButton').disabled = true;
         } else {
             alert("Please enter a valid positive whole number greater than 0. It should not start with 0.");
@@ -66,46 +48,50 @@ function enableActionButtons() {
     document.getElementById('stack-peekButton').disabled = false;
     document.getElementById('stack-isEmptyButton').disabled = false;
     document.getElementById('stack-isFullButton').disabled = false;
-    document.getElementById('stack-sizeButton').disabled = false;  // Enable the size button
+    document.getElementById('stack-sizeButton').disabled = false;
 }
 
 // Function to refresh the page and reset the capacity
 function refreshCapacity() {
-    // Reload the page to reset everything
     location.reload();
+}
+
+function updateStackState() {
+    const topEl = document.getElementById('stack-top-val');
+    const sizeEl = document.getElementById('stack-size-val');
+    const stackBox = document.querySelector('.stack-box');
+    
+    if (sizeEl) {
+        sizeEl.innerText = `${stackSize} / ${stackCapacity}`;
+    }
+    if (topEl) {
+        if (stackSize > 0 && stackBox && stackBox.lastElementChild) {
+            topEl.innerText = stackBox.lastElementChild.textContent;
+        } else {
+            topEl.innerText = 'Empty (None)';
+        }
+    }
 }
 
 // Push button event listener
 document.getElementById('stack-pushButton').addEventListener('click', function() {
-    const inputValue = document.getElementById('stack-numberInput').value.trim();
+    const numberInput = document.getElementById('stack-numberInput');
+    const inputValue = numberInput.value.trim();
     
-    // Validate if the input is a valid positive whole number (integer)
-    if (inputValue && !isNaN(inputValue) && parseFloat(inputValue) === parseInt(inputValue) && parseInt(inputValue) > 0 &&
-        !inputValue.startsWith('0')) {
+    if (inputValue && !isNaN(inputValue) && parseFloat(inputValue) === parseInt(inputValue, 10) && 
+        parseInt(inputValue, 10) > 0 && !inputValue.startsWith('0')) {
         if (stackSize < stackCapacity) {
-            // Create a new bar div
             const newBar = document.createElement('div');
             newBar.classList.add('stack-bar');
-            
-            // Set the text of the bar to the input value
             newBar.textContent = inputValue;
             
-            // Get the stack-box container
             const stackBox = document.querySelector('.stack-box');
-            
-            // Add the new bar to the bottom of the stack (stacking from top to bottom)
             stackBox.appendChild(newBar);
-            
-            // Update the stack size
             stackSize++;
-            
-            // Scroll to the bottom of the container to show the latest added element
-            stackBox.scrollTop = stackBox.scrollHeight;  // Scroll to the bottom of the container
-            
-            // Clear the input field after pushing
-            document.getElementById('stack-numberInput').value = '';
+            stackBox.scrollTop = stackBox.scrollHeight;
+            numberInput.value = '';
+            updateStackState();
         } else {
-            // Warn the user if they try to add more items than the capacity
             alert('The stack is full! Cannot add more items.');
         }
     } else {
@@ -117,22 +103,16 @@ document.getElementById('stack-pushButton').addEventListener('click', function()
 document.getElementById('stack-popButton').addEventListener('click', function() {
     const stackBox = document.querySelector('.stack-box');
     
-    // Check if the stack has any items to pop
     if (stackSize > 0) {
-        // Get the value of the top element (LIFO)
         const topElementValue = stackBox.lastElementChild.textContent;
-
-        // Get the user input from the textbox
-        const userInput = document.getElementById('stack-numberInput').value.trim(); // Assuming 'stack-numberInput' is the ID of your textbox
+        const userInput = document.getElementById('stack-numberInput').value.trim();
 
         if (userInput === topElementValue) {
-            // Remove the top bar (last element)
             stackBox.removeChild(stackBox.lastElementChild);
-            
-            // Update the stack size
             stackSize--;
+            document.getElementById('stack-numberInput').value = '';
+            updateStackState();
         } else {
-            // Inform the user about the incorrect input based on LIFO
             alert(`Incorrect input. According to LIFO, the number to pop should be: ${topElementValue}`);
         }
     } else {
@@ -144,16 +124,13 @@ document.getElementById('stack-popButton').addEventListener('click', function() 
 document.getElementById('stack-peekButton').addEventListener('click', function() {
     const stackBox = document.querySelector('.stack-box');
     
-    // Check if the stack has any items to peek
     if (stackSize > 0) {
-        const topBar = stackBox.lastElementChild; // The last element is the top of the stack
-        topBar.classList.add('stack-highlight'); // Add the highlight class to the top element
-        topBar.style.backgroundColor = "#FFFF80"; // Light yellow color
+        const topBar = stackBox.lastElementChild;
+        topBar.classList.add('stack-highlight');
         
         setTimeout(() => {
             topBar.classList.remove('stack-highlight');
-            topBar.style.backgroundColor = ""; // Reset the background color
-        }, 1000); // Removes the highlight after 1 second
+        }, 1000);
     } else {
         alert('The stack is empty! Cannot peek.');
     }
@@ -161,20 +138,12 @@ document.getElementById('stack-peekButton').addEventListener('click', function()
 
 // Is Empty button event listener
 document.getElementById('stack-isEmptyButton').addEventListener('click', function() {
-    if (stackSize === 0) {
-        alert('True. The stack is empty.');
-    } else {
-        alert('False. The stack is not empty.');
-    }
+    alert(stackSize === 0 ? 'True. The stack is empty.' : 'False. The stack is not empty.');
 });
 
 // Is Full button event listener
 document.getElementById('stack-isFullButton').addEventListener('click', function() {
-    if (stackSize === stackCapacity) {
-        alert('True. The stack is full.');
-    } else {
-        alert('False. The stack is not full.');
-    }
+    alert(stackSize === stackCapacity ? 'True. The stack is full.' : 'False. The stack is not full.');
 });
 
 // Size button event listener
@@ -182,9 +151,9 @@ document.getElementById('stack-sizeButton').addEventListener('click', function()
     alert(`The current size of the stack is: ${stackSize}`);
 });
 
-// Add event listener for the Set Capacity button
-document.getElementById('stack-setCapacityButton').addEventListener('click', setStackCapacity);
-
-// Add event listener for the Refresh button
+// Add event listeners for capacity & reset
+document.getElementById('stack-setCapacityButton').addEventListener('click', () => {
+    setStackCapacity();
+    updateStackState();
+});
 document.getElementById('stack-refreshButton').addEventListener('click', refreshCapacity);
-document.getElementById('stack-refreshButton').textContent = "Reset"; 

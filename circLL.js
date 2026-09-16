@@ -1,19 +1,3 @@
-const sideNavbar = document.getElementById("sideNavbar");
-const openBtn = document.getElementById("openBtn");
-const closeBtn = document.getElementById("closeBtn");
-const mainContent = document.querySelector(".main-content");
-
-// Open and close the side navbar
-openBtn.addEventListener("click", () => {
-    sideNavbar.classList.add("active");
-    mainContent.classList.add("shifted");
-});
-
-closeBtn.addEventListener("click", () => {
-    sideNavbar.classList.remove("active");
-    mainContent.classList.remove("shifted");
-});
-
 class Node {
     constructor(value) {
         this.value = value;
@@ -119,15 +103,15 @@ class LinkedList {
             return false;
         }
     
-        // Create a new node with a zero-padded address
-        const newNode = new Node(value);
-        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padded address
-        this.counter++;
-    
         // Case 1: Inserting at the beginning (index 0)
         if (index === 0) {
             return this.prepend(value);
         }
+
+        // Create a new node with a zero-padded address
+        const newNode = new Node(value);
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padded address
+        this.counter++;
     
         let current = this.head;
         // Traverse to the node just before the desired index
@@ -293,7 +277,7 @@ class LinkedList {
     
 
     find(address) {
-        if (!this.head) return -1;  // List is empty
+        if (!this.head) return null;  // List is empty
     
         let current = this.head;
         do {
@@ -303,7 +287,7 @@ class LinkedList {
             current = current.next;
         } while (current !== this.head);
     
-        return -1;  // Address not found
+        return null;  // Address not found
     }
     
 
@@ -545,37 +529,14 @@ function clearInputs() {
 
 function addOperationLog(operation) {
     const logContainer = document.getElementById('operationsLog');
-    if (logContainer.textContent === 'No operations yet.') {
+    if (!logContainer) return;
+    if (logContainer.textContent.trim() === 'No operations yet.') {
         logContainer.innerHTML = '';
     }
     const logEntry = document.createElement('div');
     logEntry.classList.add('log-entry');
     logEntry.textContent = operation;
     logContainer.appendChild(logEntry);
-    logContainer.scrollTop = logContainer.scrollHeight;
-}function addOperationLog(operation) {
-    const logContainer = document.getElementById('operationsLog');
-
-    // Check if the log container has text content (initial state message)
-    if (logContainer.textContent === 'No operations yet.') {
-        logContainer.innerHTML = ''; // Clear the default message
-    }
-
-    // Remove the previous log entry if it exists
-    const previousLogEntry = logContainer.querySelector('.log-entry');
-    if (previousLogEntry) {
-        logContainer.removeChild(previousLogEntry); // Remove previous log entry
-    }
-
-    // Create a new log entry with the current operation
-    const logEntry = document.createElement('div');
-    logEntry.classList.add('log-entry');
-    logEntry.textContent = operation;
-
-    // Append the new log entry
-    logContainer.appendChild(logEntry);
-
-    // Scroll to the bottom to show the latest log entry
     logContainer.scrollTop = logContainer.scrollHeight;
 }
 
@@ -731,8 +692,8 @@ function find() {
         return;
     }
     
-    const result = linkedList.find(address);  // Call find method using address
-    if (result !== -1) {
+    const result = linkedList.find(address.trim());  // Call find method using address
+    if (result !== null) {
         addOperationLog(`Found node with address ${address}. Value: ${result}`);
     } else {
         addOperationLog(`Address ${address} not found in the list`);

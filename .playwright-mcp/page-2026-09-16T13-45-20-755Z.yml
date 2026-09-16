@@ -1,0 +1,68 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - button "Close Menu" [ref=f2e3] [cursor=pointer]: ×
+    - link "Home" [ref=f2e4] [cursor=pointer]:
+      - /url: /
+    - link "Stack" [ref=f2e5] [cursor=pointer]:
+      - /url: /stack
+    - link "Regular Queue" [ref=f2e6] [cursor=pointer]:
+      - /url: /regular-queue
+    - link "Circular Queue" [ref=f2e7] [cursor=pointer]:
+      - /url: /circular-queue
+    - link "Priority Queue" [ref=f2e8] [cursor=pointer]:
+      - /url: /priority-queue
+    - link "Singly Linked List" [ref=f2e9] [cursor=pointer]:
+      - /url: /singly-linked-list
+    - link "Doubly Linked List" [ref=f2e10] [cursor=pointer]:
+      - /url: /doubly-linked-list
+    - link "Circular Linked List" [ref=f2e11] [cursor=pointer]:
+      - /url: /circular-linked-list
+    - link "AVL Tree" [ref=f2e12] [cursor=pointer]:
+      - /url: /avl-tree
+  - button "Open Menu" [ref=f2e13] [cursor=pointer]: ☰ Menu
+  - generic [ref=f2e14]:
+    - heading "Priority Queue Visualization" [level=1] [ref=f2e15]
+    - paragraph [ref=f2e17]: "A Priority Queue is a special type of queue in which each element has a priority. Elements are dequeued based on their priority: higher priority elements are dequeued first. In this visualization, the priority elements are inserted at the front of the queue, while lower priority elements are placed at the end."
+    - generic [ref=f2e18]:
+      - generic [ref=f2e19]:
+        - textbox "Enter max size" [ref=f2e20]
+        - button "Set Max Size" [ref=f2e21] [cursor=pointer]
+        - button "Reset" [ref=f2e22] [cursor=pointer]
+      - paragraph [ref=f2e23]: Set the maximum size for the priority queue.
+      - generic [ref=f2e24]:
+        - generic [ref=f2e25]:
+          - textbox "Enter positive number to enqueue" [ref=f2e26]
+          - button "Enqueue" [disabled] [ref=f2e27]
+        - paragraph [ref=f2e28]: Add an element to the queue. Check "Priority" for high-priority elements.
+        - generic [ref=f2e29]:
+          - checkbox "Priority" [ref=f2e30]
+          - generic [ref=f2e31]: Priority
+      - generic [ref=f2e32]:
+        - textbox "Enter value to dequeue" [ref=f2e33]
+        - button "Dequeue" [disabled] [ref=f2e34]
+      - paragraph [ref=f2e35]: Remove an element from the queue. Enter the value to remove.
+      - generic [ref=f2e36]:
+        - generic [ref=f2e37]:
+          - button "Peek" [disabled] [ref=f2e38]
+          - paragraph [ref=f2e39]: View the first element in the queue without removing it.
+        - generic [ref=f2e40]:
+          - button "Rear" [disabled] [ref=f2e41]
+          - paragraph [ref=f2e42]: View the last element in the queue without removing it.
+        - generic [ref=f2e43]:
+          - button "Is Empty" [disabled] [ref=f2e44]
+          - paragraph [ref=f2e45]: Check if the queue is empty.
+        - generic [ref=f2e46]:
+          - button "Is Full" [disabled] [ref=f2e47]
+          - paragraph [ref=f2e48]: Check if the queue has reached its maximum size.
+        - generic [ref=f2e49]:
+          - button "Size" [disabled] [ref=f2e50]
+          - paragraph [ref=f2e51]: Get the current number of elements in the queue.
+        - generic [ref=f2e52]:
+          - button "Display" [disabled] [ref=f2e53]
+          - paragraph [ref=f2e54]: Show all elements currently in the queue.
+      - alert [ref=f2e55]:
+        - paragraph [ref=f2e56]: No actions performed yet
+      - generic [ref=f2e57]:
+        - generic [ref=f2e58]: FRONT
+        - paragraph [ref=f2e60]: Queue is empty
+        - generic [ref=f2e61]: BACK
