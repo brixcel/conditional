@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Circular Queue (Ring Buffer) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <div class="page-container">
         <header class="page-header">
-            <div class="badge">Linear Data Structure</div>
+            <div class="badge">Cyclic Data Structure &bull; Ring Buffer</div>
             <h1 class="page-title">Circular Queue Visualization</h1>
             <p class="page-desc">
                 An optimized queue implementation utilizing a fixed-size ring buffer where the final position wraps around 
@@ -19,7 +20,7 @@
 
         <!-- Concept Card -->
         <div class="concept-card">
-            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <h2 class="concept-title">Abstract Data Type Properties</h2>
             <p class="concept-body">
                 Standard array queues suffer from false-overflow (empty slots preceding <em>front</em> cannot be reused). 
                 Circular queues resolve this by advancing pointers via modulo arithmetic: <code>rear = (rear + 1) % capacity</code>.

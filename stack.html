@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stack (LIFO) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <div class="page-container">
         <header class="page-header">
-            <div class="badge">Linear Data Structure</div>
+            <div class="badge">Linear Data Structure &bull; LIFO Model</div>
             <h1 class="page-title">Stack Visualization</h1>
             <p class="page-desc">
                 A linear data structure operating under the <strong>Last-In, First-Out (LIFO)</strong> principle.
@@ -19,7 +20,7 @@
 
         <!-- Concept Brief -->
         <div class="concept-card">
-            <h2 class="concept-title">📘 Abstract Data Type Properties</h2>
+            <h2 class="concept-title">Abstract Data Type Properties</h2>
             <p class="concept-body">
                 Stacks allow insertions and deletions solely at one end, termed the <em>Top</em>. 
                 Common computer science applications include call stack execution, expression evaluation, syntax parsing, and undo-redo buffers.
@@ -47,9 +48,10 @@
             </div>
 
             <div class="control-section">
-                <div class="control-section-title">1. Initialization & Allocation</div>
+                <div class="control-section-title">1. Initialization &amp; Capacity Allocation</div>
                 <div class="controls-row">
-                    <button id="stack-setCapacityButton" class="btn" data-tooltip="Set stack maximum size">Set Stack Capacity</button>
+                    <input type="number" id="stack-capacityInput" min="1" max="10" value="6" placeholder="Capacity (1-10)" style="width: 140px;" />
+                    <button id="stack-setCapacityButton" class="btn" data-tooltip="Allocate stack maximum capacity">Allocate Capacity</button>
                     <button id="stack-refreshButton" class="btn btn-danger" data-tooltip="Reset stack state">Reset Stack</button>
                 </div>
             </div>
@@ -57,20 +59,22 @@
             <div class="control-section">
                 <div class="control-section-title">2. Mutation Operations</div>
                 <div class="controls-row">
-                    <input type="text" id="stack-numberInput" placeholder="Enter integer value" style="width: 200px;" disabled />
+                    <input type="number" id="stack-numberInput" placeholder="Enter integer value" style="width: 180px;" disabled />
                     <button id="stack-pushButton" class="btn" data-tooltip="Push item onto Top of stack" disabled>Push (Insert)</button>
                     <button id="stack-popButton" class="btn btn-danger" data-tooltip="Pop item from Top of stack" disabled>Pop (Remove)</button>
                 </div>
             </div>
 
             <div class="control-section">
-                <div class="control-section-title">3. State Queries & Inspection</div>
+                <div class="control-section-title">3. State Queries &amp; Inspection</div>
                 <div class="controls-row">
                     <button id="stack-peekButton" class="btn btn-secondary" data-tooltip="Inspect Top item without removing" disabled>Peek</button>
                     <button id="stack-isEmptyButton" class="btn btn-secondary" data-tooltip="Check if size == 0" disabled>Is Empty?</button>
                     <button id="stack-isFullButton" class="btn btn-secondary" data-tooltip="Check if size == capacity" disabled>Is Full?</button>
                     <button id="stack-sizeButton" class="btn btn-secondary" data-tooltip="Query current element count" disabled>Size</button>
                 </div>
+            </div>
+
             <!-- State Monitor -->
             <div class="state-monitor">
                 <div>Top Element: <strong id="stack-top-val" style="color: var(--primary-light); font-family: var(--font-mono);">Empty (None)</strong></div>

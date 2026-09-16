@@ -4,34 +4,49 @@
  */
 
 (function () {
+    // Clean SVG icon system (replacing casual emojis with professional vector geometry)
+    const SVG_ICONS = {
+        overview: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`,
+        stack: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>`,
+        regularQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="5" height="10" rx="1"/><rect x="9.5" y="7" width="5" height="10" rx="1"/><rect x="17" y="7" width="5" height="10" rx="1"/><path d="M2 12h20"/><polyline points="18 8 22 12 18 16"/></svg>`,
+        circularQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
+        priorityQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+        singlyList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><line x1="8" y1="12" x2="16" y2="12"/><polyline points="13 9 16 12 13 15"/></svg>`,
+        doublyList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><line x1="6.5" y1="10" x2="17.5" y2="10"/><polyline points="15 7 17.5 10 15 13"/><line x1="17.5" y1="14" x2="6.5" y2="14"/><polyline points="9 11 6.5 14 9 17"/></svg>`,
+        circularList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="16" r="2.5"/><circle cx="5" cy="16" r="2.5"/><path d="M14.5 6.5l3 6.5"/><path d="M16.5 17.5l-9 0"/><path d="M6.5 13.5l3.5-6.5"/></svg>`,
+        avlTree: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
+        menu: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
+        close: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+    };
+
     const navCategories = [
         {
             category: "General",
             items: [
-                { label: "Overview & Dashboard", href: "index.html", icon: "🏛️" }
+                { label: "Overview & Dashboard", href: "index.html", iconKey: "overview" }
             ]
         },
         {
             category: "Linear Structures",
             items: [
-                { label: "Stack (LIFO)", href: "stack.html", icon: "📚" },
-                { label: "Regular Queue (FIFO)", href: "regular-queue.html", icon: "🚶" },
-                { label: "Circular Queue", href: "circular-queue.html", icon: "🔄" },
-                { label: "Priority Queue", href: "priority-queue.html", icon: "⭐" }
+                { label: "Stack (LIFO)", href: "stack.html", iconKey: "stack" },
+                { label: "Regular Queue (FIFO)", href: "regular-queue.html", iconKey: "regularQueue" },
+                { label: "Circular Queue", href: "circular-queue.html", iconKey: "circularQueue" },
+                { label: "Priority Queue", href: "priority-queue.html", iconKey: "priorityQueue" }
             ]
         },
         {
             category: "Linked Lists",
             items: [
-                { label: "Singly Linked List", href: "singly-linked-list.html", icon: "➡️" },
-                { label: "Doubly Linked List", href: "doubly-linked-list.html", icon: "↔️" },
-                { label: "Circular Linked List", href: "circular-linked-list.html", icon: "🔁" }
+                { label: "Singly Linked List", href: "singly-linked-list.html", iconKey: "singlyList" },
+                { label: "Doubly Linked List", href: "doubly-linked-list.html", iconKey: "doublyList" },
+                { label: "Circular Linked List", href: "circular-linked-list.html", iconKey: "circularList" }
             ]
         },
         {
             category: "Tree Structures",
             items: [
-                { label: "AVL Tree (Self-Balancing)", href: "avl-tree.html", icon: "🌲" }
+                { label: "AVL Tree (Self-Balancing)", href: "avl-tree.html", iconKey: "avlTree" }
             ]
         }
     ];
@@ -64,11 +79,20 @@
 
         let navHtml = `
             <div class="side-navbar-header">
-                <div>
-                    <div class="side-navbar-brand">DSA Visualizer</div>
-                    <div class="side-navbar-sub">Academic Workbench</div>
+                <div class="side-navbar-brand-wrap">
+                    <svg class="brand-icon" viewBox="0 0 32 32" width="24" height="24">
+                        <circle cx="16" cy="7" r="4.5" fill="#2563EB"/>
+                        <circle cx="8" cy="23" r="3.5" fill="#38BDF8"/>
+                        <circle cx="24" cy="23" r="3.5" fill="#38BDF8"/>
+                        <line x1="16" y1="7" x2="8" y2="23" stroke="#94A3B8" stroke-width="2"/>
+                        <line x1="16" y1="7" x2="24" y2="23" stroke="#94A3B8" stroke-width="2"/>
+                    </svg>
+                    <div>
+                        <div class="side-navbar-brand">DSA Visualizer</div>
+                        <div class="side-navbar-sub">Academic Workbench</div>
+                    </div>
                 </div>
-                <button class="side-navbar-close" id="closeBtn" aria-label="Close menu">&times;</button>
+                <button class="side-navbar-close" id="closeBtn" aria-label="Close menu">${SVG_ICONS.close}</button>
             </div>
             <div class="side-navbar-scroll">
         `;
@@ -80,7 +104,7 @@
                 const isActive = (currentPage === item.href || (currentPage === "" && item.href === "index.html"));
                 navHtml += `
                     <a href="${item.href}" class="side-navbar-link ${isActive ? 'active' : ''}">
-                        <span class="side-navbar-icon">${item.icon}</span>
+                        <span class="side-navbar-icon">${SVG_ICONS[item.iconKey] || ''}</span>
                         <span>${item.label}</span>
                     </a>
                 `;
@@ -97,11 +121,12 @@
             openBtn = document.createElement("button");
             openBtn.id = "openBtn";
             openBtn.className = "nav-open-btn";
-            openBtn.innerHTML = "☰ <span>Modules</span>";
+            openBtn.innerHTML = `${SVG_ICONS.menu} <span>Modules</span>`;
             openBtn.setAttribute("aria-label", "Open navigation menu");
             document.body.prepend(openBtn);
         } else {
             openBtn.classList.add("nav-open-btn");
+            openBtn.innerHTML = `${SVG_ICONS.menu} <span>Modules</span>`;
         }
 
         const closeBtn = document.getElementById("closeBtn");
@@ -149,7 +174,7 @@
     }
 
     window.DSA_UI = {
-        showToast: function (message, type = "info", duration = 4000) {
+        showToast: function (message, type = "info", duration = 3500) {
             let toastContainer = document.getElementById("toastContainer");
             if (!toastContainer) {
                 toastContainer = document.createElement("div");
