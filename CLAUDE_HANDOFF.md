@@ -32,6 +32,44 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G4: Searching algorithms module + page
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-25 22:14 (Philippine time)
+- Branch: `gemini/g4-searching`
+- Commit(s): `b2d293d`
+- Files changed: `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js`
+- Summary:
+  - Created pure, DOM-free `src/algorithms/searching.js` implementing Linear Search, Binary Search (iterative), and Interpolation Search (`SEARCHING_ALGORITHMS`, `traceSearch`, `parseArrayInput`, `parseTargetInput`, `randomSearchCase`), reusing `src/core/validate.js` (`parseInteger`).
+  - Each recorded step follows `{ array, type: "start"|"compare"|"narrow"|"found"|"not-found"|"done", indices, low, high, mid, range, line, message, comparisons, foundIndex }` (uses `null` instead of `-1` when absent, builds messages before bound mutations, and never mutates the caller's array).
+  - Binary Search and Interpolation Search explicitly sort a copy of unsorted input ascending and state so in Step 1's message. Interpolation Search guards against division by zero whenever `A[high] === A[low]`.
+  - Created `searching.html` and `src/pages/searching-page.js` copying the `sorting.html` / `sorting-page.js` + `StepPlayer` pattern: algorithm select, array + target inputs with inline `#inputError`, random case generator, playback controls + keyboard shortcuts, bars with `L` / `M` / `H` pointer markers and active-window fading, live pseudocode highlighting, search state counters, and a complexity comparison table. Reused existing `main.css` section 12 classes with zero edits to `main.css`.
+  - Added `tests/searching.test.js` (17 tests): 300 seeded random cases per algorithm (900 total) verified against ground truth, plus edge cases (target at either end, absent below/above/in-gap, single element, all-equal values / ÷0 guard, empty array, unsorted auto-sort message, input immutability, complexity bounds, and input parsing).
+- npm test output (paste the real lines):
+    # tests 96
+    # pass 96
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `searching.html` on `http://localhost:5501` at desktop (`1280px`) and mobile (`375px`) widths. Console clean: yes (0 console errors, 0 uncaught page errors, 0 native dialogs). Verified Binary Search default run (`Found at index 6`, `L`/`M`/`H` markers, faded eliminated bars, pseudocode highlight, back/reset), unsorted auto-sort message, Linear Search on unsorted input, Interpolation Search on all-equal `[7,7,7,7,7]` (÷0 guard triggered cleanly) and absent target (`Not found`), invalid target error banner, Random Case button, and clean mobile stacking with zero horizontal overflow at `375px` and `1280px`.
+- Not done / not verified: Full keyboard-only Tab traversal and screen reader announcements were not manually audited. Did not edit `shared.js`, `index.html`, or `main.css`.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Algorithms` category):**
+     - `SVG_ICONS.searching`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
+     - Item: `{ label: "Searching Algorithms", href: "searching.html", iconKey: "searching" }`
+  2. **Homepage card for `index.html` (under Algorithms section):**
+     - Link: `searching.html`
+     - Title: `Searching Algorithms`
+     - Description: `Step through Linear, Binary (Iterative), and Interpolation Search with live low/mid/high pointers, range narrowing, and comparison counters.`
+     - Footer: `O(1) – O(n) / O(log n)` &rarr; `Launch Visualizer`
+  3. **Small CSS note discovered on mobile (`<= 640px`):** `.field-grow { flex: 1 1 260px; }` inside `.controls-row` stretches vertically to 260px tall when `.controls-row` switches to `flex-direction: column` at `<= 640px`. In `searching.html` I used `.field` with `size="32"` to avoid it; adding `.field-grow { flex: 0 0 auto; }` inside `@media (max-width: 640px)` in `main.css` after G3 merges will fix it globally (including on `sorting.html`).
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G2: Replace native dialogs (Circular LL, Doubly LL)
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-25 21:59 (Philippine time)

@@ -15,7 +15,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
 | G3 | Dark theme tokens + remove inline styles | Gemini | `main.css` | GEMINI_HANDOFF.md#g3 |
-| G4 | Searching algorithms module + page | Gemini | `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js` | GEMINI_HANDOFF.md#g4 |
 | C1b | Theme toggle in `shared.js`, skip link, nav entries for new pages | Claude | `shared.js`, `index.html` | after G3/G4 land (needs G3 tokens + CSS) |
 
 **Found while testing, for G3 (CSS):** on phones the fixed "Modules" button
@@ -30,7 +29,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| G4 | Searching algorithms module + page | Gemini | `gemini/g4-searching` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
