@@ -4,6 +4,12 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Changed (2026-11-25 21:50, Claude: C2b)
+- Stack page now runs on the tested `Stack` module (`src/pages/stack-page.js`).
+  The old `stack.js` kept the stack inside the DOM and read values back from bar text.
+  Messages now name the top index, and a capacity above 12 is rejected instead of silently cut to 12.
+- Overflow messages say "the only slot is used" for capacity 1.
+
 ### Changed (G1 by Gemini, reviewed and merged by Claude)
 - AVL Tree, Stack and Singly Linked List no longer use `alert()`/`prompt()`
   (24 calls → 0). Inputs are labelled, errors appear inline, and focus moves to

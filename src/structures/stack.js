@@ -26,7 +26,7 @@ export class Stack {
     push(value) {
         assertValue(value);
         if (this.isFull()) {
-            return fail(`Stack overflow: all ${this.capacity} slots are used, so ${value} cannot be pushed.`,
+            return fail(`Stack overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be pushed.`,
                 [{ type: "overflow", indices: [], message: "push rejected (stack is full)", snapshot: this.snapshot() }]);
         }
         this.items.push(value);

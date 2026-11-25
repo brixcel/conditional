@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C2b | Wire Stack page to `src/structures/stack.js` (started 2026-11-25 21:50) | Claude | main | `stack.html`, `stack.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -47,4 +47,5 @@ and list any CSS they need in their handoff report.
 | C4 | Merge, Quick, Heap sort + recursion step context (`range`, `depth`, `key`) | Claude | 2026-11-25 |
 | C2 | Pure Stack, LinearQueue, CircularQueue, PriorityQueue modules + model-based tests; Regular Queue page migrated | Claude | 2026-11-25 |
 | G1 | Replace all native dialogs on AVL, Stack, Singly LL (24 calls → 0) | Gemini (reviewed by Claude) | 2026-11-25 |
+| C2b | Stack page now uses `src/structures/stack.js` (old `stack.js` removed) | Claude | 2026-11-25 21:50 |
 | C1a | Sidebar a11y: `inert` when closed, `aria-expanded`/`aria-controls`, focus in/out, Tab trap, `aria-current`, main landmark | Claude | 2026-11-25 |

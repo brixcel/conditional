@@ -42,7 +42,7 @@ export class LinearQueue {
                 ? `Cannot enqueue ${value}: rear is already at the last index (${this.rear}). ` +
                   `${waste} slot${waste === 1 ? "" : "s"} at the front ${waste === 1 ? "is" : "are"} free, but a linear queue never moves ` +
                   `rear back to ${waste === 1 ? "it" : "them"}. This "false overflow" is why circular queues exist.`
-                : `Queue overflow: all ${this.capacity} slots are used, so ${value} cannot be enqueued.`;
+                : `Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`;
             return fail(error, [{ type: waste > 0 ? "false-overflow" : "overflow", indices: [], message: error, snapshot: this.snapshot() }]);
         }
         this.rear++;
@@ -114,7 +114,7 @@ export class CircularQueue {
     enqueue(value) {
         assertValue(value);
         if (this.isFull()) {
-            return fail(`Queue overflow: all ${this.capacity} slots are used, so ${value} cannot be enqueued.`,
+            return fail(`Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`,
                 [{ type: "overflow", indices: [], message: "enqueue rejected (queue is full)", snapshot: this.snapshot() }]);
         }
         let message;
@@ -189,7 +189,7 @@ export class PriorityQueue {
         assertValue(value);
         assertValue(priority);
         if (this.isFull()) {
-            return fail(`Queue overflow: all ${this.capacity} slots are used, so ${value} cannot be enqueued.`,
+            return fail(`Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`,
                 [{ type: "overflow", indices: [], message: "enqueue rejected (queue is full)", snapshot: this.snapshot() }]);
         }
         if (!this.allowDuplicates && this.items.some(it => it.value === value)) {

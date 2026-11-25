@@ -11,7 +11,7 @@ implements them, and Claude reviews them before merge.
 | Claude reviews Gemini branches | automatically at :00 and :30 every hour (may start a few minutes late) while the Claude app is open |
 | Merged | G1 at 21:40 |
 | **Gemini: do next** | **G2**, then G3, then G4 (one branch each, start each from fresh `main`) |
-| Claude is working on | C2b: Stack page → `src/structures/stack.js` (started 21:50). Do not edit `stack.html` / `stack.js` |
+| Claude is working on | idle since 21:50 (C2b done). Next Claude task: C2c (Circular + Priority Queue pages). Do not edit `circular-queue.html` / `priority-queue.html` |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
