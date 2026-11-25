@@ -44,8 +44,9 @@ for (const key of KEYS) {
             const steps = traceSort(key, input);
             const target = sortedCopy(input);
             assert.deepEqual(steps.at(-1).array, target);
-            // Insertion sort temporarily duplicates a value while shifting; others must always be permutations.
-            if (key !== "insertion") {
+            // Insertion and merge sort overwrite slots from a held-aside copy, so mid-step snapshots can
+            // contain duplicates; swap-based sorts must always hold a permutation of the input.
+            if (key !== "insertion" && key !== "merge") {
                 for (const s of steps) assert.deepEqual(sortedCopy(s.array), target);
             }
         }
@@ -140,5 +141,71 @@ test("an index marked final never changes value afterwards", () => {
         for (const s of steps) {
             for (const i of s.sorted) assert.equal(s.array[i], finalArray[i], `${key}: index ${i} marked final too early`);
         }
+    }
+});
+
+test("recursive sorts report a valid range and depth on every step", () => {
+    for (const key of ["merge", "quick", "heap"]) {
+        const n = 9;
+        for (const s of traceSort(key, [5, 2, 9, 1, 7, 3, 8, 6, 4])) {
+            if (!s.range) continue;
+            const [lo, hi] = s.range;
+            assert.ok(lo >= 0 && hi < n && lo <= hi, `${key}: bad range ${s.range}`);
+            if (s.depth !== undefined) assert.ok(s.depth >= 0);
+            for (const i of s.indices) assert.ok(i >= lo && i <= hi, `${key}: index ${i} outside range ${s.range}`);
+        }
+    }
+});
+
+test("quick sort: when a pivot is placed, its range is correctly partitioned", () => {
+    const rand = seeded(99);
+    for (let round = 0; round < 100; round++) {
+        const input = Array.from({ length: 2 + Math.floor(rand() * 14) }, () => Math.floor(rand() * 30));
+        for (const s of traceSort("quick", input)) {
+            if (s.type !== "sorted" || s.key === undefined) continue;
+            const [lo, hi] = s.range;
+            const p = s.indices[0];
+            for (let i = lo; i < p; i++) assert.ok(s.array[i] < s.array[p]);
+            for (let i = p + 1; i <= hi; i++) assert.ok(s.array[i] >= s.array[p]);
+        }
+    }
+});
+
+test("quick sort with last-element pivot hits the O(n²) worst case on sorted input", () => {
+    const n = 8;
+    const ascending = Array.from({ length: n }, (_, i) => i + 1);
+    assert.equal(traceSort("quick", ascending).at(-1).comparisons, (n * (n - 1)) / 2);
+});
+
+test("heap sort: after the build phase the array is a valid max-heap", () => {
+    const rand = seeded(5);
+    for (let round = 0; round < 100; round++) {
+        const input = Array.from({ length: 2 + Math.floor(rand() * 14) }, () => Math.floor(rand() * 50));
+        const firstExtract = traceSort("heap", input).find(s => s.type === "swap" && s.line === 3);
+        if (!firstExtract) continue;
+        // Undo the extract swap to see the heap exactly as the build phase left it.
+        const heap = firstExtract.array.slice();
+        const end = firstExtract.indices[1];
+        [heap[0], heap[end]] = [heap[end], heap[0]];
+        for (let i = 0; i < heap.length; i++) {
+            for (const c of [2 * i + 1, 2 * i + 2]) if (c < heap.length) assert.ok(heap[i] >= heap[c], `heap property at ${i}`);
+        }
+    }
+});
+
+test("merge sort comparisons stay within n·⌈log2 n⌉", () => {
+    const rand = seeded(11);
+    for (let round = 0; round < 100; round++) {
+        const n = 2 + Math.floor(rand() * 15);
+        const input = Array.from({ length: n }, () => Math.floor(rand() * 100));
+        assert.ok(traceSort("merge", input).at(-1).comparisons <= n * Math.ceil(Math.log2(n)));
+    }
+});
+
+test("every registry entry has pseudocode, complexity and summary", () => {
+    for (const [key, a] of Object.entries(SORTING_ALGORITHMS)) {
+        assert.ok(a.name && a.summary && a.pseudocode.length > 0, key);
+        for (const f of ["best", "average", "worst", "space"]) assert.ok(a.complexity[f], `${key}.${f}`);
+        assert.equal(typeof a.complexity.stable, "boolean");
     }
 });

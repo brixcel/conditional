@@ -27,6 +27,12 @@ class Tracer {
         this.sorted = new Set();
         this.comparisons = 0;
         this.writes = 0;
+        /**
+         * Context for recursive sorts, copied into every step while set:
+         * range: [lo, hi] subarray being worked on, depth: recursion depth,
+         * key: value held aside (insertion key / quick sort pivot).
+         */
+        this.ctx = {};
     }
 
     record(type, indices, line, message, extra = {}) {
@@ -39,6 +45,7 @@ class Tracer {
             message,
             comparisons: this.comparisons,
             writes: this.writes,
+            ...this.ctx,
             ...extra,
         });
     }
@@ -136,6 +143,120 @@ function insertionSort(t) {
     t.markAllSorted();
 }
 
+function mergeSort(t) {
+    const a = t.a;
+
+    function sort(lo, hi, depth) {
+        t.ctx = { range: [lo, hi], depth };
+        if (lo >= hi) {
+            t.record("split", [lo], 2, `A[${lo}] = ${a[lo]} is a single element, so it is already sorted. Return.`);
+            return;
+        }
+        const mid = Math.floor((lo + hi) / 2);
+        t.record("split", [], 3,
+            `Split A[${lo}..${hi}] at mid = ${mid} into A[${lo}..${mid}] and A[${mid + 1}..${hi}] (depth ${depth}).`);
+        sort(lo, mid, depth + 1);
+        sort(mid + 1, hi, depth + 1);
+
+        t.ctx = { range: [lo, hi], depth };
+        const left = a.slice(lo, mid + 1);
+        const right = a.slice(mid + 1, hi + 1);
+        t.record("select", [], 5, `Merge the sorted halves L = [${left.join(", ")}] and R = [${right.join(", ")}] back into A[${lo}..${hi}].`);
+
+        let i = 0, j = 0, k = lo;
+        while (i < left.length && j < right.length) {
+            t.comparisons++;
+            const takeLeft = left[i] <= right[j]; // "<=" keeps equal values in original order (stable)
+            t.record("compare", [k], 6,
+                `Compare fronts: L has ${left[i]}, R has ${right[j]}. Take ${takeLeft ? `${left[i]} from L` : `${right[j]} from R`}${left[i] === right[j] ? " (tie goes to L to keep the sort stable)" : ""}.`);
+            a[k] = takeLeft ? left[i++] : right[j++];
+            t.writes++;
+            t.record("insert", [k], 7, `Write ${a[k]} into A[${k}].`);
+            k++;
+        }
+        while (i < left.length || j < right.length) {
+            const fromLeft = i < left.length;
+            a[k] = fromLeft ? left[i++] : right[j++];
+            t.writes++;
+            t.record("insert", [k], 8, `${fromLeft ? "R" : "L"} is empty, so copy the leftover ${a[k]} from ${fromLeft ? "L" : "R"} into A[${k}].`);
+            k++;
+        }
+    }
+
+    sort(0, a.length - 1, 0);
+    t.ctx = {};
+    t.markAllSorted();
+}
+
+function quickSort(t) {
+    const a = t.a;
+
+    function sort(lo, hi, depth) {
+        if (lo > hi) return;
+        t.ctx = { range: [lo, hi], depth };
+        if (lo === hi) {
+            t.markSorted(lo, 2, `A[${lo}] = ${a[lo]} is a one-element range, so it is already in its final position.`);
+            return;
+        }
+        const pivot = a[hi];
+        t.ctx = { range: [lo, hi], depth, key: pivot };
+        t.record("select", [hi], 3, `Partition A[${lo}..${hi}] using the last element ${pivot} as the pivot (depth ${depth}).`);
+
+        let i = lo;
+        for (let j = lo; j < hi; j++) {
+            t.comparisons++;
+            const less = a[j] < pivot;
+            t.record("compare", [j, hi], 5,
+                `Compare A[${j}] = ${a[j]} with pivot ${pivot}: ${a[j]} ${less ? "<" : "≥"} ${pivot}${less ? ", so it belongs on the left" : ", so leave it"}.`);
+            if (less) {
+                if (i !== j) t.swap(i, j, 5, `move ${a[j]} into the "less than pivot" region`);
+                i++;
+            }
+        }
+        if (i !== hi) t.swap(i, hi, 6, `put pivot ${pivot} between the smaller and larger values`);
+        t.markSorted(i, 6, `Pivot ${pivot} is now at index ${i}, its final position: everything left is smaller, everything right is ≥ ${pivot}.`);
+
+        sort(lo, i - 1, depth + 1);
+        sort(i + 1, hi, depth + 1);
+    }
+
+    sort(0, a.length - 1, 0);
+    t.ctx = {};
+    t.markAllSorted();
+}
+
+function heapSort(t) {
+    const a = t.a;
+    const n = a.length;
+
+    function siftDown(i, size) {
+        while (true) {
+            const l = 2 * i + 1;
+            const r = l + 1;
+            let largest = i;
+            if (l < size && t.greater(l, largest, 6)) largest = l;
+            if (r < size && t.greater(r, largest, 6)) largest = r;
+            if (largest === i) return;
+            t.swap(i, largest, 7, `a parent must be ≥ its children, so ${a[i]} moves down`);
+            i = largest;
+        }
+    }
+
+    t.ctx = { range: [0, n - 1] };
+    t.record("select", [], 1, `Phase 1: build a max-heap. Sift down every parent from index ${Math.floor(n / 2) - 1} to 0.`);
+    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) siftDown(i, n);
+
+    for (let end = n - 1; end >= 1; end--) {
+        t.ctx = { range: [0, end] };
+        t.swap(0, end, 3, `the root ${a[0]} is the largest value left, so it goes to the end`);
+        t.markSorted(end, 3, `${a[end]} is final at index ${end}. The heap shrinks to A[0..${end - 1}].`);
+        t.ctx = { range: [0, end - 1] };
+        siftDown(0, end);
+    }
+    t.ctx = {};
+    t.markAllSorted();
+}
+
 export const SORTING_ALGORITHMS = {
     bubble: {
         name: "Bubble Sort",
@@ -177,6 +298,52 @@ export const SORTING_ALGORITHMS = {
         ],
         complexity: { best: "O(n)", average: "O(n²)", worst: "O(n²)", space: "O(1)", stable: true },
         summary: "Grows a sorted prefix one element at a time by shifting larger values right and dropping the key into the gap. Fast on nearly-sorted data.",
+    },
+    merge: {
+        name: "Merge Sort",
+        run: mergeSort,
+        pseudocode: [
+            "mergeSort(A, lo, hi)",
+            "    if lo ≥ hi: return   (one element is sorted)",
+            "    mid ← ⌊(lo + hi) / 2⌋",
+            "    mergeSort(A, lo, mid);  mergeSort(A, mid + 1, hi)",
+            "    L ← A[lo..mid];  R ← A[mid + 1..hi]",
+            "    while L and R are not empty: take the smaller front (L on a tie)",
+            "        A[k] ← taken value;  k ← k + 1",
+            "    copy whatever is left in L or R into A",
+        ],
+        complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n log n)", space: "O(n)", stable: true },
+        summary: "Divide and conquer: split the array in half until each piece has one element, then merge sorted pieces back together. Always O(n log n), at the cost of an extra O(n) buffer.",
+    },
+    quick: {
+        name: "Quick Sort",
+        run: quickSort,
+        pseudocode: [
+            "quickSort(A, lo, hi)",
+            "    if lo ≥ hi: return",
+            "    pivot ← A[hi];  i ← lo",
+            "    for j ← lo to hi − 1",
+            "        if A[j] < pivot: swap A[i], A[j];  i ← i + 1",
+            "    swap A[i], A[hi]   (pivot lands in its final place)",
+            "    quickSort(A, lo, i − 1);  quickSort(A, i + 1, hi)",
+        ],
+        complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n²)", space: "O(log n) avg stack", stable: false },
+        summary: "Picks a pivot (here: the last element, Lomuto scheme), moves smaller values left of it and larger values right, then sorts each side. Fast in practice, but already-sorted input with this pivot choice hits the O(n²) worst case.",
+    },
+    heap: {
+        name: "Heap Sort",
+        run: heapSort,
+        pseudocode: [
+            "for i ← ⌊n/2⌋ − 1 down to 0: siftDown(A, i, n)   (build max-heap)",
+            "for end ← n − 1 down to 1",
+            "    swap A[0], A[end]   (largest goes to its final place)",
+            "    siftDown(A, 0, end)",
+            "siftDown(A, i, size):",
+            "    largest ← biggest of A[i], A[2i + 1], A[2i + 2] inside size",
+            "    if largest ≠ i: swap A[i], A[largest];  i ← largest;  repeat",
+        ],
+        complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n log n)", space: "O(1)", stable: false },
+        summary: "Treats the array as a binary max-heap (children of index i are 2i + 1 and 2i + 2). Repeatedly swaps the root, the largest value, to the end and restores the heap. In-place and always O(n log n).",
     },
 };
 

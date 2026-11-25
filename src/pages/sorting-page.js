@@ -8,6 +8,7 @@ const els = {
     random: $("randomBtn"), reset: $("resetBtn"), prev: $("prevBtn"), play: $("playBtn"), next: $("nextBtn"),
     speed: $("speedSelect"), progress: $("progress"), counter: $("stepCounter"), bars: $("bars"),
     message: $("stepMessage"), code: $("pseudocode"), compare: $("statCompare"), writes: $("statWrites"), key: $("statKey"),
+    depth: $("statDepth"), range: $("statRange"),
 };
 
 let values = [];
@@ -19,6 +20,7 @@ function render(step, index, p) {
     const highlight = new Set(step.indices);
     const sorted = new Set(step.sorted);
     const bars = els.bars.children;
+    const [lo, hi] = step.range ?? [0, step.array.length - 1];
 
     step.array.forEach((v, i) => {
         const bar = bars[i];
@@ -28,6 +30,9 @@ function render(step, index, p) {
         bar.className = "bar";
         if (sorted.has(i)) bar.classList.add("is-sorted");
         if (highlight.has(i)) bar.classList.add(`is-${step.type}`);
+        // Fade bars outside the subarray a recursive sort is working on.
+        // Runtime style (not markup) so no new CSS is needed while main.css is owned by task G3.
+        bar.style.opacity = i < lo || i > hi ? "0.3" : "";
     });
 
     [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === step.line));
@@ -36,6 +41,8 @@ function render(step, index, p) {
     els.compare.textContent = step.comparisons;
     els.writes.textContent = step.writes;
     els.key.textContent = step.key ?? "—";
+    els.depth.textContent = step.depth ?? "—";
+    els.range.textContent = step.range ? `A[${lo}..${hi}]` : "whole array";
     els.counter.textContent = `Step ${index + 1} / ${p.length}`;
     els.progress.max = p.length - 1;
     els.progress.value = index;
