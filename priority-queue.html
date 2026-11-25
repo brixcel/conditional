@@ -50,38 +50,38 @@
             <div class="control-section">
                 <div class="control-section-title">1. Queue Capacity Configuration</div>
                 <div class="controls-row">
-                    <input type="text" id="maxSize" placeholder="Max queue size (e.g. 5)" style="width: 200px;">
-                    <button onclick="setMaxSize()" class="btn">Allocate Queue</button>
-                    <button onclick="resetQueue()" class="btn btn-danger">Reset Queue</button>
+                    <input type="text" id="maxSize" inputmode="numeric" aria-label="Max queue size (1 to 50)" placeholder="Max size 1–50 (e.g. 5)" style="width: 200px;">
+                    <button type="button" id="pqAllocateBtn" class="btn">Allocate Queue</button>
+                    <button type="button" id="pqResetBtn" class="btn btn-danger">Reset Queue</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">2. Mutation Operations</div>
                 <div class="controls-row">
-                    <input type="text" id="enqueueValue" placeholder="Positive integer value" style="width: 200px;">
+                    <input type="text" id="enqueueValue" inputmode="numeric" aria-label="Value to enqueue" placeholder="Positive integer value" style="width: 200px;">
                     <div class="priority-highlight">
                         <input type="checkbox" id="priority">
                         <label for="priority" style="cursor: pointer; font-size: 0.9rem;">High Priority (P)</label>
                     </div>
-                    <button onclick="enqueue()" class="btn">Enqueue Item</button>
+                    <button type="button" id="pqEnqueueBtn" class="btn">Enqueue Item</button>
                 </div>
 
                 <div class="controls-row" style="margin-top: 8px;">
-                    <input type="text" id="dequeueValue" placeholder="Confirm front value to dequeue" style="width: 240px;">
-                    <button onclick="dequeue()" class="btn btn-danger">Dequeue Front</button>
+                    <input type="text" id="dequeueValue" inputmode="numeric" aria-label="Type the front value to dequeue" placeholder="Confirm front value to dequeue" style="width: 240px;">
+                    <button type="button" id="pqDequeueBtn" class="btn btn-danger">Dequeue Front</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">3. Queue Inspection &amp; Queries</div>
                 <div class="controls-row">
-                    <button onclick="peek()" class="btn btn-secondary">Peek (Front)</button>
-                    <button onclick="rear()" class="btn btn-secondary">Rear (Back)</button>
-                    <button onclick="isEmpty()" class="btn btn-secondary">isEmpty?</button>
-                    <button onclick="isFull()" class="btn btn-secondary">isFull?</button>
-                    <button onclick="size()" class="btn btn-secondary">Size</button>
-                    <button onclick="display()" class="btn btn-secondary">Display List</button>
+                    <button type="button" id="pqPeekBtn" class="btn btn-secondary">Peek (Front)</button>
+                    <button type="button" id="pqRearBtn" class="btn btn-secondary">Rear (Back)</button>
+                    <button type="button" id="pqIsEmptyBtn" class="btn btn-secondary">isEmpty?</button>
+                    <button type="button" id="pqIsFullBtn" class="btn btn-secondary">isFull?</button>
+                    <button type="button" id="pqSizeBtn" class="btn btn-secondary">Size</button>
+                    <button type="button" id="pqDisplayBtn" class="btn btn-secondary">Display List</button>
                 </div>
             </div>
 
@@ -98,7 +98,7 @@
             </div>
 
             <!-- Output Message Banner -->
-            <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
+            <div class="output-box" id="output" role="status" aria-live="polite">Set max size and perform operations to inspect priority queue state</div>
         </div>
 
         <!-- Educational Reference -->
@@ -126,294 +126,6 @@
     </div>
 
     <script src="shared.js"></script>
-    <script>
-        class QueueItem {
-            constructor(id, value, priority) {
-                this.id = id;
-                this.value = value;
-                this.priority = priority;
-            }
-        }
-
-        class PriorityQueue {
-            constructor(maxSize) {
-                this.items = [];
-                this.maxSize = maxSize;
-                this.itemCounter = 0;
-            }
-
-            isEmpty() {
-                return this.items.length === 0;
-            }
-
-            isFull() {
-                return this.items.length >= this.maxSize;
-            }
-
-            size() {
-                return this.items.length;
-            }
-
-            enqueue(value, priority) {
-                if (this.isFull()) {
-                    return false;
-                }
-
-                const exists = this.items.some(item => item.value === value);
-                if (exists) {
-                    return false;
-                }
-
-                this.itemCounter++;
-                const newItem = new QueueItem(this.itemCounter, value, priority);
-
-                if (priority) {
-                    const lastPriorityIndex = this.items.findLastIndex(item => item.priority);
-                    this.items.splice(lastPriorityIndex + 1, 0, newItem);
-                } else {
-                    this.items.push(newItem);
-                }
-
-                return true;
-            }
-
-            dequeue(value) {
-                if (this.isEmpty()) {
-                    return null;
-                }
-
-                const firstItem = this.items[0];
-                if (firstItem.value === value || firstItem.id.toString() === value || `${firstItem.id}. ${firstItem.value}` === value) {
-                    return this.items.shift();
-                }
-
-                return null;
-            }
-
-            peek() {
-                return this.isEmpty() ? null : this.items[0];
-            }
-
-            rear() {
-                return this.isEmpty() ? null : this.items[this.items.length - 1];
-            }
-
-            display() {
-                return [...this.items];
-            }
-        }
-
-        let queue = null;
-
-        function isPositiveInteger(value) {
-            return /^[1-9]\d*$/.test(value);
-        }
-
-        function setMaxSize() {
-            const maxSizeInput = document.getElementById('maxSize');
-            const maxSize = maxSizeInput.value.trim();
-
-            if (!isPositiveInteger(maxSize)) {
-                setOutput('Error: Please enter a valid positive integer for max size. The number should not start with 0 or be negative.');
-                return;
-            }
-
-            const sizeVal = parseInt(maxSize, 10);
-            queue = new PriorityQueue(sizeVal);
-            setOutput(`Queue initialized with max size: ${sizeVal}`);
-            updateQueueDisplay();
-            enableButtons();
-        }
-
-        function disableButtons() {
-            const buttons = document.querySelectorAll('button:not([onclick="setMaxSize()"]):not([onclick="resetQueue()"]):not(#openBtn):not(#closeBtn)');
-            buttons.forEach(button => {
-                button.classList.add('disabled');
-                button.disabled = true;
-            });
-        }
-
-        function enableButtons() {
-            const buttons = document.querySelectorAll('.disabled, button:disabled');
-            buttons.forEach(button => {
-                button.classList.remove('disabled');
-                button.disabled = false;
-            });
-        }
-
-        function resetQueue() {
-            queue = null;
-            document.getElementById('maxSize').value = '';
-            document.getElementById('enqueueValue').value = '';
-            document.getElementById('dequeueValue').value = '';
-            document.getElementById('priority').checked = false;
-            setOutput('Queue has been reset. Please set a new max size.');
-            updateQueueDisplay();
-            disableButtons();
-        }
-
-        window.onload = function() {
-            disableButtons();
-            const resetBtn = document.querySelector('button[onclick="resetQueue()"]');
-            if (resetBtn) {
-                resetBtn.disabled = false;
-                resetBtn.classList.remove('disabled');
-            }
-        };
-
-        function enqueue() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const enqueueInput = document.getElementById('enqueueValue');
-            const priorityCheckbox = document.getElementById('priority');
-            const value = enqueueInput.value.trim();
-            const isPriority = priorityCheckbox.checked;
-
-            if (!isPositiveInteger(value)) {
-                setOutput('Error: Please enter a valid positive integer to enqueue. The number should not start with 0 or be negative.');
-                return;
-            }
-
-            if (queue.isFull()) {
-                setOutput('Error: Queue is full. Cannot enqueue more items.');
-                return;
-            }
-
-            const success = queue.enqueue(value, isPriority);
-
-            if (!success) {
-                setOutput('Error: Unable to enqueue the item (value may already exist in queue).');
-                return;
-            }
-
-            setOutput(`Enqueued: ${value} (Priority: ${isPriority ? 'Yes' : 'No'})`);
-            updateQueueDisplay();
-
-            enqueueInput.value = '';
-            priorityCheckbox.checked = false;
-        }
-
-        function dequeue() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const dequeueInput = document.getElementById('dequeueValue');
-            const value = dequeueInput.value.trim();
-
-            if (queue.isEmpty()) {
-                setOutput('Error: Queue is empty. Cannot dequeue.');
-                return;
-            }
-
-            if (value !== queue.peek().value) {
-                setOutput('Error: You can only dequeue the front element of the queue.');
-                return;
-            }
-
-            const dequeuedItem = queue.dequeue(value);
-
-            if (!dequeuedItem) {
-                setOutput('Error: No such element exists in the queue to dequeue.');
-                return;
-            }
-
-            setOutput(`Dequeued: ${dequeuedItem.value}`);
-            updateQueueDisplay();
-            dequeueInput.value = '';
-        }
-
-        function isEmpty() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const emptyStatus = queue.isEmpty();
-            setOutput(emptyStatus ? 'Queue is empty (TRUE).' : 'Queue is not empty (FALSE).');
-        }
-
-        function isFull() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const fullStatus = queue.isFull();
-            setOutput(fullStatus ? 'Queue is full (TRUE).' : 'Queue is not full (FALSE).');
-        }
-
-        function size() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            setOutput(`Queue size: ${queue.size()}`);
-        }
-
-        function peek() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const front = queue.peek();
-            setOutput(front ? `Front of queue: ${front.value}` : 'Queue is empty.');
-        }
-
-        function rear() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const rearItem = queue.rear();
-            setOutput(rearItem ? `Rear of queue: ${rearItem.value}` : 'Queue is empty.');
-        }
-
-        function display() {
-            if (!queue) {
-                setOutput('Please set the max size first.');
-                return;
-            }
-
-            const items = queue.display();
-            setOutput('Queue Items: ' + (items.map(item => `${item.value}${item.priority ? ' (P)' : ''}`).join(', ') || 'Queue is empty.'));
-        }
-
-        function setOutput(message) {
-            document.getElementById('output').textContent = message;
-        }
-
-        function updateQueueDisplay() {
-            const queueDiv = document.getElementById('queueDisplay');
-            queueDiv.innerHTML = '';
-
-            if (!queue || queue.isEmpty()) {
-                queueDiv.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Queue is empty</p>';
-                return;
-            }
-
-            queue.items.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `queue-item ${item.priority ? 'queue-item-priority' : ''}`;
-                itemDiv.textContent = item.value;
-
-                if (item.priority) {
-                    const priorityLabel = document.createElement('span');
-                    priorityLabel.className = 'priority-label';
-                    priorityLabel.textContent = 'P';
-                    itemDiv.appendChild(priorityLabel);
-                }
-
-                queueDiv.appendChild(itemDiv);
-            });
-        }
-    </script>
+    <script type="module" src="src/pages/priority-queue-page.js"></script>
 </body>
 </html>

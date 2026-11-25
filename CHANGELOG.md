@@ -4,6 +4,16 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Changed (2026-11-25 21:53, Claude: C2c)
+- Circular Queue and Priority Queue pages now run on the tested modules
+  (`src/pages/circular-queue-page.js`, `src/pages/priority-queue-page.js`). Their
+  inline `<script>` copies of the logic are gone, and buttons use ids instead of `onclick`.
+- Circular Queue: messages show the modulo step (e.g. "rear = (5 + 1) mod 6 = 0, wrapped").
+  Fixed overlapping Front/Rear labels when both point at one slot. The status
+  banner is now announced to screen readers.
+- Priority Queue: max size is now 1–50 (it had no limit), and messages explain where an item
+  was placed and how many it jumped ahead of.
+
 ### Changed (2026-11-25 21:50, Claude: C2b)
 - Stack page now runs on the tested `Stack` module (`src/pages/stack-page.js`).
   The old `stack.js` kept the stack inside the DOM and read values back from bar text.

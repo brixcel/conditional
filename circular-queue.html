@@ -42,7 +42,7 @@
         </div>
 
         <!-- Notification Banner -->
-        <div id="status" class="alert-banner" role="alert"></div>
+        <div id="status" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
 
         <!-- Controls & Operations -->
         <div class="card">
@@ -55,41 +55,41 @@
                 <div class="controls-row">
                     <label for="queueSize" style="font-weight: 600; font-size: 0.9rem;">Capacity (2-100):</label>
                     <input type="number" id="queueSize" min="2" max="100" placeholder="e.g. 6" style="width: 140px;">
-                    <button onclick="changeQueueSize()" class="btn">Allocate Ring</button>                    
-                    <button onclick="resetQueueSize()" class="btn btn-danger">Reset Queue</button>
+                    <button type="button" id="cqAllocateBtn" class="btn">Allocate Ring</button>                    
+                    <button type="button" id="cqResetBtn" class="btn btn-danger">Reset Queue</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">2. Enqueue &amp; Dequeue Mutations</div>
                 <div class="controls-row">
-                    <input type="text" id="enqueueValue" placeholder="Enter integer to enqueue" style="width: 200px;">
-                    <button onclick="handleEnqueue()" class="btn" data-tooltip="Insert element at cyclic rear">Enqueue</button>
+                    <input type="text" id="enqueueValue" inputmode="numeric" aria-label="Value to enqueue (1 to 1000)" placeholder="Integer 1–1000 to enqueue" style="width: 200px;">
+                    <button type="button" id="cqEnqueueBtn" class="btn" data-tooltip="Insert element at cyclic rear">Enqueue</button>
 
-                    <input type="text" id="dequeueValue" placeholder="Verify front to dequeue" style="width: 200px;">
-                    <button onclick="handleDequeue()" class="btn btn-danger" data-tooltip="Remove element from cyclic front">Dequeue</button>
+                    <input type="text" id="dequeueValue" inputmode="numeric" aria-label="Type the front value to dequeue" placeholder="Verify front to dequeue" style="width: 200px;">
+                    <button type="button" id="cqDequeueBtn" class="btn btn-danger" data-tooltip="Remove element from cyclic front">Dequeue</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">3. Ring State Queries</div>
                 <div class="controls-row">
-                    <button onclick="handlePeek()" class="btn btn-secondary" data-tooltip="Inspect front item">Peek (Front)</button>
-                    <button onclick="handleRear()" class="btn btn-secondary" data-tooltip="Inspect rear item">Rear (Last)</button>
-                    <button onclick="handleSize()" class="btn btn-secondary" data-tooltip="Get count of stored items">Queue Size</button>
-                    <button onclick="handleIsEmpty()" class="btn btn-secondary" data-tooltip="Check if ring is empty">IsEmpty?</button>
-                    <button onclick="handleIsFull()" class="btn btn-secondary" data-tooltip="Check if ring is full">IsFull?</button>
+                    <button type="button" id="cqPeekBtn" class="btn btn-secondary" data-tooltip="Inspect front item">Peek (Front)</button>
+                    <button type="button" id="cqRearBtn" class="btn btn-secondary" data-tooltip="Inspect rear item">Rear (Last)</button>
+                    <button type="button" id="cqSizeBtn" class="btn btn-secondary" data-tooltip="Get count of stored items">Queue Size</button>
+                    <button type="button" id="cqIsEmptyBtn" class="btn btn-secondary" data-tooltip="Check if ring is empty">IsEmpty?</button>
+                    <button type="button" id="cqIsFullBtn" class="btn btn-secondary" data-tooltip="Check if ring is full">IsFull?</button>
                 </div>
             </div>
 
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Circular Memory Stage</span>
-                <div id="queueContainer" class="cqv-queue-container"></div>
+                <div id="queueContainer" class="cqv-queue-container" role="img" aria-label="Circular queue ring"></div>
             </div>
 
             <!-- Output Monitor -->
-            <div id="output" class="output-box">Initialize capacity and perform operations to inspect circular state</div>
+            <div id="output" class="output-box" aria-hidden="true">Initialize capacity and perform operations to inspect circular state</div>
         </div>
 
         <!-- Educational Reference -->
@@ -117,298 +117,6 @@
     </div>
 
     <script src="shared.js"></script>
-    <script>
-        class CircularQueue {
-            constructor(capacity) {
-                this.queue = new Array(capacity).fill(null);
-                this.capacity = capacity;
-                this.front = -1;
-                this.rear = -1;
-            }
-
-            getSize() {
-                if (this.front === -1) return 0;
-                if (this.rear >= this.front) return this.rear - this.front + 1;
-                return this.capacity - (this.front - this.rear - 1);
-            }
-
-            isEmpty() {
-                return this.front === -1;
-            }
-
-            isFull() {
-                return (this.rear + 1) % this.capacity === this.front;
-            }
-
-            enqueue(data) {
-                if (typeof data !== 'number' || isNaN(data) || !Number.isInteger(data)) {
-                    return "Only integers are allowed.";
-                }
-
-                if (data < 1 || data > 1000) {
-                    return "Please enter a number between 1 and 1000.";
-                }
-
-                if (this.isFull()) {
-                    return "Queue reached its maximum capacity.";
-                }
-
-                if (this.front === -1) {
-                    this.front = 0;
-                }
-
-                this.rear = (this.rear + 1) % this.capacity;
-                this.queue[this.rear] = data;
-                return `${data} was added to the queue.`;
-            }
-
-            dequeue() {
-                if (this.isEmpty()) {
-                    return "Nothing to dequeue.";
-                }
-
-                const frontElement = this.queue[this.front];
-                this.queue[this.front] = null;
-                if (this.front === this.rear) {
-                    this.front = -1;
-                    this.rear = -1;
-                } else {
-                    this.front = (this.front + 1) % this.capacity;
-                }
-
-                return `${frontElement} was removed from the queue.`;
-            }
-
-            peek() {
-                return this.isEmpty() ? "Queue is empty." : `Peek: ${this.queue[this.front]}`;
-            }
-
-            rearElement() {
-                return this.isEmpty() ? "Queue is empty." : `Rear: ${this.queue[this.rear]}`;
-            }
-
-            reset() {
-                this.queue = new Array(this.capacity).fill(null);
-                this.front = -1;
-                this.rear = -1;
-            }
-        }
-
-        let circularQueue = null;
-        const queueContainer = document.getElementById("queueContainer");
-        const statusDiv = document.getElementById("status");
-
-        function showStatus(text, type = "info") {
-            if (!statusDiv) return;
-            statusDiv.innerText = text;
-            statusDiv.className = `alert-banner alert-${type}`;
-            statusDiv.style.display = text ? "block" : "none";
-        }
-
-        function setOutputText(text) {
-            const out = document.getElementById("output");
-            if (out) out.innerText = text;
-        }
-
-        function changeQueueSize() {
-            const newSize = parseInt(document.getElementById("queueSize").value.trim(), 10);
-            if (isNaN(newSize) || newSize <= 0 || newSize > 100) {
-                showStatus("Please enter a valid queue size (2-100).", "error");
-                return;
-            }
-            circularQueue = new CircularQueue(newSize);
-            showStatus(`Queue initialized with a size of ${newSize}.`, "success");
-            setOutputText(`Queue capacity set to ${newSize}`);
-            updateQueueDisplay();
-        }
-
-        function handleEnqueue() {
-            const enqueueInput = document.getElementById("enqueueValue");
-            let data = enqueueInput.value.trim();
-            enqueueInput.value = "";
-
-            if (!/^-?[1-9]\d*$/.test(data)) {
-                showStatus("Please enter a valid integer.", "error");
-                return;
-            }
-
-            data = parseInt(data, 10);
-
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const result = circularQueue.enqueue(data);
-            showStatus(result, circularQueue.isFull() ? "warning" : "success");
-            setOutputText(result);
-            updateQueueDisplay();
-        }
-
-        function resetQueueSize() {
-            document.getElementById('queueSize').value = '';
-            document.getElementById('enqueueValue').value = '';
-            document.getElementById('dequeueValue').value = '';
-            
-            if (circularQueue) {
-                circularQueue.reset();
-                circularQueue = null;
-            }
-            
-            updateQueueDisplay();
-            showStatus("The queue has been reset. Please input a new queue size to start again.", "info");
-            setOutputText("Queue reset");
-        }
-
-        function handleDequeue() {
-            const dequeueInput = document.getElementById("dequeueValue");
-            let value = dequeueInput.value.trim();
-            dequeueInput.value = "";
-
-            if (!/^-?[1-9]\d*$/.test(value)) {
-                showStatus("Please enter a valid integer.", "error");
-                return;
-            }
-
-            value = parseInt(value, 10);
-
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-
-            if (circularQueue.queue[circularQueue.front] !== value) {
-                showStatus(`You can only dequeue the front element. The front is ${circularQueue.queue[circularQueue.front]}, not ${value}.`, "error");
-                return;
-            }
-
-            const result = circularQueue.dequeue();
-            showStatus(result, "info");
-            setOutputText(result);
-            updateQueueDisplay();
-        }
-
-        function handlePeek() {
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const res = circularQueue.peek();
-            showStatus(res, "info");
-            setOutputText(res);
-        }
-
-        function handleRear() {
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const res = circularQueue.rearElement();
-            showStatus(res, "info");
-            setOutputText(res);
-        }
-
-        function handleSize() {
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const res = `Queue size: ${circularQueue.getSize()}`;
-            showStatus(res, "info");
-            setOutputText(res);
-        }
-
-        function handleIsEmpty() {
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const res = circularQueue.isEmpty() ? "TRUE (Queue is empty)" : "FALSE (Queue is not empty)";
-            showStatus(res, "info");
-            setOutputText(res);
-        }
-
-        function handleIsFull() {
-            if (!circularQueue) {
-                showStatus("Please set a valid queue limit first.", "warning");
-                return;
-            }
-            const res = circularQueue.isFull() ? "TRUE (Queue is full)" : "FALSE (Queue is not full)";
-            showStatus(res, "info");
-            setOutputText(res);
-        }
-
-        function calculatePositions(size, radius) {
-            const positions = [];
-            const centerX = radius + 30;
-            const centerY = radius + 30;
-            const angleStep = (2 * Math.PI) / size;
-
-            for (let i = 0; i < size; i++) {
-                const angle = i * angleStep;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-                positions.push({ x, y });
-            }
-            return positions;
-        }
-
-        function updateQueueDisplay() {
-            queueContainer.innerHTML = '';
-            if (!circularQueue) {
-                queueContainer.style.width = '240px';
-                queueContainer.style.height = '240px';
-                return;
-            }
-            const containerMax = Math.min(window.innerWidth - 60, 300);
-            const radius = Math.max(65, Math.floor((containerMax - 50) / 2));
-            queueContainer.style.width = `${2 * radius + 50}px`;
-            queueContainer.style.height = `${2 * radius + 50}px`;
-            const positions = calculatePositions(circularQueue.capacity, radius);
-
-            // Render all allocated slots in the ring buffer
-            for (let idx = 0; idx < circularQueue.capacity; idx++) {
-                const slot = document.createElement("div");
-                slot.className = "cqv-queue-slot";
-                slot.style.left = `${positions[idx].x}px`;
-                slot.style.top = `${positions[idx].y}px`;
-
-                const isOccupied = circularQueue.queue[idx] !== null;
-                if (isOccupied) {
-                    slot.classList.add("cqv-queue-slot-filled");
-                    slot.innerHTML = `<span style="font-size: 0.6rem; opacity: 0.8; display: block; line-height: 1;">[${idx}]</span>${circularQueue.queue[idx]}`;
-                } else {
-                    slot.innerHTML = `<span style="font-size: 0.65rem; color: var(--text-muted);">[${idx}]</span>`;
-                }
-
-                queueContainer.appendChild(slot);
-
-                if (!circularQueue.isEmpty()) {
-                    if (idx === circularQueue.front) {
-                        addFrontLastIndicator(positions[idx], "Front (F)");
-                    }
-                    if (idx === circularQueue.rear) {
-                        addFrontLastIndicator(positions[idx], "Rear (R)");
-                    }
-                }
-            }
-        }
-
-        function addFrontLastIndicator(position, label) {
-            const indicator = document.createElement("div");
-            indicator.className = "cqv-front-last-indicator";
-            indicator.innerText = label;
-
-            const offset = 32;
-            const angle = Math.atan2(position.y - (queueContainer.clientHeight / 2), position.x - (queueContainer.clientWidth / 2));
-            const x = position.x + offset * Math.cos(angle);
-            const y = position.y + offset * Math.sin(angle);
-
-            indicator.style.left = `${x}px`;
-            indicator.style.top = `${y}px`;
-            queueContainer.appendChild(indicator);
-        }
-
-        window.addEventListener('resize', updateQueueDisplay);
-    </script>
+    <script type="module" src="src/pages/circular-queue-page.js"></script>
 </body>
 </html>

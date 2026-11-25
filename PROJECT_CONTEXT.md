@@ -23,7 +23,8 @@ Rizal System – Antipolo Campus students.
   1. *Legacy pages* (Stack, Regular/Circular/Priority Queue, Singly/Doubly/
      Circular Linked List, AVL Tree) use classic `<script>` files or inline
      scripts with global state, and logic mixed with DOM updates.
-  2. *Module pages* (currently `sorting.html`, `regular-queue.html`, `stack.html`) use ES modules:
+  2. *Module pages* (currently `sorting.html`, `regular-queue.html`, `stack.html`,
+     `circular-queue.html`, `priority-queue.html`) use ES modules:
      `src/algorithms|structures/*.js` (pure logic, no DOM), `src/core/` (shared
      engine), and `src/pages/*-page.js` (DOM controller). New work uses this pattern.
 - **Tests:** `npm test` runs Node's built-in test runner on `tests/*.test.js`,

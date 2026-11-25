@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C2c | Circular + Priority Queue pages → `src/structures/queue.js` (started 2026-11-25 21:51) | Claude | main | `circular-queue.html`, `priority-queue.html`, `src/pages/circular-queue-page.js`, `src/pages/priority-queue-page.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -46,5 +46,6 @@ and list any CSS they need in their handoff report.
 | C4 | Merge, Quick, Heap sort + recursion step context (`range`, `depth`, `key`) | Claude | 2026-11-25 |
 | C2 | Pure Stack, LinearQueue, CircularQueue, PriorityQueue modules + model-based tests; Regular Queue page migrated | Claude | 2026-11-25 |
 | G1 | Replace all native dialogs on AVL, Stack, Singly LL (24 calls → 0) | Gemini (reviewed by Claude) | 2026-11-25 |
+| C2c | Circular + Priority Queue pages now use `src/structures/queue.js` (inline scripts removed) | Claude | 2026-11-25 21:53 |
 | C2b | Stack page now uses `src/structures/stack.js` (old `stack.js` removed) | Claude | 2026-11-25 21:50 |
 | C1a | Sidebar a11y: `inert` when closed, `aria-expanded`/`aria-controls`, focus in/out, Tab trap, `aria-current`, main landmark | Claude | 2026-11-25 |
