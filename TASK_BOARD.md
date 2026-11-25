@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| none | | | | |
+| C3 | AVL: animate rotations by node id, explain delete rotations (started 2026-11-25 21:54) | Claude | main | `avl-tree.js`, `avl-tree.html`, `tests/avl-real.test.js` |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -18,7 +18,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | G3 | Dark theme tokens + remove inline styles | Gemini | `main.css` | GEMINI_HANDOFF.md#g3 |
 | G4 | Searching algorithms module + page | Gemini | `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js` | GEMINI_HANDOFF.md#g4 |
 | C1b | Theme toggle in `shared.js`, skip link, nav entries for new pages | Claude | `shared.js`, `index.html` | after G3/G4 land (needs G3 tokens + CSS) |
-| C3 | AVL: animate rotations by node id, show delete rotations | Claude (visualization) | `avl-tree.js` | unblocked (G1 merged) |
 
 **Found while testing, for G3 (CSS):** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
