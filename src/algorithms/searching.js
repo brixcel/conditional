@@ -22,6 +22,7 @@
  */
 
 import { parseInteger } from "../core/validate.js";
+import { parseArrayInput as parseNumberList } from "./sorting.js";
 
 function isSortedAscending(arr) {
     for (let i = 1; i < arr.length; i++) {
@@ -417,23 +418,11 @@ export function traceSearch(algorithmKey, input, target) {
 export const INPUT_LIMITS = { minLength: 1, maxLength: 16, min: -99, max: 999 };
 
 /**
- * Parse user text like "5, 3 8,1" into integers.
+ * Parse user text like "5, 3 8,1" into integers, reusing sorting.js's parser.
  * @returns {{ ok: true, values: number[] } | { ok: false, error: string }}
  */
 export function parseArrayInput(text, limits = INPUT_LIMITS) {
-    const raw = String(text ?? "").trim();
-    if (raw === "") return { ok: false, error: "Enter some numbers separated by commas or spaces." };
-    const tokens = raw.split(/[\s,]+/).filter(Boolean);
-    const values = [];
-    for (const token of tokens) {
-        if (!/^-?\d+$/.test(token)) return { ok: false, error: `"${token}" is not a whole number.` };
-        const v = Number(token);
-        if (v < limits.min || v > limits.max) return { ok: false, error: `${v} is outside the allowed range ${limits.min} to ${limits.max}.` };
-        values.push(v);
-    }
-    if (values.length < limits.minLength) return { ok: false, error: `Enter at least ${limits.minLength} number${limits.minLength === 1 ? "" : "s"}.` };
-    if (values.length > limits.maxLength) return { ok: false, error: `Enter at most ${limits.maxLength} numbers so every step stays readable.` };
-    return { ok: true, values };
+    return parseNumberList(text, limits);
 }
 
 /**
