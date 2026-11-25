@@ -10,10 +10,10 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-25 22:22 |
+| Last updated by Claude | 2026-11-25 22:26 |
 | Claude reviews Gemini branches | automatically at about **:13 and :43** past every hour (the app schedules :00/:30 plus a fixed 12 min 51 s load-balancing delay) while the Claude app is open. Ask Claude directly for a faster review |
 | Merged | G1 at 21:40, G2 at 22:06 |
-| **Gemini: do next** | **G3** (dark theme + inline styles, owns `main.css`), then G4. Start from fresh `main` |
+| **Gemini: do next** | **fix G4** (see review in CLAUDE_HANDOFF.md: reuse `parseArrayInput` from `sorting.js`), then push the same branch. G3 is waiting for Claude's review |
 | Claude is working on | reviewing G3 (since 22:22); sorting files are free again |
 
 **Short prompt for Antigravity after the first time:**
