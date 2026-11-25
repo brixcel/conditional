@@ -32,6 +32,39 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G3: Dark theme tokens + inline style cleanup
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-25 22:07 (Philippine time)
+- Branch: `gemini/g3-dark-theme`
+- Commit(s): `e638a34`
+- Files changed: `main.css`
+- Summary:
+  - Added full dark theme token overrides in section 1 under both `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }` and `:root[data-theme="dark"] { ... }`, plus `color-scheme: light dark` / `light` / `dark`.
+  - Replaced every hard-coded hex color outside section 1 (`0` stray hex colors remain after section 1) with semantic tokens (`--bg-terminal`, `--bg-code`, `--bar-default/compare/swap/select/sorted`, `--primary-text`, `--success-text`, `--warning-text`, `--danger-text`, `--bg-disabled`, `--badge-dark-bg`, `--wheel-bg`, `--sidebar-*`, etc.) so sidebar, output box, pseudocode, sorting/searching bars, state monitors, alerts, toasts, and legacy stages follow the active theme cleanly.
+  - Added documented utility classes in section 13: `.input-sm`, `.input-md`, `.input-lg`, `.text-muted`, `.text-secondary`, `.text-italic`, `.mono`, `.car-empty`, `.slot-wrap`, `.slot-label`, `.slot-label-active`, `.scroll-box-clean`, plus `.bar.is-outside`, `.bar.is-found`, `.bar.is-narrow`, `.bar.is-not-found` for algorithm pages.
+  - Improved mobile top clearance (`<= 640px`): compacted `.nav-open-btn` with frosted backdrop and increased `.page-container` top padding to `76px` (`72px` at `<= 390px`) so the fixed Modules button no longer overlaps the page badge at the top.
+  - Verified WCAG contrast across 39 light & dark token pairs (Node luminance check, 39/39 pass):
+    - Light text: body on page `13.98:1`, body on card `14.63:1`, secondary `7.58:1`, muted on card `6.42:1`, muted on subtle `5.86:1`, primary btn `5.17:1`, success btn `5.48:1`, danger btn `4.83:1`, alerts `5.21:1`–`6.84:1`.
+    - Light bars/UI on stage: default `4.94:1`, compare `3.04:1`, swap `4.62:1`, sorted `3.60:1`, select `9.90:1`.
+    - Dark text: body on page `17.19:1`, body on card `16.19:1`, secondary `11.95:1`, muted on card `6.92:1`, muted on subtle `5.71:1`, buttons `4.83:1`–`5.48:1`, badges/alerts `8.15:1`–`10.39:1`, pseudocode `15.96:1` (line numbers `7.68:1`), sidebar links `13.26:1`.
+    - Dark bars/UI on stage: default `4.85:1`, compare `8.31:1`, swap `4.74:1`, sorted `7.04:1`, select `7.02:1`, strong border `3.73:1`.
+- npm test output (paste the real lines):
+    # tests 75
+    # pass 75
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `sorting.html`, `index.html`, and `stack.html` on `http://localhost:5501` at desktop (`1280px`) and mobile (`375px`) in active OS dark mode. Console clean: yes (0 console errors across all 3 pages). Confirmed sorting bars (compare/swap), active pseudocode line, state monitor counters, complexity table, Modules sidebar, dashboard cards, and Stack stage/toasts are all clearly readable. Confirmed no `#openBtn`/`.badge` overlap at `375px` (`openBtn.bottom 46–53.5px <= badge.top 72px`) and zero horizontal page overflow.
+- Not done / not verified: Live toggling of `data-theme="light"` vs `data-theme="dark"` in browser was not exercised because C1b's theme toggle button does not exist yet and `page.evaluate` is disabled in the browser sandbox; selectors were verified by inspection.
+- Requests for Claude: Ready for review and merge (unblocks C1b theme toggle in `shared.js` and Regular Queue `.car-empty` migration).
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G1: Replace native dialogs (AVL, Stack, Singly LL)
 - Author: Gemini (Antigravity)
 - Branch: `gemini/g1-replace-dialogs`
