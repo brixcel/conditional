@@ -110,7 +110,7 @@
             cat.items.forEach(item => {
                 const isActive = (currentPage === item.href || (currentPage === "" && item.href === "index.html"));
                 navHtml += `
-                    <a href="${item.href}" class="side-navbar-link ${isActive ? 'active' : ''}">
+                    <a href="${item.href}" class="side-navbar-link ${isActive ? 'active' : ''}"${isActive ? ' aria-current="page"' : ''}>
                         <span class="side-navbar-icon">${SVG_ICONS[item.iconKey] || ''}</span>
                         <span>${item.label}</span>
                     </a>
@@ -121,6 +121,10 @@
 
         navHtml += `</div>`;
         sidebar.innerHTML = navHtml;
+        sidebar.setAttribute("aria-label", "Modules");
+        // Closed sidebar sits off-screen; `inert` keeps its links out of the Tab order
+        // and away from screen readers until it is opened.
+        sidebar.inert = true;
 
         // Create open menu button if not present
         let openBtn = document.getElementById("openBtn") || document.getElementById("menuBtn");
@@ -135,23 +139,51 @@
             openBtn.classList.add("nav-open-btn");
             openBtn.innerHTML = `${SVG_ICONS.menu} <span>Modules</span>`;
         }
+        openBtn.setAttribute("aria-controls", "sideNavbar");
+        openBtn.setAttribute("aria-expanded", "false");
 
         const closeBtn = document.getElementById("closeBtn");
         const mainContent = document.querySelector(".page-container") || document.querySelector(".main-content");
+        if (mainContent && !mainContent.closest("main") && !mainContent.hasAttribute("role")) {
+            mainContent.setAttribute("role", "main");
+        }
+
+        function focusableIn(el) {
+            return [...el.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+        }
 
         function openMenu() {
+            sidebar.inert = false;
             sidebar.classList.add("active");
             overlay.classList.add("active");
             if (mainContent) mainContent.classList.add("shifted");
             document.body.classList.add("nav-open");
+            openBtn.setAttribute("aria-expanded", "true");
+            const target = sidebar.querySelector(".side-navbar-link.active") || closeBtn;
+            if (target) target.focus();
         }
 
         function closeMenu() {
+            const hadFocus = sidebar.contains(document.activeElement);
             sidebar.classList.remove("active");
             overlay.classList.remove("active");
             if (mainContent) mainContent.classList.remove("shifted");
             document.body.classList.remove("nav-open");
+            openBtn.setAttribute("aria-expanded", "false");
+            sidebar.inert = true;
+            if (hadFocus) openBtn.focus();
         }
+
+        // Keep Tab inside the open sidebar (it covers the page like a dialog).
+        sidebar.addEventListener("keydown", function (e) {
+            if (e.key !== "Tab") return;
+            const items = focusableIn(sidebar);
+            if (items.length === 0) return;
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
 
         openBtn.onclick = function (e) {
             e.stopPropagation();

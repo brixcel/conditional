@@ -44,7 +44,7 @@ stack.js, regularqueue.js,
 singly-linked-list.js, circLL.js,
 avl-tree.js                      legacy page scripts (global state, DOM-coupled)
 src/core/step-player.js          playback engine (play/pause/step/back/speed)
-src/algorithms/sorting.js        bubble/selection/insertion with traced steps
+src/algorithms/sorting.js        bubble/selection/insertion/merge/quick/heap with traced steps
 src/pages/sorting-page.js        DOM controller for sorting.html
 tests/*.test.js                  real-code tests (node:test)
 tests/legacy-regression.cjs      old suite. Suites 1-8 test COPIES, not real code
@@ -60,8 +60,11 @@ docs/archive/                    previous audit + plan (Sept 2026), historical o
 3. **Step shape**
    ```js
    { type, indices | nodeIds, line /* 1-based pseudocode */, message,
-     /* snapshot */ array | nodes | edges, /* counters */ comparisons, writes, ... }
+     /* snapshot */ array | nodes | edges, /* counters */ comparisons, writes, ...,
+     /* optional context */ range: [lo, hi], depth, key }
    ```
+   Recursive algorithms set `range` (active subarray), `depth` (recursion depth)
+   and `key` (pivot or held-aside value). Renderers fade what is outside `range`.
 4. **Registries** carry `name`, `run`, `pseudocode[]`, `complexity`, `summary`.
 5. **Errors are values**, e.g. `{ ok: false, error }`, shown inline
    (`.alert-banner.alert-live` with `role="alert"`), never `alert()`.
@@ -95,7 +98,7 @@ Verified by reading the code, running tests, and loading the live site at deskto
 | 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
 | 6 | Many inline `style=""` attributes remain in page markup | most pages | Low |
 | 7 | No dark theme, no step-by-step playback on legacy pages, no lessons/quizzes/progress | site-wide | Feature gap |
-| 8 | Only 8 structures and (now) 3 algorithms are covered | site-wide | Feature gap |
+| 8 | Only 8 structures and (now) 6 sorting algorithms are covered | site-wide | Feature gap |
 | 9 | AVL delete never sets a rotation message, so users don't see delete rotations explained | avl-tree.js `removeNode` | Low |
 | 10 | Debug screenshots (`.playwright-mcp/`) were committed | repo root | Fixed: untracked and ignored |
 

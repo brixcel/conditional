@@ -9,8 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C4 | Merge, Quick, Heap sort (defines recursion step format: `range`, `depth`, `key`) | Claude (algorithms) | main | `src/algorithms/sorting.js`, `src/pages/sorting-page.js`, `sorting.html`, `tests/sorting.test.js` |
-| C1a | Sidebar a11y: hidden sidebar not focusable (`inert`), `aria-expanded`, focus moves in/out | Claude (accessibility) | main | `shared.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -40,3 +39,5 @@ and list any CSS they need in their handoff report.
 | F3 | StepPlayer + sorting module (bubble/selection/insertion) + page | Claude | 2026-11-25 |
 | F4 | Real-code tests incl. AVL invariants on the actual `avl-tree.js` | Claude | 2026-11-25 |
 | F5 | Repo hygiene (tests/, docs/archive/, .gitignore, package.json) | Claude | 2026-11-25 |
+| C4 | Merge, Quick, Heap sort + recursion step context (`range`, `depth`, `key`) | Claude | 2026-11-25 |
+| C1a | Sidebar a11y: `inert` when closed, `aria-expanded`/`aria-controls`, focus in/out, Tab trap, `aria-current`, main landmark | Claude | 2026-11-25 |

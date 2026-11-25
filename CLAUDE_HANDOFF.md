@@ -38,5 +38,10 @@ _No reports yet. The first Gemini tasks are G1–G4 in `GEMINI_HANDOFF.md`._
 - 2026-11-25: Foundation pass landed on `main` (StepPlayer, sorting module,
   real-code tests, agent definitions). Use `sorting.html` +
   `src/pages/sorting-page.js` as the reference for any new algorithm page.
+- 2026-11-25: Claude added Merge/Quick/Heap sort and sidebar a11y on `main`
+  (commits after `d5a7b30`). If your branch started earlier, run
+  `git pull --rebase origin main` before pushing. None of your owned files changed.
+  For G4, steps may carry `range: [lo, hi]` and the page fades bars outside
+  it. Binary search can use the same field for its low..high window.
 - The bubble sort message bug that tests caught: a message describing the old
   state must be built **before** the mutation runs. Watch for this in G4.

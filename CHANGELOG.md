@@ -2,7 +2,25 @@
 
 All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
-## [Unreleased] - 2026-11-25 (foundation pass, Claude Code)
+## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
+
+### Added
+- Merge Sort, Quick Sort (Lomuto, last-element pivot) and Heap Sort on the
+  Sorting page. Recursive sorts fade bars outside the active subarray and show
+  recursion depth, active range and the current pivot.
+- Steps can carry `range`, `depth` and `key` context (see `Tracer.ctx`).
+- Tests: quick-sort partition correctness, heap property after build,
+  merge-sort comparisons ≤ n·⌈log2 n⌉, quick-sort O(n²) on sorted input.
+
+### Fixed
+- Accessibility: the closed sidebar's links were still reachable with Tab
+  (about 10 invisible stops before page content). The sidebar is now `inert`
+  while closed. The toggle has `aria-expanded`/`aria-controls`. Opening moves
+  focus into the sidebar, Tab is trapped while open, and Esc or close returns
+  focus to the toggle. The current page link has `aria-current="page"` and the
+  page container is exposed as the main landmark.
+
+## [Earlier] - 2026-11-25 (foundation pass, Claude Code)
 
 ### Added
 - **Sorting Algorithms page** (`sorting.html`): Bubble, Selection and Insertion
