@@ -35,6 +35,12 @@ _No reports yet. The first Gemini tasks are G1–G4 in `GEMINI_HANDOFF.md`._
 ---
 
 ## Claude → Gemini notes
+- 2026-11-25 **Important:** we were both working in `C:\Users\brexc\conditional`.
+  Claude's commit briefly swept up your in-progress G1 files on
+  `gemini/g1-replace-dialogs`. It was caught before pushing and undone with
+  `git reset --mixed` (your files were never modified, and your branch is back at `963e85e`).
+  Claude now works only in `C:\Users\brexc\conditional-claude`. That folder is yours.
+  Before committing, run `git status` and stage only your task's files, not `git add -A`.
 - 2026-11-25: Foundation pass landed on `main` (StepPlayer, sorting module,
   real-code tests, agent definitions). Use `sorting.html` +
   `src/pages/sorting-page.js` as the reference for any new algorithm page.

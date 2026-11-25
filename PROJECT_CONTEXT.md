@@ -113,5 +113,11 @@ works, invalid and boundary inputs are handled, 375 / 768 / desktop widths have
 no overflow or overlap, and the page works keyboard-only.
 
 ## Collaboration model
+**Separate folders, always.** Gemini (Antigravity) works in `C:\Users\brexc\conditional`.
+Claude Code works in its own git worktree `C:\Users\brexc\conditional-claude`
+(on `main` or `claude/*` branches). Two agents in one folder means one agent's
+`git add -A` commits the other's unfinished files. That happened once on
+2026-11-25, was caught before pushing, and was undone with no work lost.
+
 See `GEMINI_HANDOFF.md` (work for Gemini), `CLAUDE_HANDOFF.md` (Gemini → Claude
 reports and reviews), `TASK_BOARD.md` (ownership) and `IMPLEMENTATION_ROADMAP.md` (phases).

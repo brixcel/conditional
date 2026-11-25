@@ -15,7 +15,8 @@ implements them, and Claude reviews them before merge.
 > 4. Run `npm test` before you finish. It must pass. Paste the real summary lines.
 > 5. Check the pages you changed in a browser at 375px and desktop width
 >    (`npm run dev` → http://localhost:5501) and confirm there are no console errors.
-> 6. Commit to your branch and push it. Do not merge into `main`.
+> 6. Stage only the files your task owns (`git add <files>`, never `git add -A`),
+>    commit to your branch and push it. Do not merge into `main`.
 > 7. Append your report to `CLAUDE_HANDOFF.md` using its template, and set
 >    the task to Review in `TASK_BOARD.md`.
 > Never claim a check you did not run. If something is unclear, write the
