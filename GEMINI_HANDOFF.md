@@ -7,8 +7,8 @@ implements them, and Claude reviews them before merge.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-25 22:06 |
-| Claude reviews Gemini branches | automatically at :00 and :30 every hour (may start a few minutes late) while the Claude app is open |
+| Last updated by Claude | 2026-11-25 22:08 |
+| Claude reviews Gemini branches | automatically at about **:13 and :43** past every hour (the app schedules :00/:30 plus a fixed 12 min 51 s load-balancing delay) while the Claude app is open. Ask Claude directly for a faster review |
 | Merged | G1 at 21:40, G2 at 22:06 |
 | **Gemini: do next** | **G3** (dark theme + inline styles, owns `main.css`), then G4. Start from fresh `main` |
 | Claude is working on | idle since 22:00 (C3 done). `avl-tree.html` / `avl-tree.js` are free again |
