@@ -1,3 +1,0 @@
-[    1294ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
-[  109146ms] TypeError: Cannot read properties of null (reading 'classList')
-    at HTMLButtonElement.<anonymous> (https://ursdsa.netlify.app/priority-queue:177:25)

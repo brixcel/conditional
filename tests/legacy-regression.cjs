@@ -3,7 +3,12 @@
  * Comprehensive DSA & Regression Test Suite
  * Data Structures & Algorithms Visualization Project (Phases 1 - 6)
  * ============================================================================
- * Run: node test_regression.js
+ * Run: node tests/legacy-regression.cjs   (or: npm test)
+ *
+ * NOTE (2026-11): suites 1-8 test COPIES of the classes written inside this
+ * file, not the code the pages load. A pass here does not prove the live page
+ * is correct. New tests must import the real module (see tests/*.test.js).
+ * Suite 9 does read the real HTML/CSS/JS files.
  */
 
 const fs = require('fs');
@@ -780,7 +785,7 @@ suite('8. AVL Tree Self-Balancing & Rotations', () => {
 // 9. ARCHITECTURE & HTML/CSS/JS INTEGRATION SUITE
 // ----------------------------------------------------------------------------
 suite('9. Architecture, CSS Tokens & Nav Integration', () => {
-  const workspace = __dirname;
+  const workspace = path.join(__dirname, '..');
   const htmlFiles = [
     'index.html',
     'stack.html',
@@ -834,3 +839,5 @@ console.log(`======================================================\n`);
 if (passedTests !== totalTests) {
   process.exit(1);
 }
+
+if (passedTests !== totalTests) process.exitCode = 1;

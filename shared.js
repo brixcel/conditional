@@ -15,6 +15,7 @@
         doublyList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><line x1="6.5" y1="10" x2="17.5" y2="10"/><polyline points="15 7 17.5 10 15 13"/><line x1="17.5" y1="14" x2="6.5" y2="14"/><polyline points="9 11 6.5 14 9 17"/></svg>`,
         circularList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="16" r="2.5"/><circle cx="5" cy="16" r="2.5"/><path d="M14.5 6.5l3 6.5"/><path d="M16.5 17.5l-9 0"/><path d="M6.5 13.5l3.5-6.5"/></svg>`,
         avlTree: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
+        sorting: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
         menu: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
         close: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
     };
@@ -47,6 +48,12 @@
             category: "Tree Structures",
             items: [
                 { label: "AVL Tree (Self-Balancing)", href: "avl-tree.html", iconKey: "avlTree" }
+            ]
+        },
+        {
+            category: "Algorithms",
+            items: [
+                { label: "Sorting Algorithms", href: "sorting.html", iconKey: "sorting" }
             ]
         }
     ];

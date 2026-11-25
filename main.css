@@ -1295,3 +1295,195 @@ input:disabled, select:disabled {
     }
 }
 
+
+/* --------------------------------------------------------------------------
+   12. Algorithm Player (shared by step-by-step algorithm pages)
+   Used by: sorting.html. Reuse these classes for future algorithm modules.
+   -------------------------------------------------------------------------- */
+.alert-banner.alert-live:not([hidden]) { display: block; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-grow { flex: 1 1 260px; }
+.field-grow input { width: 100%; }
+.field-inline { flex-direction: row; align-items: center; gap: 8px; }
+.field-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+
+.step-counter {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.player-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.player-progress {
+    width: 100%;
+    margin: 14px 0 0;
+    accent-color: var(--primary-light);
+}
+
+.bars {
+    --n: 8;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    align-items: end;
+    gap: clamp(3px, 1vw, 10px);
+    width: 100%;
+    height: 240px;
+    padding-top: 22px;
+}
+
+.bar {
+    --h: 50%;
+    --bar-color: var(--primary-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    min-width: 0;
+}
+
+.bar-fill {
+    position: relative;
+    height: var(--h);
+    background: var(--bar-color);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.bar-value {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-bottom: 2px;
+    font-family: var(--font-mono);
+    font-size: clamp(0.62rem, 1.6vw, 0.8rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.bar-index {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding-top: 4px;
+}
+
+.bar.is-sorted  { --bar-color: var(--success); }
+.bar.is-compare { --bar-color: var(--warning); }
+.bar.is-swap,
+.bar.is-shift   { --bar-color: var(--danger); }
+.bar.is-select,
+.bar.is-insert  { --bar-color: var(--primary); }
+
+.bar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 16px;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.bar-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw-compare { background: var(--warning); }
+.sw-swap    { background: var(--danger); }
+.sw-select  { background: var(--primary); }
+.sw-sorted  { background: var(--success); }
+
+.step-message {
+    min-height: 3em;
+    padding: 12px 16px;
+    border-left: 3px solid var(--primary-light);
+    background: var(--primary-subtle);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.algo-detail { align-items: start; }
+.algo-detail > * { min-width: 0; } /* lets wide pseudocode scroll instead of stretching the grid */
+
+.pseudocode {
+    list-style: none;
+    counter-reset: line;
+    margin: 0;
+    padding: 8px 0;
+    background: var(--neutral-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #CBD5E1;
+    overflow-x: auto;
+}
+.pseudocode li {
+    counter-increment: line;
+    padding: 3px 14px 3px 0;
+    white-space: pre;
+    border-left: 3px solid transparent;
+}
+.pseudocode li::before {
+    content: counter(line);
+    display: inline-block;
+    width: 2.4em;
+    text-align: right;
+    margin-right: 12px;
+    color: #64748B;
+}
+.pseudocode li.active {
+    background: rgba(37, 99, 235, 0.28);
+    border-left-color: #60A5FA;
+    color: #FFFFFF;
+}
+
+.state-monitor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.stat-grid {
+    display: grid;
+    margin-top: 0;
+    gap: 8px;
+}
+.stat-grid div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+.stat-grid strong { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow-x: auto; margin-top: 14px; }
+.cx-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.cx-table th, .cx-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+.cx-table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+.cx-table td { font-family: var(--font-mono); }
+.table-note { margin-top: 12px; }
+
+@media (max-width: 640px) {
+    .bars { height: 190px; }
+    .player-controls .btn { flex: 1 1 calc(50% - 8px); }
+    .field-inline { width: 100%; justify-content: space-between; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bar-fill { transition: none; }
+}

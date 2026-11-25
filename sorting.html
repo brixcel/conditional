@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithms - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Algorithms &bull; Comparison Sorting</div>
+            <h1 class="page-title">Sorting Algorithms</h1>
+            <p class="page-desc">
+                Watch a real sort run one comparison at a time. Every frame below is a snapshot the algorithm
+                actually produced, so you can step backward and forward through its exact execution.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="algoName">Bubble Sort</h2>
+            <p class="concept-body" id="algoSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Best</div><div class="prop-value" id="cxBest"></div></div>
+                <div class="prop-item"><div class="prop-label">Average</div><div class="prop-value" id="cxAvg"></div></div>
+                <div class="prop-item"><div class="prop-label">Worst</div><div class="prop-value" id="cxWorst"></div></div>
+                <div class="prop-item"><div class="prop-label">Extra Space</div><div class="prop-value" id="cxSpace"></div></div>
+                <div class="prop-item"><div class="prop-label">Stable</div><div class="prop-value" id="cxStable"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Input &amp; Algorithm</h2>
+            </div>
+            <form class="control-section" id="inputForm" novalidate>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Algorithm</span>
+                        <select id="algoSelect">
+                            <option value="bubble">Bubble Sort</option>
+                            <option value="selection">Selection Sort</option>
+                            <option value="insertion">Insertion Sort</option>
+                        </select>
+                    </label>
+                    <label class="field field-grow">
+                        <span class="field-label">Values (2–16 whole numbers, −99 to 999)</span>
+                        <input type="text" id="arrayInput" inputmode="numeric" autocomplete="off"
+                               aria-describedby="inputError" value="38, 27, 43, 3, 9, 82, 10">
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="submit" class="btn">Load Values</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random Values</button>
+                </div>
+                <div id="inputError" class="alert-banner alert-error alert-live" role="alert" hidden></div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Back to first step" title="First step (Home)">&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Previous step" title="Previous step (←)">&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)">&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Next step" title="Next step (→)">Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5×</option>
+                        <option value="1" selected>1×</option>
+                        <option value="2">2×</option>
+                        <option value="4">4×</option>
+                    </select>
+                </label>
+            </div>
+            <input type="range" id="progress" class="player-progress" min="0" max="0" value="0" aria-label="Jump to step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label">Array (index below each bar)</span>
+                <div class="bars" id="bars" role="img" aria-label="Array bar chart"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i>Comparing</span>
+                    <span><i class="sw sw-swap"></i>Swap / shift</span>
+                    <span><i class="sw sw-select"></i>Key / minimum</span>
+                    <span><i class="sw sw-sorted"></i>Final position</span>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title">Pseudocode</div>
+                    <ol class="pseudocode" id="pseudocode"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Counters</div>
+                    <div class="state-monitor stat-grid">
+                        <div>Comparisons <strong id="statCompare">0</strong></div>
+                        <div>Array writes <strong id="statWrites">0</strong></div>
+                        <div>Key held out <strong id="statKey">—</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Compare the Algorithms</h2>
+            <div class="table-wrap">
+                <table class="cx-table">
+                    <thead>
+                        <tr><th scope="col">Algorithm</th><th scope="col">Best</th><th scope="col">Average</th><th scope="col">Worst</th><th scope="col">Space</th><th scope="col">Stable</th></tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Try an already-sorted input like <code>1 2 3 4 5 6</code>: Bubble and Insertion Sort finish in one pass (O(n)),
+                while Selection Sort still makes every comparison.
+            </p>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/sorting-page.js"></script>
+</body>
+</html>
