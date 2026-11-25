@@ -51,25 +51,48 @@
             <div class="control-section">
                 <div class="control-section-title">1. Insertions, Deletions &amp; Rebalancing</div>
                 <div class="controls-row">
-                    <input type="number" id="numberInput" placeholder="Enter integer key" style="width: 180px;" />
-                    <button onclick="enqueueNumber()" class="btn" data-tooltip="Insert key & balance">Insert / Enqueue</button>
-                    <button onclick="dequeueNode()" class="btn btn-danger" data-tooltip="Delete selected key">Delete / Dequeue</button>
-                    <button onclick="clearTree()" class="btn btn-danger" data-tooltip="Clear entire tree">Delete All</button>
-                    <button onclick="balanceTree()" class="btn btn-success" data-tooltip="Balance BST structure">Balance Tree</button>
+                    <label class="field">
+                        <span class="field-label">Node Key (Insert / Delete / Siblings)</span>
+                        <input type="number" id="numberInput" min="1" step="1" placeholder="Positive integer (e.g. 25)" aria-describedby="avlAlert" />
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="button" onclick="enqueueNumber()" class="btn" data-tooltip="Insert key & balance">Insert / Enqueue</button>
+                    <button type="button" onclick="dequeueNode()" class="btn btn-danger" data-tooltip="Delete key from Node Key input">Delete / Dequeue</button>
+                    <button type="button" onclick="clearTree()" class="btn btn-danger" data-tooltip="Clear entire tree">Delete All</button>
+                    <button type="button" onclick="balanceTree()" class="btn btn-success" data-tooltip="Balance BST structure">Balance Tree</button>
                 </div>
             </div>
+
+            <div id="avlAlert" class="alert-banner alert-live" role="alert" hidden></div>
 
             <div class="control-section">
                 <div class="control-section-title">2. Tree Queries &amp; Node Inspection</div>
                 <div class="controls-row">
-                    <button onclick="showTreeHeight()" class="btn btn-secondary" data-tooltip="Calculate tree height">Tree Height</button>
-                    <button onclick="peekRoot()" class="btn btn-secondary" data-tooltip="Highlight root node">Root</button>
-                    <button onclick="peekParentNodes()" class="btn btn-secondary" data-tooltip="Highlight parent nodes">Parents</button>
-                    <button onclick="peekChildren()" class="btn btn-secondary" data-tooltip="Highlight children nodes">Children</button>
-                    <button onclick="peekLeafNodes()" class="btn btn-secondary" data-tooltip="Highlight leaf nodes (degree 0)">Leaf Nodes</button>
-                    <button onclick="peekSiblings()" class="btn btn-secondary" data-tooltip="Highlight sibling nodes">Show Siblings</button>
-                    <button onclick="updateNode()" class="btn btn-secondary" data-tooltip="Update existing node value">Update Node</button>
-                    <button onclick="showSubtree()" class="btn btn-secondary" data-tooltip="Highlight branching subtrees">Show Subtree</button>
+                    <button type="button" onclick="showTreeHeight()" class="btn btn-secondary" data-tooltip="Calculate tree height">Tree Height</button>
+                    <button type="button" onclick="peekRoot()" class="btn btn-secondary" data-tooltip="Highlight root node">Root</button>
+                    <button type="button" onclick="peekParentNodes()" class="btn btn-secondary" data-tooltip="Highlight parent nodes">Parents</button>
+                    <button type="button" onclick="peekChildren()" class="btn btn-secondary" data-tooltip="Highlight children nodes">Children</button>
+                    <button type="button" onclick="peekLeafNodes()" class="btn btn-secondary" data-tooltip="Highlight leaf nodes (degree 0)">Leaf Nodes</button>
+                    <button type="button" onclick="peekSiblings()" class="btn btn-secondary" data-tooltip="Find siblings of Node Key">Show Siblings</button>
+                    <button type="button" onclick="showSubtree()" class="btn btn-secondary" data-tooltip="Highlight branching subtrees">Show Subtree</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">3. Update Existing Node</div>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Target Key to Update</span>
+                        <input type="number" id="updateTargetInput" min="1" step="1" placeholder="Existing key" disabled />
+                    </label>
+                    <label class="field">
+                        <span class="field-label">New Key Value</span>
+                        <input type="number" id="updateNewInput" min="1" step="1" placeholder="New positive integer" disabled />
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="button" onclick="updateNode()" id="updateNodeBtn" class="btn btn-secondary" data-tooltip="Replace target node with new value">Update Node</button>
                 </div>
             </div>
 
@@ -80,7 +103,7 @@
             </div>
 
             <!-- Output Monitor -->
-            <div id="output" class="output-box">Perform an operation to inspect tree state and balance factors</div>
+            <div id="output" class="output-box" role="status" aria-live="polite">Perform an operation to inspect tree state and balance factors</div>
         </div>
 
         <!-- Educational Reference -->

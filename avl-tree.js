@@ -8,6 +8,46 @@ class TreeNode {
     }
 }
 
+function showAvlMessage(message, type = 'error') {
+    const banner = document.getElementById('avlAlert');
+    if (banner) {
+        if (!message) {
+            banner.textContent = '';
+            banner.hidden = true;
+            return;
+        }
+        const isError = type === 'error';
+        banner.className = `alert-banner alert-live alert-${type}`;
+        banner.setAttribute('role', isError ? 'alert' : 'status');
+        banner.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+        banner.textContent = message;
+        banner.hidden = false;
+    }
+    const out = document.getElementById('output');
+    if (out && message && type === 'error') {
+        out.textContent = message;
+    }
+}
+
+function clearAvlNotice() {
+    showAvlMessage('');
+}
+
+function parsePositiveInteger(raw) {
+    const trimmed = raw === null || raw === undefined ? '' : String(raw).trim();
+    if (trimmed === '') {
+        return { ok: false, reason: 'empty' };
+    }
+    if (!/^[+-]?\d+$/.test(trimmed)) {
+        return { ok: false, reason: 'invalid' };
+    }
+    const value = Number(trimmed);
+    if (!Number.isSafeInteger(value) || value <= 0) {
+        return { ok: false, reason: 'non-positive' };
+    }
+    return { ok: true, value };
+}
+
 function toggleButtons() {
     const buttons = document.querySelectorAll("button");
     const isTreeEmpty = !bst || !bst.root;
@@ -22,6 +62,11 @@ function toggleButtons() {
             button.disabled = false;
         }
     });
+
+    const updateTargetInput = document.getElementById('updateTargetInput');
+    const updateNewInput = document.getElementById('updateNewInput');
+    if (updateTargetInput) updateTargetInput.disabled = isTreeEmpty;
+    if (updateNewInput) updateNewInput.disabled = isTreeEmpty;
 }
 
 class AVLTree {
@@ -142,49 +187,53 @@ class AVLTree {
 
     enqueue(value) {
         if (this.findNode(this.root, value)) {
-            alert(`Node with value ${value} already exists in the tree.`);
-            return;
+            showAvlMessage(`Node with value ${value} already exists in the tree.`, 'error');
+            return false;
         }
 
+        clearAvlNotice();
         this.lastRotationMessage = null;
         this.root = this.insert(this.root, value, null);
         if (this.root) this.root.parent = null;
         this.recalculateParents(this.root);
         this.visualize(false);
-        
+
         const out = document.getElementById('output');
         if (out) {
             if (this.lastRotationMessage) {
                 out.innerHTML = `<strong>Inserted ${value}</strong> &bull; ${this.lastRotationMessage}`;
             } else {
-                out.innerText = `Node ${value} inserted directly. Tree remains balanced (|BF| &le; 1).`;
+                out.textContent = `Node ${value} inserted directly. Tree remains balanced (|BF| ≤ 1).`;
             }
         }
         toggleButtons();
+        return true;
     }
 
     dequeue(value) {
         const targetNode = this.findNode(this.root, value);
         if (!targetNode) {
-            alert('Node to dequeue not found.');
-            return;
+            showAvlMessage(`Node ${value} not found in the tree.`, 'error');
+            return false;
         }
 
+        clearAvlNotice();
         this.lastRotationMessage = null;
         this.root = this.removeNode(this.root, value);
         if (this.root) this.root.parent = null;
         this.recalculateParents(this.root);
         this.visualize(false);
-        
+
         const out = document.getElementById('output');
         if (out) {
             if (this.lastRotationMessage) {
                 out.innerHTML = `<strong>Deleted ${value}</strong> &bull; ${this.lastRotationMessage}`;
             } else {
-                out.innerText = `Node ${value} removed. AVL balance verified across all nodes.`;
+                out.textContent = `Node ${value} removed. AVL balance verified across all nodes.`;
             }
         }
         toggleButtons();
+        return true;
     }
 
     minValueNode(node) {
@@ -256,10 +305,11 @@ class AVLTree {
     }
 
     clear() {
+        clearAvlNotice();
         this.root = null;
         this.visualize(false);
         const out = document.getElementById('output');
-        if (out) out.innerText = 'Tree cleared.';
+        if (out) out.textContent = 'Tree cleared.';
         toggleButtons();
     }
 
@@ -377,49 +427,58 @@ class AVLTree {
     }
 
     updateNode() {
-        const input = document.getElementById('numberInput');
-        if (!input || input.value.trim() === '') {
-            alert('Please enter a new value in the input field first.');
+        const targetInput = document.getElementById('updateTargetInput');
+        const newInput = document.getElementById('updateNewInput');
+
+        const parsedTarget = parsePositiveInteger(targetInput ? targetInput.value : '');
+        if (!parsedTarget.ok) {
+            if (parsedTarget.reason === 'empty') {
+                showAvlMessage('Please enter the target node key to update.', 'error');
+            } else {
+                showAvlMessage('Target key must be a valid positive integer greater than zero.', 'error');
+            }
+            if (targetInput) targetInput.focus();
             return;
         }
 
-        const newValue = parseInt(input.value.trim(), 10);
-        if (isNaN(newValue) || newValue <= 0) {
-            alert('Please enter a valid positive number for the new value.');
+        const parsedNew = parsePositiveInteger(newInput ? newInput.value : '');
+        if (!parsedNew.ok) {
+            if (parsedNew.reason === 'empty') {
+                showAvlMessage('Please enter a new positive integer key.', 'error');
+            } else {
+                showAvlMessage('New key must be a valid positive integer greater than zero.', 'error');
+            }
+            if (newInput) newInput.focus();
             return;
         }
 
-        const targetPrompt = prompt("Enter the value of the node to update:");
-        if (targetPrompt === null || targetPrompt.trim() === '') {
-            return;
-        }
-
-        const targetValue = parseInt(targetPrompt.trim(), 10);
-        if (isNaN(targetValue)) {
-            alert('Please enter a valid target value.');
-            return;
-        }
+        const targetValue = parsedTarget.value;
+        const newValue = parsedNew.value;
 
         const targetNode = this.findNode(this.root, targetValue);
         if (!targetNode) {
-            alert('Node to update not found.');
+            showAvlMessage(`Node ${targetValue} not found in the tree.`, 'error');
+            if (targetInput) targetInput.focus();
             return;
         }
 
         if (newValue !== targetValue && this.findNode(this.root, newValue)) {
-            alert('Cannot update: The new value already exists in the tree.');
+            showAvlMessage(`Cannot update: Node ${newValue} already exists in the tree.`, 'error');
+            if (newInput) newInput.focus();
             return;
         }
 
+        clearAvlNotice();
         // To maintain AVL tree invariant strictly, we remove the target and insert the new value
         this.root = this.removeNode(this.root, targetValue);
         this.root = this.insert(this.root, newValue, null);
         if (this.root) this.root.parent = null;
         this.recalculateParents(this.root);
         this.visualize(false);
-        input.value = '';
+        if (targetInput) targetInput.value = '';
+        if (newInput) newInput.value = '';
         const out = document.getElementById('output');
-        if (out) out.innerText = `Node with value ${targetValue} updated to ${newValue} (AVL balanced).`;
+        if (out) out.textContent = `Node with value ${targetValue} updated to ${newValue} (AVL balanced).`;
         toggleButtons();
     }
 
@@ -446,30 +505,33 @@ class AVLTree {
     }
 
     peekSiblings() {
-        const input = prompt("Enter the value of the node to find siblings for:");
-        if (input === null || input.trim() === '') {
+        const input = document.getElementById('numberInput');
+        const parsed = parsePositiveInteger(input ? input.value : '');
+        if (!parsed.ok) {
+            if (parsed.reason === 'empty') {
+                showAvlMessage('Enter a node key in the Node Key field to find its siblings.', 'error');
+            } else {
+                showAvlMessage('Please enter a valid positive integer greater than zero.', 'error');
+            }
+            if (input) input.focus();
             return;
         }
 
-        const nodeValue = parseInt(input.trim(), 10);
-        if (isNaN(nodeValue)) {
-            alert('Please enter a valid number.');
-            return;
-        }
-
+        const nodeValue = parsed.value;
         const node = this.findNode(this.root, nodeValue);
         const out = document.getElementById('output');
 
         if (!node) {
-            if (out) out.innerText = `Node ${nodeValue} not found in the tree.`;
+            showAvlMessage(`Node ${nodeValue} not found in the tree.`, 'error');
             return;
         }
 
+        clearAvlNotice();
         const siblingsInfo = this.collectSiblings(node);
         if (siblingsInfo.length > 0) {
-            if (out) out.innerText = `Node ${node.value} has sibling(s): ${siblingsInfo.join(', ')}`;
+            if (out) out.textContent = `Node ${node.value} has sibling(s): ${siblingsInfo.join(', ')}`;
         } else {
-            if (out) out.innerText = `Node ${node.value} has no siblings.`;
+            if (out) out.textContent = `Node ${node.value} has no siblings.`;
         }
     }
 
@@ -570,35 +632,39 @@ const bst = new AVLTree();
 
 function enqueueNumber() {
     const input = document.getElementById('numberInput');
-    if (!input || input.value.trim() === '') {
-        alert('Please enter a number.');
+    const parsed = parsePositiveInteger(input ? input.value : '');
+    if (!parsed.ok) {
+        if (parsed.reason === 'empty') {
+            showAvlMessage('Please enter a positive integer key to insert.', 'error');
+        } else {
+            showAvlMessage('Only positive whole numbers greater than zero are allowed.', 'error');
+            if (input) input.value = '';
+        }
+        if (input) input.focus();
         return;
     }
 
-    const value = parseInt(input.value.trim(), 10);
-    if (isNaN(value) || value <= 0) {
-        alert('Only positive numbers greater than zero are allowed.');
+    if (bst.enqueue(parsed.value) && input) {
         input.value = '';
-        return;
     }
-
-    bst.enqueue(value);
-    input.value = '';
 }
 
 function dequeueNode() {
-    const input = prompt("Enter the value of the node to dequeue:");
-    if (input === null || input.trim() === '') {
+    const input = document.getElementById('numberInput');
+    const parsed = parsePositiveInteger(input ? input.value : '');
+    if (!parsed.ok) {
+        if (parsed.reason === 'empty') {
+            showAvlMessage('Enter a node key in the Node Key field to delete.', 'error');
+        } else {
+            showAvlMessage('Only positive whole numbers greater than zero are allowed.', 'error');
+        }
+        if (input) input.focus();
         return;
     }
 
-    const value = parseInt(input.trim(), 10);
-    if (isNaN(value)) {
-        alert('Please enter a valid number.');
-        return;
+    if (bst.dequeue(parsed.value) && input) {
+        input.value = '';
     }
-
-    bst.dequeue(value);
 }
 
 function clearTree() {

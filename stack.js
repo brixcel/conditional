@@ -7,10 +7,17 @@ let stackCapacity = 0;
 let stackSize = 0;
 
 function notify(message, type = "info") {
+    const banner = document.getElementById('stackMessage');
+    if (banner) {
+        const isError = type === 'error';
+        banner.className = `alert-banner alert-live alert-${type}`;
+        banner.setAttribute('role', isError ? 'alert' : 'status');
+        banner.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+        banner.textContent = message;
+        banner.hidden = !message;
+    }
     if (window.DSA_UI && typeof window.DSA_UI.showToast === "function") {
         window.DSA_UI.showToast(message, type);
-    } else {
-        alert(message);
     }
 }
 
@@ -27,40 +34,40 @@ disableTextbox();
 
 // Function to set the stack capacity
 function setStackCapacity() {
-    let capacityValue = null;
     const capacityInput = document.getElementById('stack-capacityInput');
+    const capacityValue = capacityInput ? capacityInput.value.trim() : '';
 
-    if (capacityInput && capacityInput.value) {
-        capacityValue = capacityInput.value.trim();
-    } else {
-        capacityValue = prompt("Enter the maximum capacity of the stack (1 - 12):");
+    if (capacityValue === '') {
+        notify("Please enter a maximum stack capacity (1–12) before allocating.", "error");
+        if (capacityInput) capacityInput.focus();
+        return;
     }
 
-    if (capacityValue !== null) {
-        capacityValue = String(capacityValue).trim();
+    if (!isNaN(capacityValue) && parseInt(capacityValue, 10) > 0 &&
+        !capacityValue.startsWith('0') && Number.isInteger(Number(capacityValue))) {
 
-        if (capacityValue && !isNaN(capacityValue) && parseInt(capacityValue, 10) > 0 && 
-            !capacityValue.startsWith('0') && Number.isInteger(Number(capacityValue))) {
-            
-            stackCapacity = parseInt(capacityValue, 10);
-            if (stackCapacity > 12) stackCapacity = 12; // Cap max height for optimal viewport display
-            
-            stackSize = 0;
-            const stackBox = document.querySelector('.stack-box');
-            if (stackBox) stackBox.innerHTML = '';
+        stackCapacity = parseInt(capacityValue, 10);
+        if (stackCapacity > 12) stackCapacity = 12; // Cap max height for optimal viewport display
 
-            notify(`Stack capacity successfully set to ${stackCapacity}`, "success");
-            enableActionButtons();
-            disableTextbox();
-            
-            const setCapBtn = document.getElementById('stack-setCapacityButton');
-            if (setCapBtn) setCapBtn.disabled = true;
-            if (capacityInput) capacityInput.disabled = true;
-            
-            updateStackState();
-        } else {
-            notify("Please enter a valid positive whole number greater than 0 (e.g., 5).", "error");
+        stackSize = 0;
+        const stackBox = document.querySelector('.stack-box');
+        if (stackBox) stackBox.innerHTML = '';
+
+        notify(`Stack capacity successfully set to ${stackCapacity}`, "success");
+        enableActionButtons();
+        disableTextbox();
+
+        const setCapBtn = document.getElementById('stack-setCapacityButton');
+        if (setCapBtn) setCapBtn.disabled = true;
+        if (capacityInput) {
+            capacityInput.value = String(stackCapacity);
+            capacityInput.disabled = true;
         }
+
+        updateStackState();
+    } else {
+        notify("Please enter a valid positive whole number greater than 0 (e.g., 5).", "error");
+        if (capacityInput) capacityInput.focus();
     }
 }
 

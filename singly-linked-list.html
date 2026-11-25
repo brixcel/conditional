@@ -51,52 +51,71 @@
             <div class="control-section">
                 <div class="control-section-title">1. List Capacity &amp; Reset</div>
                 <div class="controls-row">
-                    <input type="number" id="maxSizeInput" placeholder="Max Size (1-20)" min="1" max="20" style="width: 180px;">
-                    <button onclick="setMaxSize()" id="setMaxSizeBtn" class="btn">Set Max Size</button>
-                    <button onclick="resetWebsite()" id="resetBtn" class="btn btn-danger">Reset List</button>
+                    <label class="field">
+                        <span class="field-label">Max Size (1–20)</span>
+                        <input type="number" id="maxSizeInput" placeholder="1–20" min="1" max="20" aria-describedby="message">
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="button" onclick="setMaxSize()" id="setMaxSizeBtn" class="btn">Set Max Size</button>
+                    <button type="button" onclick="resetWebsite()" id="resetBtn" class="btn btn-danger">Reset List</button>
                 </div>
             </div>
 
             <!-- Notification Banner -->
-            <div id="message" class="alert-banner" role="alert"></div>
+            <div id="message" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
 
             <!-- Section 2: Input Parameters -->
             <div class="control-section">
                 <div class="control-section-title">2. Input Parameters</div>
                 <div class="controls-row">
-                    <input type="text" id="operationValue" placeholder="Value (Append/Prepend/Insert)" style="width: 240px;" disabled>
-                    <input type="text" id="findAddressInput" placeholder="Address (Find/Update)" style="width: 200px;">
+                    <label class="field">
+                        <span class="field-label">Value (Append / Prepend / Insert / Update / Replace)</span>
+                        <input type="text" id="operationValue" inputmode="numeric" placeholder="Positive integer (e.g. 42)" disabled>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Index (Insert at / Delete by Index)</span>
+                        <input type="text" id="operationIndex" inputmode="numeric" placeholder="0-based index" disabled>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Target Address (Find / Update / Replace)</span>
+                        <input type="text" id="findAddressInput" placeholder="e.g. abc001" disabled>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">New Address (Replace only)</span>
+                        <input type="text" id="newAddressInput" placeholder="e.g. xyz001" disabled>
+                    </label>
                 </div>
-                <p id="insertIndexError" style="color: var(--danger); font-size: 0.85rem; font-weight: 600; text-align: center; margin: 4px 0;"></p>
+                <p id="insertIndexError" class="alert-banner alert-live alert-error" role="alert" hidden></p>
             </div>
 
             <!-- Section 3: Grouped Operations -->
             <div class="control-section">
                 <div class="control-section-title">3. Insertions &amp; Deletions</div>
                 <div class="controls-row">
-                    <button onclick="append()" id="appendBtn" class="btn" data-tooltip="Insert at tail (last)">Append</button>
-                    <button onclick="prepend()" id="prependBtn" class="btn" data-tooltip="Insert at head (first)">Prepend</button>
-                    <button onclick="insertAt()" id="insertAtBtn" class="btn" data-tooltip="Insert at specific index">Insert at Index</button>
-                    <button onclick="deleteHead()" id="deleteHeadBtn" class="btn btn-danger" data-tooltip="Remove first node">Delete Head</button>
-                    <button onclick="deleteTail()" id="deleteTailBtn" class="btn btn-danger" data-tooltip="Remove last node">Delete Tail</button>
-                    <button onclick="deleteIndex()" id="deleteIndexBtn" class="btn btn-danger" data-tooltip="Remove node at index">Delete by Index</button>
-                    <button onclick="clearList()" id="clearListBtn" class="btn btn-danger" data-tooltip="Clear entire linked list">Clear List</button>
+                    <button type="button" onclick="append()" id="appendBtn" class="btn" data-tooltip="Insert at tail (last)">Append</button>
+                    <button type="button" onclick="prepend()" id="prependBtn" class="btn" data-tooltip="Insert at head (first)">Prepend</button>
+                    <button type="button" onclick="insertAt()" id="insertAtBtn" class="btn" data-tooltip="Insert at specific index">Insert at Index</button>
+                    <button type="button" onclick="deleteHead()" id="deleteHeadBtn" class="btn btn-danger" data-tooltip="Remove first node">Delete Head</button>
+                    <button type="button" onclick="deleteTail()" id="deleteTailBtn" class="btn btn-danger" data-tooltip="Remove last node">Delete Tail</button>
+                    <button type="button" onclick="deleteIndex()" id="deleteIndexBtn" class="btn btn-danger" data-tooltip="Remove node at index">Delete by Index</button>
+                    <button type="button" onclick="clearList()" id="clearListBtn" class="btn btn-danger" data-tooltip="Clear entire linked list">Clear List</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">4. Search, Reorder &amp; Inspection</div>
                 <div class="controls-row">
-                    <button onclick="getSize()" id="getSizeBtn" class="btn btn-secondary" data-tooltip="Display node count">Size</button>
-                    <button onclick="showHead()" id="showHeadBtn" class="btn btn-secondary" data-tooltip="Return head node">Head</button>
-                    <button onclick="showTail()" id="showTailBtn" class="btn btn-secondary" data-tooltip="Return tail node">Tail</button>
-                    <button onclick="reverseList()" id="reverseBtn" class="btn btn-secondary" data-tooltip="Reverse pointer directions">Reverse</button>
-                    <button onclick="sortList()" id="sortBtn" class="btn btn-secondary" data-tooltip="Sort nodes ascending">Sort</button>
-                    <button onclick="findElement()" id="findBtn" class="btn btn-secondary" data-tooltip="Find node by address">Find Address</button>
-                    <button onclick="isEmpty()" id="isEmptyBtn" class="btn btn-secondary" data-tooltip="Check if size == 0">Is Empty?</button>
-                    <button onclick="isFull()" id="isFullBtn" class="btn btn-secondary" data-tooltip="Check if size == max">Is Full?</button>
-                    <button onclick="updateAddress()" id="updateAddressBtn" class="btn btn-secondary" data-tooltip="Update value by address">Update Address</button>
-                    <button onclick="replaceAddress()" id="replaceAddressBtn" class="btn btn-secondary" data-tooltip="Replace value & address">Replace Address</button>
+                    <button type="button" onclick="getSize()" id="getSizeBtn" class="btn btn-secondary" data-tooltip="Display node count">Size</button>
+                    <button type="button" onclick="showHead()" id="showHeadBtn" class="btn btn-secondary" data-tooltip="Return head node">Head</button>
+                    <button type="button" onclick="showTail()" id="showTailBtn" class="btn btn-secondary" data-tooltip="Return tail node">Tail</button>
+                    <button type="button" onclick="reverseList()" id="reverseBtn" class="btn btn-secondary" data-tooltip="Reverse pointer directions">Reverse</button>
+                    <button type="button" onclick="sortList()" id="sortBtn" class="btn btn-secondary" data-tooltip="Sort nodes ascending">Sort</button>
+                    <button type="button" onclick="findElement()" id="findBtn" class="btn btn-secondary" data-tooltip="Find node by address">Find Address</button>
+                    <button type="button" onclick="isEmpty()" id="isEmptyBtn" class="btn btn-secondary" data-tooltip="Check if size == 0">Is Empty?</button>
+                    <button type="button" onclick="isFull()" id="isFullBtn" class="btn btn-secondary" data-tooltip="Check if size == max">Is Full?</button>
+                    <button type="button" onclick="updateAddress()" id="updateAddressBtn" class="btn btn-secondary" data-tooltip="Update value by address">Update Address</button>
+                    <button type="button" onclick="replaceAddress()" id="replaceAddressBtn" class="btn btn-secondary" data-tooltip="Replace value & address">Replace Address</button>
                 </div>
             </div>
 
