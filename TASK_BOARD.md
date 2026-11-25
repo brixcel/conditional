@@ -14,11 +14,10 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G3 | Dark theme tokens + remove inline styles | Gemini | `main.css` | GEMINI_HANDOFF.md#g3 |
 | G4 | Searching algorithms module + page | Gemini | `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js` | GEMINI_HANDOFF.md#g4 |
 | C1b | Theme toggle in `shared.js`, skip link, nav entries for new pages | Claude | `shared.js`, `index.html` | after G3/G4 land (needs G3 tokens + CSS) |
 
-**Found while testing, for G3 (CSS):** on phones the fixed "Modules" button
+**Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
 Queue page styles empty/freed slots with runtime styles (`EMPTY_SLOT_STYLE` in
 `src/pages/regular-queue-page.js`). After G3 merges, Claude moves that into a
@@ -35,6 +34,7 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| G3 | Dark theme tokens (OS dark + `data-theme`), 0 hard-coded colours outside tokens, utility classes, phone Modules-button overlap fixed | Gemini (reviewed by Claude) | 2026-11-25 23:31 |
 | F1 | Audit + PROJECT_CONTEXT | Claude | 2026-11-25 |
 | F2 | Nine agent definitions | Claude | 2026-11-25 |
 | F3 | StepPlayer + sorting module (bubble/selection/insertion) + page | Claude | 2026-11-25 |
