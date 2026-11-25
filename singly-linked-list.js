@@ -8,42 +8,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listener for operationValue input
     const operationValueInput = document.getElementById('operationValue');
-    operationValueInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        // Remove any non-digit characters
-        value = value.replace(/\D/g, '');
-        // Remove leading zeros
-        value = value.replace(/^0+/, '');
-        // Ensure the value is not empty
-        if (value === '') {
-            e.target.value = '';
-        } else {
-            // Parse the value as an integer
-            const intValue = parseInt(value, 10);
-            // Ensure the value is a positive integer
-            e.target.value = intValue > 0 ? intValue.toString() : '';
-        }
-    });
+    if (operationValueInput) {
+        operationValueInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            // Remove any non-digit characters
+            value = value.replace(/\D/g, '');
+            // Remove leading zeros
+            value = value.replace(/^0+/, '');
+            // Ensure the value is not empty
+            if (value === '') {
+                e.target.value = '';
+            } else {
+                // Parse the value as an integer
+                const intValue = parseInt(value, 10);
+                // Ensure the value is a positive integer
+                e.target.value = intValue > 0 ? intValue.toString() : '';
+            }
+        });
+    }
 
     // Add event listener for operationIndex input
     const operationIndexInput = document.getElementById('operationIndex');
-    operationIndexInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        value = value.replace(/\D/g, ''); // Remove non-digit characters
-        e.target.value = value;
-    });
+    if (operationIndexInput) {
+        operationIndexInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/\D/g, ''); // Remove non-digit characters
+            e.target.value = value;
+        });
+    }
 
     // Add event listener for maxSizeInput
     const maxSizeInput = document.getElementById('maxSizeInput');
-    maxSizeInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        // Only allow the exact numbers 1-20
-        if (/^(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)$/.test(value)) {
-            e.target.value = value;
-        } else {
-            e.target.value = '';
-        }
-    });
+    if (maxSizeInput) {
+        maxSizeInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            // Only allow the exact numbers 1-20
+            if (/^(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)$/.test(value)) {
+                e.target.value = value;
+            } else {
+                e.target.value = '';
+            }
+        });
+    }
 
     updateButtonStates();
 });
@@ -191,16 +197,24 @@ function deleteIndex() {
         return;
     }
 
-    const index = prompt(`Enter the index to delete (0 to ${linkedList.length - 1}):`);
-    if (index === null) return; // User cancelled
+    const indexInput = document.getElementById('operationIndex');
+    const index = indexInput ? indexInput.value.trim() : '';
 
-    if (!/^(0|[1-9]\d*)$/.test(index) || parseInt(index) >= linkedList.length) {
-        showMessage('Error: Invalid index. Please enter a non-negative integer within the list range.', 'red');
+    if (index === '') {
+        showMessage(`Error: Enter an index to delete (0 to ${linkedList.length - 1}) in the Index field.`, 'red');
+        if (indexInput) indexInput.focus();
         return;
     }
 
-    const parsedIndex = parseInt(index);
+    if (!/^(0|[1-9]\d*)$/.test(index) || parseInt(index, 10) >= linkedList.length) {
+        showMessage(`Error: Invalid index. Enter a whole number from 0 to ${linkedList.length - 1}.`, 'red');
+        if (indexInput) indexInput.focus();
+        return;
+    }
+
+    const parsedIndex = parseInt(index, 10);
     const deletedNode = linkedList.splice(parsedIndex, 1)[0];
+    if (indexInput) indexInput.value = '';
     connectNodes();
     displayList();
     showMessage(`Success: Element ${deletedNode.el} at index ${parsedIndex} has been deleted`, 'green');
@@ -286,7 +300,12 @@ function reverseList() {
 // Find an element in the list
 function findElement() {
     const addressInput = document.getElementById('findAddressInput');
-    const address = addressInput.value.trim();
+    const address = addressInput ? addressInput.value.trim() : '';
+    if (!address) {
+        showMessage('Error: Please enter a target address to find.', 'red');
+        if (addressInput) addressInput.focus();
+        return;
+    }
     const index = linkedList.findIndex(node => node.address === address);
     if (index !== -1) {
         displayList(index);
@@ -294,7 +313,7 @@ function findElement() {
     } else {
         showMessage(`Address ${address} not found in the list.`, 'red');
     }
-    addressInput.value = ''; // Clear input field
+    if (addressInput) addressInput.value = ''; // Clear input field
 }
 
 // Sort the list
@@ -337,8 +356,24 @@ function isFull() {
 
 // Show message on the page
 function showMessage(message, color) {
-    document.getElementById('message').textContent = message;
-    document.getElementById('message').style.color = color;
+    const el = document.getElementById('message');
+    if (!el) return;
+    if (!message) {
+        el.textContent = '';
+        el.hidden = true;
+        return;
+    }
+    const variant = color === 'red' || color === 'error'
+        ? 'error'
+        : color === 'green' || color === 'success'
+            ? 'success'
+            : 'info';
+    const isError = variant === 'error';
+    el.className = `alert-banner alert-live alert-${variant}`;
+    el.setAttribute('role', isError ? 'alert' : 'status');
+    el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+    el.textContent = message;
+    el.hidden = false;
 }
 
 // Show the head of the list
@@ -375,72 +410,95 @@ function connectNodes() {
 
 // Update Address
 function updateAddress() {
-    const address = prompt("Enter the address of the element to update:");
+    const addressInput = document.getElementById('findAddressInput');
+    const valueInput = document.getElementById('operationValue');
+    const address = addressInput ? addressInput.value.trim() : '';
+    const newValue = valueInput ? valueInput.value.trim() : '';
+
     if (!address) {
-        showMessage("Error: Address cannot be empty.", "red");
+        showMessage("Error: Enter the target address to update in the Target Address field.", "red");
+        if (addressInput) addressInput.focus();
         return;
     }
 
     const node = linkedList.find(node => node.address === address);
     if (!node) {
         showMessage(`Error: No element found with address ${address}`, "red");
+        if (addressInput) addressInput.focus();
         return;
     }
 
-    const newValue = prompt("Enter the new value (positive integer only):");
     if (!newValue || !validatePositiveInteger(newValue)) {
-        showMessage("Error: Please enter a valid positive integer.", "red");
+        showMessage("Error: Enter a valid positive integer in the Value field.", "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
     if (valueExists(newValue)) {
         showMessage(`Error: Value '${newValue}' already exists in the list.`, "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
     node.el = newValue;
+    if (addressInput) addressInput.value = '';
+    if (valueInput) valueInput.value = '';
     showMessage(`Element at address ${address} updated to '${newValue}'`, "green");
     displayList();
 }
 
 // Replace Address
 function replaceAddress() {
-    const oldAddress = prompt("Enter the address of the element to replace:");
+    const oldAddressInput = document.getElementById('findAddressInput');
+    const valueInput = document.getElementById('operationValue');
+    const newAddressInput = document.getElementById('newAddressInput');
+
+    const oldAddress = oldAddressInput ? oldAddressInput.value.trim() : '';
+    const newValue = valueInput ? valueInput.value.trim() : '';
+    const newAddress = newAddressInput ? newAddressInput.value.trim() : '';
+
     if (!oldAddress) {
-        showMessage("Error: Old address cannot be empty.", "red");
+        showMessage("Error: Enter the target address to replace in the Target Address field.", "red");
+        if (oldAddressInput) oldAddressInput.focus();
         return;
     }
 
     const nodeIndex = linkedList.findIndex(node => node.address === oldAddress);
     if (nodeIndex === -1) {
         showMessage(`Error: No element found with address ${oldAddress}`, "red");
+        if (oldAddressInput) oldAddressInput.focus();
         return;
     }
 
-    const newValue = prompt("Enter the new value (positive integer only):");
     if (!newValue || !validatePositiveInteger(newValue)) {
-        showMessage("Error: Please enter a valid positive integer.", "red");
+        showMessage("Error: Enter a valid positive integer in the Value field.", "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
     if (valueExists(newValue)) {
         showMessage(`Error: Value '${newValue}' already exists in the list.`, "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
-    const newAddress = prompt("Enter the new address:");
     if (!newAddress) {
-        showMessage("Error: New address cannot be empty.", "red");
+        showMessage("Error: Enter a replacement address in the New Address field.", "red");
+        if (newAddressInput) newAddressInput.focus();
         return;
     }
 
     if (linkedList.some(node => node.address === newAddress)) {
         showMessage(`Error: Cannot replace address as address ${newAddress} already exists.`, "red");
+        if (newAddressInput) newAddressInput.focus();
         return;
     }
 
     linkedList[nodeIndex].el = newValue;
     linkedList[nodeIndex].address = newAddress;
+    if (oldAddressInput) oldAddressInput.value = '';
+    if (valueInput) valueInput.value = '';
+    if (newAddressInput) newAddressInput.value = '';
     connectNodes();
     showMessage(`Element at address ${oldAddress} replaced with value '${newValue}' and new address '${newAddress}'`, "green");
     displayList();
@@ -472,26 +530,34 @@ function updateButtonStates() {
         }
     });
 
-    // Enable/disable the operationValue input
+    // Keep Value and Index enabled whenever capacity is set (Update/Replace and Delete by Index still need them when full)
     const operationValueInput = document.getElementById('operationValue');
-    operationValueInput.disabled = !isMaxSizeSet || isFull;
+    if (operationValueInput) operationValueInput.disabled = !isMaxSizeSet;
 
-    // Enable/disable the findAddressInput
+    const operationIndexInput = document.getElementById('operationIndex');
+    if (operationIndexInput) operationIndexInput.disabled = !isMaxSizeSet;
+
+    // Enable/disable address inputs when list has nodes
     const findAddressInput = document.getElementById('findAddressInput');
-    findAddressInput.disabled = !isMaxSizeSet || isEmpty;
+    if (findAddressInput) findAddressInput.disabled = !isMaxSizeSet || isEmpty;
+
+    const newAddressInput = document.getElementById('newAddressInput');
+    if (newAddressInput) newAddressInput.disabled = !isMaxSizeSet || isEmpty;
 }
 
 // Check if the insertion at an index is possible
 function checkInsertIndex() {
     const indexInput = document.getElementById('operationIndex');
-    const index = parseInt(indexInput.value.trim());
     const errorMessage = document.getElementById('insertIndexError');
-    
+    if (!indexInput || !errorMessage) return;
+
+    const index = parseInt(indexInput.value.trim(), 10);
     if (isNaN(index) || index < 0 || index > linkedList.length) {
         errorMessage.textContent = 'Invalid index for insertion';
-        errorMessage.style.color = 'red';
+        errorMessage.hidden = false;
     } else {
         errorMessage.textContent = '';
+        errorMessage.hidden = true;
     }
 
     // Clear the input value after checking
@@ -507,27 +573,37 @@ function insertAt() {
         return;
     }
 
-    const index = prompt("Enter the index to insert at (0 to " + linkedList.length + "):");
-    if (index === null) return; // User cancelled
+    const indexInput = document.getElementById('operationIndex');
+    const valueInput = document.getElementById('operationValue');
+    const index = indexInput ? indexInput.value.trim() : '';
+    const value = valueInput ? valueInput.value.trim() : '';
 
-    if (!/^(0|[1-9]\d*)$/.test(index) || parseInt(index) > linkedList.length) {
-        showMessage("Error: Invalid index. Please enter a non-negative integer within the list range.", "red");
+    if (index === '') {
+        showMessage(`Error: Enter an index (0 to ${linkedList.length}) in the Index field.`, "red");
+        if (indexInput) indexInput.focus();
         return;
     }
 
-    const value = prompt("Enter the value to insert:");
-    if (value === null) return; // User cancelled
+    if (!/^(0|[1-9]\d*)$/.test(index) || parseInt(index, 10) > linkedList.length) {
+        showMessage(`Error: Invalid index. Enter a whole number from 0 to ${linkedList.length}.`, "red");
+        if (indexInput) indexInput.focus();
+        return;
+    }
 
-    if (!validatePositiveInteger(value)) {
-        showMessage("Error: Please enter a valid positive integer.", "red");
+    if (value === '' || !validatePositiveInteger(value)) {
+        showMessage("Error: Enter a valid positive integer in the Value field.", "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
     if (valueExists(value)) {
         showMessage(`Error: Value '${value}' already exists in the list.`, "red");
+        if (valueInput) valueInput.focus();
         return;
     }
 
-    insert(value, parseInt(index), 3);
+    insert(value, parseInt(index, 10), 3);
+    if (indexInput) indexInput.value = '';
+    if (valueInput) valueInput.value = '';
 }
 
