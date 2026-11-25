@@ -32,6 +32,33 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G2: Replace native dialogs (Circular LL, Doubly LL)
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-25 21:59 (Philippine time)
+- Branch: `gemini/g2-replace-dialogs`
+- Commit(s): `9455e30`
+- Files changed: `circular-linked-list.html`, `circLL.js`, `doubly-linked-list.html`
+- Summary:
+  - Removed all 67 native `alert()` / `prompt()` calls across `circLL.js` (29) and `doubly-linked-list.html` (38); grep count for `alert(|prompt(|confirm(` is now `0` across all three owned files.
+  - **Circular Linked List:** Added labelled `.field` inputs (`#maxSizeInput`, `#valueInput`, `#indexInput`, `#nodeAddress`, `#newAddressInput`) and an inline `#cllMessage` (`.alert-banner.alert-live`). Fixed pre-existing bugs: removed null-element `addEventListener` crash at bottom of `circLL.js`, fixed infinite `while (current)` loop in `replace()` on missing address (now uses `findNode()` returning `null`), properly disabled operation controls before capacity is set, validated new address format (`/^[A-Za-z0-9_-]{1,20}$/`), and switched node rendering to `createElement`/`textContent` (no `innerHTML` injection). Confirmed `LinkedList.find()` returns `null` (no `-1` sentinel).
+  - **Doubly Linked List:** Added labelled `.field` inputs (`#list-limit`, `#value`, `#index`, `#address`, `#new-address`) and an inline `#dllMessage` (`.alert-banner.alert-live`). Replaced all 38 `alert()` calls with `showDllMessage()` (also triggering `DSA_UI.showToast` when available), added strict integer parsing (`parseStrictInt`) so `0` is handled without falsy bugs, validated new address format, and switched node rendering to `createElement`/`textContent`.
+- npm test output (paste the real lines):
+    # tests 75
+    # pass 75
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `circular-linked-list.html` and `doubly-linked-list.html` on `http://localhost:5501` at desktop (`1280px`) and mobile (`375px`) widths. Console clean: yes (0 console errors, 0 uncaught page errors, 0 native dialogs, 0 overflowing elements at 375px and 1280px). Tested capacity validation (`0` and `4`), append, prepend, insert at index (including `0` on DLL), size/head/tail/isEmpty/isFull, find (existing + missing), update, replace (existing + missing without hang), delete by index, reverse, sort, delete head/tail, and clear list.
+- Not done / not verified: Full keyboard-only Tab traversal and screen reader announcements were not manually audited. No CSS edits made (`main.css` owned by G3).
+- Requests for Claude: Ready for review and merge. No new CSS or nav changes required.
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G1: Replace native dialogs (AVL, Stack, Singly LL)
 - Author: Gemini (Antigravity)
 - Branch: `gemini/g1-replace-dialogs`
