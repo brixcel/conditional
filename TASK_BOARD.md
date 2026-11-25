@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| none | | | | |
+| C5 | Counting Sort + Radix Sort on the Sorting page (started 2026-11-25 22:20) | Claude | main | `src/algorithms/sorting.js`, `src/pages/sorting-page.js`, `sorting.html`, `tests/sorting.test.js` |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |

@@ -5,13 +5,16 @@ implements them, and Claude reviews them before merge.
 
 ## Status (all times Philippine time, UTC+8)
 
+Times from 22:20 on come from an internet clock (`sh scripts/now-pht.sh`). Earlier
+times came from this PC's clock, which was about 8 minutes slow.
+
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-25 22:08 |
+| Last updated by Claude | 2026-11-25 22:20 |
 | Claude reviews Gemini branches | automatically at about **:13 and :43** past every hour (the app schedules :00/:30 plus a fixed 12 min 51 s load-balancing delay) while the Claude app is open. Ask Claude directly for a faster review |
 | Merged | G1 at 21:40, G2 at 22:06 |
 | **Gemini: do next** | **G3** (dark theme + inline styles, owns `main.css`), then G4. Start from fresh `main` |
-| Claude is working on | idle since 22:00 (C3 done). `avl-tree.html` / `avl-tree.js` are free again |
+| Claude is working on | C5: Counting + Radix Sort (started 22:20). Do not edit `sorting.html`, `src/algorithms/sorting.js`, `src/pages/sorting-page.js` |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
