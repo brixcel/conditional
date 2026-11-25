@@ -41,8 +41,6 @@
             </div>
         </div>
 
-        <!-- Notification Banner -->
-        <div id="queueMessage" class="alert-banner" role="alert"></div>
 
         <!-- Controls & Operations -->
         <div class="card">
@@ -79,11 +77,15 @@
                 </div>
             </div>
 
+            <!-- Result of the last operation (kept next to the stage so it stays in view) -->
+            <div id="queueMessage" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
+
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">FIFO Buffer Stage (Front &rarr; Rear)</span>
                 <div id="queue" class="queue-display"></div>
             </div>
+            <div class="state-monitor" id="queueState" aria-live="polite"></div>
         </div>
 
         <!-- Educational Reference -->
@@ -103,14 +105,16 @@
                     <p>Read-only inspections of the extreme elements (front index 0 or rear index n-1) without mutation.</p>
                 </div>
                 <div class="check">
-                    <h2>Array Limitations</h2>
-                    <p>Linear static array queues without cyclic wrap-around can cause wasted space after repeated dequeues.</p>
+                    <h2>False Overflow</h2>
+                    <p>In a linear array queue, <code>front</code> and <code>rear</code> only move forward. Once <code>rear</code> reaches the last index,
+                    enqueue fails even if dequeues freed slots at the front. Try it: fill the queue, dequeue once, then enqueue again.
+                    A <a href="circular-queue.html">circular queue</a> fixes this by wrapping indices with <code>mod</code>.</p>
                 </div>
             </div>
         </div>
     </div>
     
     <script src="shared.js"></script>
-    <script src="regularqueue.js"></script>
+    <script type="module" src="src/pages/regular-queue-page.js"></script>
 </body>
 </html>

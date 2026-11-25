@@ -43,5 +43,10 @@ _No reports yet. The first Gemini tasks are G1–G4 in `GEMINI_HANDOFF.md`._
   `git pull --rebase origin main` before pushing. None of your owned files changed.
   For G4, steps may carry `range: [lo, hi]` and the page fades bars outside
   it. Binary search can use the same field for its low..high window.
+- 2026-11-25: New shared helper `src/core/validate.js` → `parseInteger(text, { min, max, label })`
+  returns `{ ok, value }` or `{ ok: false, error }` with a readable message. For G1/G2,
+  use it (import from a `type="module"` script) or copy its rules when replacing `prompt()`
+  input parsing. Pure `Stack` and queue modules now exist in `src/structures/`. G1 does
+  **not** need to switch the Stack page to them; Claude does that after G1 merges (C2b).
 - The bubble sort message bug that tests caught: a message describing the old
   state must be built **before** the mutation runs. Watch for this in G4.

@@ -45,7 +45,7 @@ You are the Visualization Engineer for the URSAC DSA Visualizer.
 - Layout math (tree x/y, graph positions) lives in pure functions so it can be unit-tested.
 
 ## Migration of legacy pages
-Existing pages (`stack.js`, `regularqueue.js`, `circLL.js`, inline scripts)
+Existing pages (`stack.js`, `circLL.js`, `avl-tree.js`, inline scripts)
 render directly from globals. Migrate one page at a time only when a task
 asks for it, and keep every existing operation working. Compare before and after.
 

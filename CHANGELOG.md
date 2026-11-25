@@ -5,6 +5,28 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
 ### Added
+- `src/structures/stack.js` and `src/structures/queue.js` (LinearQueue,
+  CircularQueue, PriorityQueue): pure modules returning `{ ok, value | error, steps }`,
+  with null (not −1) for empty peeks.
+- `src/core/validate.js` `parseInteger()`: shared whole-number parsing with readable errors.
+- `tests/structures.test.js`: each structure checked against a reference model
+  over thousands of seeded random operations, plus edge cases.
+- Regular Queue page now uses `LinearQueue`. It shows every array slot, the
+  front/rear indices, freed slots, and a live state line.
+
+### Changed
+- **Regular Queue behaviour:** the old page blocked every enqueue after any
+  dequeue until "Clear". It now behaves like a real linear array queue:
+  enqueue works until `rear` reaches the last index, and then the page explains
+  the "false overflow" (free slots before `front` cannot be reused) and links
+  to the circular queue. The dequeue-by-typing-the-front-value rule is unchanged.
+- Regular Queue messages stay visible next to the stage instead of auto-hiding
+  after 5 seconds at the top of the page.
+
+### Removed
+- `regularqueue.js` (replaced by `src/pages/regular-queue-page.js`).
+
+### Added (earlier in this session)
 - Merge Sort, Quick Sort (Lomuto, last-element pivot) and Heap Sort on the
   Sorting page. Recursive sorts fade bars outside the active subarray and show
   recursion depth, active range and the current pivot.
