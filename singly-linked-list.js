@@ -513,7 +513,7 @@ function replaceAddress() {
 
 // Update button states
 function updateButtonStates() {
-    const buttons = document.querySelectorAll('button:not(#openBtn):not(#closeBtn)');
+    const buttons = document.querySelectorAll('button:not(#openBtn):not(#closeBtn):not(#themeToggle)');
     const isMaxSizeSet = maxSizeSet;
     const isEmpty = linkedList.length === 0;
     const isFull = maxSize !== null && linkedList.length >= maxSize;

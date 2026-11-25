@@ -491,6 +491,71 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/* Theme toggle (injected by shared.js, mirrors the Modules button on the right) */
+.theme-toggle-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    padding: 0;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    z-index: 997;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-subtle);
+    border-color: var(--text-muted);
+    box-shadow: var(--shadow-md);
+}
+
+.nav-open-btn:focus-visible,
+.theme-toggle-btn:focus-visible,
+.side-navbar-close:focus-visible,
+.side-navbar-link:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* Skip link: off-screen until it receives keyboard focus */
+.skip-link {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    z-index: 1200;
+    padding: 10px 16px;
+    background-color: var(--primary-light);
+    color: var(--text-on-accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.15s ease-in-out;
+}
+
+.skip-link:focus {
+    transform: translate(-50%, 0);
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* Skip-link target gets tabindex="-1"; no ring around the whole page */
+.page-container:focus,
+.main-content:focus {
+    outline: none;
+}
+
 /* --------------------------------------------------------------------------
    4. Page Layout & Fluid Academic Typography
    -------------------------------------------------------------------------- */
@@ -1311,6 +1376,12 @@ input:disabled, select:disabled {
 }
 
 @media (max-width: 640px) {
+    .theme-toggle-btn {
+        top: 10px;
+        right: 10px;
+        backdrop-filter: blur(8px);
+    }
+
     .nav-open-btn {
         top: 10px;
         left: 10px;
@@ -1768,4 +1839,5 @@ input:disabled, select:disabled {
 
 @media (prefers-reduced-motion: reduce) {
     .bar-fill { transition: none; }
+    .skip-link, .theme-toggle-btn { transition: none; }
 }

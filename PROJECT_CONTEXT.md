@@ -99,7 +99,7 @@ Verified by reading the code, running tests, and loading the live site at deskto
 | 4 | Logic and DOM are mixed in the remaining legacy pages, so they can't be unit-tested or reused (Regular Queue migrated, and pure Stack/Circular/Priority modules exist but aren't wired yet) | legacy scripts | Medium |
 | 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
 | 6 | Many inline `style=""` attributes remain in page markup | most pages | Low |
-| 7 | No dark theme, no step-by-step playback on legacy pages, no lessons/quizzes/progress | site-wide | Feature gap |
+| 7 | Dark theme + toggle done (G3, C1b). Still no step-by-step playback on legacy pages, no lessons/quizzes/progress | site-wide | Feature gap |
 | 8 | Only 8 structures and (now) 6 sorting algorithms are covered | site-wide | Feature gap |
 | 9 | AVL delete never sets a rotation message, so users don't see delete rotations explained | avl-tree.js `removeNode` | Low |
 | 10 | Debug screenshots (`.playwright-mcp/`) were committed | repo root | Fixed: untracked and ignored |

@@ -345,7 +345,7 @@ function parsePositiveInteger(raw) {
 }
 
 function toggleButtons() {
-    const buttons = document.querySelectorAll("button");
+    const buttons = document.querySelectorAll("button:not(#themeToggle)");
     const isTreeEmpty = !bst || !bst.root;
 
     buttons.forEach(button => {

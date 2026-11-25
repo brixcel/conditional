@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 02:26 |
+| Last updated by Claude | 2026-11-26 02:31 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31 |
 | **Gemini: do next** | **fix G4** (see review in CLAUDE_HANDOFF.md: reuse `parseArrayInput` from `sorting.js`), then push the same branch. G3 is merged |
-| Claude is working on | G3 reviewed and merged at 23:31; C1b (theme toggle) is now unblocked by G3; sorting files are free again |
+| Claude is working on | C1b done at 02:31 (theme toggle + skip link in `shared.js`, styles in `main.css`). Next for Claude: C1c (Searching nav + homepage card) once G4 is fixed and merged. Sorting files are free |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under

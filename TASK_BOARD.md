@@ -9,11 +9,12 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C1b | Theme toggle + skip link in `shared.js` (Searching nav entry + homepage card wait for G4 merge). Claimed 2026-11-26 02:27 | Claude | `main` | `shared.js`, `main.css` (toggle + skip-link styles only) |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
+| C1c | Searching nav entry (`shared.js`) + homepage card (`index.html`) | Claude | `shared.js`, `index.html` | after G4 merges (entries proposed in G4 report) |
 | G4 | Searching algorithms module + page | Gemini | `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js` | GEMINI_HANDOFF.md#g4 |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
@@ -33,6 +34,7 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C1b | Theme toggle (remembers choice, follows OS until one is made, `aria-pressed`) + skip link on every page via `shared.js`; legacy AVL/Singly LL no longer disable the toggle | Claude | 2026-11-26 02:31 |
 | G3 | Dark theme tokens (OS dark + `data-theme`), 0 hard-coded colours outside tokens, utility classes, phone Modules-button overlap fixed | Gemini (reviewed by Claude) | 2026-11-25 23:31 |
 | F1 | Audit + PROJECT_CONTEXT | Claude | 2026-11-25 |
 | F2 | Nine agent definitions | Claude | 2026-11-25 |

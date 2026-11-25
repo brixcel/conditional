@@ -17,8 +17,86 @@
         avlTree: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
         sorting: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
         menu: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
+        sun: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+        moon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
         close: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
     };
+
+    // ---- Theme -------------------------------------------------------------
+    // main.css follows the OS setting by default. `data-theme` on <html> is set
+    // only after the user picks a theme, and that choice is remembered.
+    const THEME_KEY = "dsa-theme";
+    const darkQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+    function readStoredTheme() {
+        try {
+            const value = localStorage.getItem(THEME_KEY);
+            return value === "light" || value === "dark" ? value : null;
+        } catch (e) {
+            return null; // storage blocked (private mode, file://, etc.)
+        }
+    }
+
+    function storeTheme(value) {
+        try { localStorage.setItem(THEME_KEY, value); } catch (e) { /* not remembered, still applied */ }
+    }
+
+    function currentTheme() {
+        return readStoredTheme() || (darkQuery && darkQuery.matches ? "dark" : "light");
+    }
+
+    const storedTheme = readStoredTheme();
+    if (storedTheme) document.documentElement.setAttribute("data-theme", storedTheme);
+
+    function initThemeToggle(afterEl) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "themeToggle";
+        btn.className = "theme-toggle-btn";
+        btn.setAttribute("aria-label", "Dark theme");
+
+        function render() {
+            const isDark = currentTheme() === "dark";
+            btn.setAttribute("aria-pressed", String(isDark));
+            btn.title = isDark ? "Switch to light theme" : "Switch to dark theme";
+            btn.innerHTML = isDark ? SVG_ICONS.sun : SVG_ICONS.moon;
+        }
+
+        btn.addEventListener("click", function () {
+            const next = currentTheme() === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", next);
+            storeTheme(next);
+            render();
+        });
+
+        // With no saved choice the page follows the OS, so keep the button in sync.
+        if (darkQuery) {
+            const onChange = function () { if (!readStoredTheme()) render(); };
+            if (darkQuery.addEventListener) darkQuery.addEventListener("change", onChange);
+            else if (darkQuery.addListener) darkQuery.addListener(onChange);
+        }
+
+        render();
+        afterEl.after(btn);
+    }
+
+    // ---- Skip link -----------------------------------------------------------
+    function initSkipLink(target) {
+        if (!target || document.querySelector(".skip-link")) return;
+        if (!target.id) target.id = "main-content";
+        if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+
+        const link = document.createElement("a");
+        link.className = "skip-link";
+        link.href = "#" + target.id;
+        link.textContent = "Skip to main content";
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            target.focus({ preventScroll: true });
+            target.scrollIntoView({ block: "start" });
+        });
+        document.body.prepend(link); // first Tab stop on the page
+    }
 
     const navCategories = [
         {
@@ -147,6 +225,9 @@
         if (mainContent && !mainContent.closest("main") && !mainContent.hasAttribute("role")) {
             mainContent.setAttribute("role", "main");
         }
+
+        initThemeToggle(openBtn);
+        initSkipLink(mainContent);
 
         function focusableIn(el) {
             return [...el.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')];
