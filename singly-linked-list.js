@@ -488,6 +488,13 @@ function replaceAddress() {
         return;
     }
 
+    // Addresses are drawn into the list with innerHTML, so only allow plain identifiers.
+    if (!/^[A-Za-z0-9_-]{1,12}$/.test(newAddress)) {
+        showMessage("Error: New address must be 1–12 letters, digits, '-' or '_' (e.g. xyz001).", "red");
+        if (newAddressInput) newAddressInput.focus();
+        return;
+    }
+
     if (linkedList.some(node => node.address === newAddress)) {
         showMessage(`Error: Cannot replace address as address ${newAddress} already exists.`, "red");
         if (newAddressInput) newAddressInput.focus();

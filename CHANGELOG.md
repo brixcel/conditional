@@ -4,6 +4,18 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Changed (G1 by Gemini, reviewed and merged by Claude)
+- AVL Tree, Stack and Singly Linked List no longer use `alert()`/`prompt()`
+  (24 calls → 0). Inputs are labelled, errors appear inline, and focus moves to
+  the field that needs fixing. AVL Update has its own target/new-value fields,
+  and Singly LL gained Index and New Address fields.
+- Singly Linked List: fixed a crash on load (missing `#operationIndex`).
+
+### Fixed
+- Singly Linked List: Replace Address accepted any text and drew it with
+  `innerHTML`, so typed HTML was rendered. Addresses must now be 1–12 letters,
+  digits, `-` or `_`.
+
 ### Added
 - `src/structures/stack.js` and `src/structures/queue.js` (LinearQueue,
   CircularQueue, PriorityQueue): pure modules returning `{ ok, value | error, steps }`,
