@@ -7,6 +7,7 @@ reviews each report before merging. The newest entries go at the top.
 ```
 ### <Task ID>: <title>
 - Author: Gemini (Antigravity) | <name>
+- Finished at: YYYY-MM-DD HH:MM (Philippine time)
 - Branch: gemini/<task>-<name>
 - Commit(s): <short sha>
 - Files changed: <list. Must match "Files you own" in GEMINI_HANDOFF.md>
@@ -21,6 +22,7 @@ reviews each report before merging. The newest entries go at the top.
 - Requests for Claude: <nav entries, CSS needs, core changes, questions>
 
 #### Review (filled in by Claude)
+- Reviewed at: YYYY-MM-DD HH:MM (Philippine time)
 - Verdict: MERGE | CHANGES REQUESTED
 - Blocking issues: <file:line → issue>
 - Merged in: <sha> on <date>
@@ -50,7 +52,8 @@ reviews each report before merging. The newest entries go at the top.
 - Requests for Claude: Ready for review and merge (unblocks C3). No new CSS or nav changes required; existing `.field`, `.field-label`, and `.alert-banner.alert-live` classes in `main.css` covered everything cleanly.
 
 #### Review (filled in by Claude)
-- Verdict: **MERGE** (2026-11-25)
+- Reviewed at: 2026-11-25 21:40 (Philippine time)
+- Verdict: **MERGE**
 - Scope: only the 6 owned files + TASK_BOARD/CLAUDE_HANDOFF changed. Merged into current `main` with no conflicts.
 - Checked by Claude, not just read in the report:
   - `npm test` on the merged result: `# tests 75 / # pass 75 / # fail 0`, legacy `24 / 24`.

@@ -3,11 +3,27 @@
 Work packets for Gemini in Antigravity. Claude Code writes them, Gemini
 implements them, and Claude reviews them before merge.
 
+## Status (all times Philippine time, UTC+8)
+
+| | |
+|---|---|
+| Last updated by Claude | 2026-11-25 21:50 |
+| Claude reviews Gemini branches | automatically at :00 and :30 every hour (may start a few minutes late) while the Claude app is open |
+| Merged | G1 at 21:40 |
+| **Gemini: do next** | **G2**, then G3, then G4 (one branch each, start each from fresh `main`) |
+| Claude is working on | C2b: Stack page → `src/structures/stack.js` (started 21:50). Do not edit `stack.html` / `stack.js` |
+
+**Short prompt for Antigravity after the first time:**
+> Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
+> "Gemini: do next" following the rules below, then file your report in
+> `CLAUDE_HANDOFF.md` with the time you finished.
+
 ## How to start (paste this into Antigravity)
 
 > You are working on the URSAC DSA Visualizer repo. Read `PROJECT_CONTEXT.md`
 > and `GEMINI_HANDOFF.md` first. Take task **G_** only.
 > 1. `git checkout main && git pull`, then `git checkout -b gemini/<task-id>-<short-name>`.
+>    Always start from fresh `main`, even if your previous branch is still checked out.
 > 2. Edit only the files listed under "Files you own" for that task. If you
 >    need to change any other file, stop and write the request in your report instead.
 > 3. Follow the conventions in `PROJECT_CONTEXT.md`. Do not add dependencies,
@@ -17,8 +33,9 @@ implements them, and Claude reviews them before merge.
 >    (`npm run dev` → http://localhost:5501) and confirm there are no console errors.
 > 6. Stage only the files your task owns (`git add <files>`, never `git add -A`),
 >    commit to your branch and push it. Do not merge into `main`.
-> 7. Append your report to `CLAUDE_HANDOFF.md` using its template, and set
->    the task to Review in `TASK_BOARD.md`.
+> 7. Append your report to `CLAUDE_HANDOFF.md` using its template (include the
+>    time you finished, Philippine time), set the task to Review in `TASK_BOARD.md`,
+>    and push. Claude's next automatic check picks it up.
 > Never claim a check you did not run. If something is unclear, write the
 > question in your report rather than guessing.
 
