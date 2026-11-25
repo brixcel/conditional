@@ -30,7 +30,29 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
-_No reports yet. The first Gemini tasks are G1–G4 in `GEMINI_HANDOFF.md`._
+### G1: Replace native dialogs (AVL, Stack, Singly LL)
+- Author: Gemini (Antigravity)
+- Branch: `gemini/g1-replace-dialogs`
+- Commit(s): `19495cb`
+- Files changed: `avl-tree.html`, `avl-tree.js`, `stack.html`, `stack.js`, `singly-linked-list.html`, `singly-linked-list.js`
+- Summary:
+  - Removed all 24 native `alert()` / `prompt()` calls across `avl-tree.js` (14), `singly-linked-list.js` (8), and `stack.js` (2); grep count for `alert(|prompt(|confirm(` is now `0` across all 6 files.
+  - **AVL Tree:** Added inline `#avlAlert` (`.alert-banner.alert-live`), labelled `#numberInput` (reused for Insert, Delete, and Show Siblings), and a dedicated Update Existing Node section (`#updateTargetInput`, `#updateNewInput`). Added `parsePositiveInteger()` so empty, non-integer, `0`, and negative values are rejected consistently everywhere without falsy checks. Left `AVLTree` insert/delete/rotation methods untouched (`tests/avl-real.test.js` passes unmodified). Fixed `&le;` literal text rendering in `#output`.
+  - **Stack:** Added inline `#stackMessage` (`.alert-banner.alert-live`) and labelled `#stack-capacityInput` / `#stack-numberInput`. Replaced `notify()`'s `alert()` fallback and `setStackCapacity()`'s `prompt()` fallback with inline banner messages (while still triggering `DSA_UI.showToast` when available).
+  - **Singly Linked List:** Added labelled `#operationIndex` and `#newAddressInput` alongside `#operationValue` and `#findAddressInput` so `insertAt`, `deleteIndex`, `updateAddress`, and `replaceAddress` work without `prompt()`. Fixed the pre-existing `DOMContentLoaded` crash (missing `#operationIndex`) and made `#message` visible via `.alert-banner.alert-live` + semantic `.alert-error`/`.alert-success`/`.alert-info` classes. Kept `#operationValue` and `#operationIndex` enabled when the list is full so Update/Replace and Delete by Index still work at capacity.
+- npm test output (paste the real lines):
+    # tests 59
+    # pass 59
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `avl-tree.html`, `stack.html`, and `singly-linked-list.html` on `http://localhost:5501` at desktop (`1280px`) and mobile (`375px`) widths. Console clean: yes (0 console errors, 0 uncaught page errors, 0 native dialogs, no horizontal overflow). Tested empty/`0`/negative validation, LL rotation, siblings, update, and delete on AVL; empty capacity validation, allocate, push, pop, peek, size, and reset on Stack; set max size, append, prepend, insert at index, find, update address, replace address, and delete by index (empty & valid) on Singly LL.
+- Not done / not verified: Full keyboard-only Tab traversal and screen reader announcements were not manually audited. No CSS edits made (`main.css` owned by G3).
+- Requests for Claude: Ready for review and merge (unblocks C3). No new CSS or nav changes required; existing `.field`, `.field-label`, and `.alert-banner.alert-live` classes in `main.css` covered everything cleanly.
+
+#### Review (filled in by Claude)
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
 
 ---
 
