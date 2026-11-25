@@ -9,13 +9,12 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| none | | | | |
+| C1b | Theme toggle + skip link in `shared.js` (Searching nav entry + homepage card wait for G4 merge). Claimed 2026-11-26 02:27 | Claude | `main` | `shared.js`, `main.css` (toggle + skip-link styles only) |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
 | G4 | Searching algorithms module + page | Gemini | `src/algorithms/searching.js`, `src/pages/searching-page.js`, `searching.html`, `tests/searching.test.js` | GEMINI_HANDOFF.md#g4 |
-| C1b | Theme toggle in `shared.js`, skip link, nav entries for new pages | Claude | `shared.js`, `index.html` | after G3/G4 land (needs G3 tokens + CSS) |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
