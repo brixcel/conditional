@@ -46,7 +46,7 @@ for (const key of KEYS) {
             assert.deepEqual(steps.at(-1).array, target);
             // Insertion and merge sort overwrite slots from a held-aside copy, so mid-step snapshots can
             // contain duplicates; swap-based sorts must always hold a permutation of the input.
-            if (key !== "insertion" && key !== "merge") {
+            if (!["insertion", "merge", "counting", "radix"].includes(key)) {
                 for (const s of steps) assert.deepEqual(sortedCopy(s.array), target);
             }
         }
@@ -207,5 +207,49 @@ test("every registry entry has pseudocode, complexity and summary", () => {
         assert.ok(a.name && a.summary && a.pseudocode.length > 0, key);
         for (const f of ["best", "average", "worst", "space"]) assert.ok(a.complexity[f], `${key}.${f}`);
         assert.equal(typeof a.complexity.stable, "boolean");
+    }
+});
+
+test("counting and radix sort never compare elements", () => {
+    for (const key of ["counting", "radix"]) {
+        assert.equal(traceSort(key, [9, 3, 7, 3, 1]).at(-1).comparisons, 0);
+    }
+});
+
+test("counting sort writes each element once; radix writes once per digit pass", () => {
+    const input = [170, 45, 75, 90, 802, 24, 2, 66];
+    assert.equal(traceSort("counting", input).at(-1).writes, input.length);
+    const radix = traceSort("radix", input);
+    const passes = radix.filter(s => /^Pass \d+:/.test(s.message)).length;
+    assert.equal(passes, 3, "max 802 has 3 digits");
+    assert.equal(radix.at(-1).writes, input.length * passes);
+});
+
+test("radix sort handles negatives by shifting, and says so", () => {
+    const steps = traceSort("radix", [-5, 3, -99, 0]);
+    assert.match(steps[1].message, /shifted by \+99/);
+    assert.deepEqual(steps.at(-1).array, [-99, -5, 0, 3]);
+});
+
+test("counting placement is stable: among equal values, later input lands later", () => {
+    const rand = seeded(21);
+    for (const key of ["counting", "radix"]) {
+        for (let round = 0; round < 100; round++) {
+            const input = Array.from({ length: 2 + Math.floor(rand() * 14) }, () => Math.floor(rand() * 6));
+            const steps = traceSort(key, input);
+            // Check each counting pass separately (radix runs one pass per digit).
+            let pass = [];
+            const passes = [];
+            for (const s of steps) {
+                if (s.type === "insert" && s.from !== undefined) pass.push({ pos: s.indices[0], from: s.from, v: s.array[s.indices[0]] });
+                else if (pass.length) { passes.push(pass); pass = []; }
+            }
+            if (pass.length) passes.push(pass);
+            for (const p of passes) {
+                for (const x of p) for (const y of p) {
+                    if (x.v === y.v && x.from < y.from) assert.ok(x.pos < y.pos, `${key}: equal ${x.v} reordered`);
+                }
+            }
+        }
     }
 });

@@ -4,6 +4,13 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Added (2026-11-25 22:22, Claude: C5)
+- Counting Sort and Radix Sort (LSD, base 10) on the Sorting page. Both make
+  0 comparisons, write values through a stable right-to-left placement, and show the
+  count, prefix-sum and placement phases step by step. Radix Sort shifts negative
+  keys to non-negative digits and says so. Tests check stability using the recorded
+  source index of every placement, plus write counts and the number of digit passes.
+
 ### Changed (2026-11-25 22:00, Claude: C3)
 - AVL Tree: insert and delete now animate. When a rotation is needed, the page first
   shows the tree right after the plain BST insert/delete, with the unbalanced node (BF ±2)

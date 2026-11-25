@@ -257,6 +257,85 @@ function heapSort(t) {
     t.markAllSorted();
 }
 
+/**
+ * Stable counting placement shared by counting and radix sort.
+ * Reads from `src` (a copy of the array) and writes into the visible array `t.a`,
+ * filling each key's slot from the right so equal keys keep their order.
+ */
+function countingPass(t, keyOf, keyRange, lines, describe) {
+    const a = t.a;
+    const n = a.length;
+    const src = a.slice();
+    const count = new Array(keyRange).fill(0);
+
+    for (let i = 0; i < n; i++) {
+        count[keyOf(src[i])]++;
+        t.record("count", [i], lines.count, describe.count(src[i], keyOf(src[i]), count[keyOf(src[i])]));
+    }
+    // Turn counts into "one past the last slot" for each key.
+    for (let k = 1; k < keyRange; k++) count[k] += count[k - 1];
+    t.record("select", [], lines.prefix, describe.prefix(count));
+
+    for (let i = n - 1; i >= 0; i--) {
+        const k = keyOf(src[i]);
+        const pos = --count[k];
+        a[pos] = src[i];
+        t.writes++;
+        t.record("insert", [pos], lines.place, describe.place(src[i], k, pos, i), { from: i });
+    }
+}
+
+function countingSort(t) {
+    const a = t.a;
+    const min = Math.min(...a);
+    const max = Math.max(...a);
+    const k = max - min + 1;
+    t.ctx = { key: `range ${min}..${max}` };
+    const paren = (v) => (v < 0 ? `(${v})` : `${v}`);
+    t.record("select", [], 1, `Keys run from ${min} to ${max}, so the count array needs k = ${max} − ${paren(min)} + 1 = ${k} slots` +
+        (min !== 0 ? ` (value v is counted in slot v − ${paren(min)}).` : "."));
+    countingPass(t, (v) => v - min, k, { count: 2, prefix: 3, place: 4 }, {
+        count: (v, slot, c) => min === 0
+            ? `Read ${v}: count[${v}] is now ${c}.`
+            : `Read ${v}: count[${v} − ${paren(min)}] = count[${slot}] is now ${c}.`,
+        prefix: (cnt) => {
+            const shown = [];
+            for (let s = 0; s < cnt.length && shown.length < 12; s++) {
+                if ((s === 0 ? cnt[0] : cnt[s] - cnt[s - 1]) > 0) shown.push(`${s + min}→${cnt[s]}`);
+            }
+            return `Prefix sums: each value now knows where its last copy ends (${shown.join(", ")}${shown.length === 12 ? ", …" : ""}).`;
+        },
+        place: (v, slot, pos, i) => `Take A[${i}] = ${v} (scanning right to left keeps equal values in order) and write it to position ${pos}.`,
+    });
+    t.ctx = {};
+    t.markAllSorted();
+}
+
+function radixSort(t) {
+    const a = t.a;
+    const min = Math.min(...a);
+    const shift = min < 0 ? -min : 0; // LSD radix sort needs non-negative keys
+    const maxKey = Math.max(...a) + shift;
+    if (shift) {
+        t.record("select", [], 1, `Radix sort works on non-negative digits, so every key is shifted by +${shift} while sorting (the order does not change).`);
+    }
+    let pass = 1;
+    for (let place = 1; place === 1 || Math.floor(maxKey / place) > 0; place *= 10, pass++) {
+        const digit = (v) => Math.floor((v + shift) / place) % 10;
+        const name = place === 1 ? "ones" : place === 10 ? "tens" : place === 100 ? "hundreds" : `${place}s`;
+        t.ctx = { key: `${name} digit` };
+        t.record("select", [], 1, `Pass ${pass}: stable counting sort on the ${name} digit (place value ${place}).`);
+        countingPass(t, digit, 10, { count: 2, prefix: 3, place: 4 }, {
+            count: (v, d, c) => `${v}${shift ? ` (+${shift} = ${v + shift})` : ""} has ${name} digit ${d}; ${c} key${c === 1 ? "" : "s"} with digit ${d} so far.`,
+            prefix: (cnt) => `Prefix sums give each digit its end position: ${cnt.map((c, d) => `${d}→${c}`).join(", ")}.`,
+            place: (v, d, pos, i) => `A[${i}] = ${v} (digit ${d}) goes to position ${pos}. Right-to-left keeps earlier passes' order.`,
+        });
+        t.record("select", [], 5, `After the ${name} pass: [${a.join(", ")}].`);
+    }
+    t.ctx = {};
+    t.markAllSorted();
+}
+
 export const SORTING_ALGORITHMS = {
     bubble: {
         name: "Bubble Sort",
@@ -344,6 +423,32 @@ export const SORTING_ALGORITHMS = {
         ],
         complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n log n)", space: "O(1)", stable: false },
         summary: "Treats the array as a binary max-heap (children of index i are 2i + 1 and 2i + 2). Repeatedly swaps the root, the largest value, to the end and restores the heap. In-place and always O(n log n).",
+    },
+    counting: {
+        name: "Counting Sort",
+        run: countingSort,
+        pseudocode: [
+            "k ← max − min + 1;  count[0..k−1] ← 0",
+            "for each x in A: count[x − min] ← count[x − min] + 1",
+            "for v ← 1 to k − 1: count[v] ← count[v] + count[v − 1]",
+            "for i ← n − 1 down to 0: count[A[i] − min]−−;  B[count[A[i] − min]] ← A[i]",
+            "A ← B",
+        ],
+        complexity: { best: "O(n + k)", average: "O(n + k)", worst: "O(n + k)", space: "O(n + k)", stable: true },
+        summary: "Never compares two elements. It counts how often each value occurs, turns the counts into positions, and writes every value straight into place. Fast when the value range k is small compared with n.",
+    },
+    radix: {
+        name: "Radix Sort (LSD)",
+        run: radixSort,
+        pseudocode: [
+            "for place ← 1, 10, 100, … while place ≤ max",
+            "    count how many keys have each digit 0–9 at this place",
+            "    prefix sums: count[d] = end position for digit d",
+            "    for i ← n − 1 down to 0: B[−−count[digit(A[i])]] ← A[i]",
+            "    A ← B",
+        ],
+        complexity: { best: "O(d·(n + 10))", average: "O(d·(n + 10))", worst: "O(d·(n + 10))", space: "O(n + 10)", stable: true },
+        summary: "Sorts by the ones digit, then the tens, then the hundreds, each time with a stable counting pass. Stability is what makes it work: ties on the current digit keep the order earlier passes created. d is the number of digits.",
     },
 };
 

@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C5 | Counting Sort + Radix Sort on the Sorting page (started 2026-11-25 22:20) | Claude | main | `src/algorithms/sorting.js`, `src/pages/sorting-page.js`, `sorting.html`, `tests/sorting.test.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -44,6 +44,7 @@ and list any CSS they need in their handoff report.
 | C2 | Pure Stack, LinearQueue, CircularQueue, PriorityQueue modules + model-based tests; Regular Queue page migrated | Claude | 2026-11-25 |
 | G2 | Replace all native dialogs on Circular LL + Doubly LL (67 calls → 0), plus fixes | Gemini (reviewed by Claude) | 2026-11-25 22:06 |
 | G1 | Replace all native dialogs on AVL, Stack, Singly LL (24 calls → 0) | Gemini (reviewed by Claude) | 2026-11-25 |
+| C5 | Counting Sort + Radix Sort (stable, 0 comparisons, negatives handled) on the Sorting page | Claude | 2026-11-25 22:22 |
 | C3 | AVL rotations animated by node id (unbalanced state shown first), delete rotations explained | Claude | 2026-11-25 22:00 |
 | C2c | Circular + Priority Queue pages now use `src/structures/queue.js` (inline scripts removed) | Claude | 2026-11-25 21:53 |
 | C2b | Stack page now uses `src/structures/stack.js` (old `stack.js` removed) | Claude | 2026-11-25 21:50 |

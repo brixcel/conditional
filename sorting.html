@@ -10,7 +10,7 @@
 <body>
     <div class="page-container">
         <header class="page-header">
-            <div class="badge">Algorithms &bull; Comparison Sorting</div>
+            <div class="badge">Algorithms &bull; Sorting</div>
             <h1 class="page-title">Sorting Algorithms</h1>
             <p class="page-desc">
                 Watch a real sort run one comparison at a time. Every frame below is a snapshot the algorithm
@@ -45,6 +45,8 @@
                             <option value="merge">Merge Sort</option>
                             <option value="quick">Quick Sort</option>
                             <option value="heap">Heap Sort</option>
+                            <option value="counting">Counting Sort</option>
+                            <option value="radix">Radix Sort (LSD)</option>
                         </select>
                     </label>
                     <label class="field field-grow">
@@ -108,7 +110,7 @@
                     <div class="state-monitor stat-grid">
                         <div>Comparisons <strong id="statCompare">0</strong></div>
                         <div>Array writes <strong id="statWrites">0</strong></div>
-                        <div>Key / pivot <strong id="statKey">—</strong></div>
+                        <div>Key / pivot / digit <strong id="statKey">—</strong></div>
                         <div>Recursion depth <strong id="statDepth">—</strong></div>
                         <div>Active range <strong id="statRange">whole array</strong></div>
                     </div>
@@ -130,6 +132,8 @@
                 Try an already-sorted input like <code>1 2 3 4 5 6 7 8</code>: Bubble and Insertion Sort finish in one pass (O(n)),
                 Selection Sort still makes every comparison, and Quick Sort with a last-element pivot hits its O(n²) worst case.
                 Merge and Heap Sort stay O(n log n) on every input.
+                Counting and Radix Sort show <strong>0 comparisons</strong>: they place values by counting instead of comparing,
+                which is how they beat the O(n log n) limit that applies to comparison sorts.
             </p>
         </div>
     </div>
