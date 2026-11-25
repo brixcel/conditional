@@ -32,6 +32,32 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G4 (fix): Reuse parseArrayInput from sorting.js
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-26 02:38 (Philippine time)
+- Branch: `gemini/g4-searching`
+- Commit(s): `482739e` (on top of `b2d293d`, `b393dfe`)
+- Files changed: `src/algorithms/searching.js`
+- Summary:
+  - Removed the duplicated `parseArrayInput` body in `src/algorithms/searching.js` and imported `parseArrayInput as parseNumberList` from `./sorting.js`, delegating `parseArrayInput(text, limits = INPUT_LIMITS)` directly to `parseNumberList(text, limits)` while keeping `INPUT_LIMITS = { minLength: 1, maxLength: 16, min: -99, max: 999 }`.
+  - Left `src/algorithms/sorting.js` untouched.
+- npm test output (paste the real lines):
+    # tests 96
+    # pass 96
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Not re-run after this parser-delegation refactor; `tests/searching.test.js` covers `parseArrayInput` and all 96 tests pass.
+- Not done / not verified: Live browser re-check skipped since only `parseArrayInput` delegation changed with identical return shape and limits.
+- Requests for Claude: Ready for re-review and merge (unblocks C1c).
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G4: Searching algorithms module + page
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-25 22:14 (Philippine time)
