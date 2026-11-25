@@ -1,10 +1,306 @@
 class TreeNode {
     constructor(value) {
+        // Stable identity so the visualizer can follow the same node as rotations move it.
+        this.id = TreeNode.nextId++;
         this.value = value;
         this.left = null;
         this.right = null;
         this.parent = null;
         this.height = 1;
+    }
+}
+TreeNode.nextId = 1;
+
+/**
+ * TreeView: draws AVL snapshots on the canvas and animates between them by node id.
+ *
+ * Snapshots are plain data: { rootId, nodes: { [id]: { id, value, left, right, height, bf } } }.
+ * plainInsert / plainDelete replay a normal BST insert/delete on a snapshot (no rebalancing),
+ * which is exactly the tree the AVL algorithm sees just before it rotates. The animation shows
+ * that real intermediate state, then slides every node to where the rotation put it.
+ * No DOM access happens until something is drawn, so avl-tree.js still loads in Node tests.
+ */
+class TreeView {
+    constructor(canvasId) {
+        this.canvasId = canvasId;
+        this.token = 0;   // bumps on every new draw/transition to cancel older animations
+        this.current = null;
+    }
+
+    /* ---------- snapshots (pure) ---------- */
+
+    static snapshot(root) {
+        const nodes = {};
+        const walk = (n) => {
+            if (!n) return 0;
+            const hl = walk(n.left);
+            const hr = walk(n.right);
+            nodes[n.id] = { id: n.id, value: n.value, left: n.left ? n.left.id : null, right: n.right ? n.right.id : null,
+                            height: 1 + Math.max(hl, hr), bf: hl - hr };
+            return 1 + Math.max(hl, hr);
+        };
+        walk(root);
+        return { rootId: root ? root.id : null, nodes };
+    }
+
+    static clone(snap) {
+        const nodes = {};
+        for (const id in snap.nodes) nodes[id] = { ...snap.nodes[id] };
+        return { rootId: snap.rootId, nodes };
+    }
+
+    static recompute(snap) {
+        const h = (id) => {
+            if (id === null) return 0;
+            const n = snap.nodes[id];
+            const hl = h(n.left);
+            const hr = h(n.right);
+            n.height = 1 + Math.max(hl, hr);
+            n.bf = hl - hr;
+            return n.height;
+        };
+        h(snap.rootId);
+        return snap;
+    }
+
+    /** Plain BST insert (no rotations). newId must be the id the real TreeNode will get. */
+    static plainInsert(snap, value, newId) {
+        const s = TreeView.clone(snap);
+        const node = { id: newId, value, left: null, right: null, height: 1, bf: 0 };
+        if (s.rootId === null) { s.nodes[newId] = node; s.rootId = newId; return s; }
+        let cur = s.nodes[s.rootId];
+        for (;;) {
+            if (value === cur.value) return TreeView.recompute(s); // duplicate: unchanged
+            const side = value < cur.value ? 'left' : 'right';
+            if (cur[side] === null) { cur[side] = newId; s.nodes[newId] = node; break; }
+            cur = s.nodes[cur[side]];
+        }
+        return TreeView.recompute(s);
+    }
+
+    /** Plain BST delete (no rotations), mirroring AVLTree.removeNode's node identity rules. */
+    static plainDelete(snap, value) {
+        const s = TreeView.clone(snap);
+        const removeFrom = (id, v) => {          // returns new subtree root id
+            if (id === null) return null;
+            const n = s.nodes[id];
+            if (v < n.value) { n.left = removeFrom(n.left, v); return id; }
+            if (v > n.value) { n.right = removeFrom(n.right, v); return id; }
+            if (n.left === null || n.right === null) {
+                const child = n.left !== null ? n.left : n.right;
+                delete s.nodes[id];
+                return child;
+            }
+            let succ = s.nodes[n.right];
+            while (succ.left !== null) succ = s.nodes[succ.left];
+            n.value = succ.value;                // node keeps its id, takes successor's value
+            n.right = removeFrom(n.right, succ.value);
+            return id;
+        };
+        s.rootId = removeFrom(s.rootId, value);
+        return TreeView.recompute(s);
+    }
+
+    /** Deepest node with |BF| > 1: the node AVL rebalances first. */
+    static pivot(snap) {
+        let best = null;
+        for (const id in snap.nodes) {
+            const n = snap.nodes[id];
+            if (Math.abs(n.bf) > 1 && (!best || n.height < best.height)) best = n;
+        }
+        return best;
+    }
+
+    static layout(snap, width) {
+        const pos = new Map();
+        const place = (id, x, y, depth) => {
+            if (id === null) return;
+            pos.set(Number(id), { x, y });
+            const gap = (width / 3.8) / Math.pow(1.8, depth);
+            const n = snap.nodes[id];
+            place(n.left, x - gap, y + 80, depth + 1);
+            place(n.right, x + gap, y + 80, depth + 1);
+        };
+        place(snap.rootId, width / 2, 60, 0);
+        return pos;
+    }
+
+    /* ---------- drawing ---------- */
+
+    canvas() { return typeof document !== 'undefined' ? document.getElementById(this.canvasId) : null; }
+
+    sizeCanvas(canvas) {
+        canvas.width = Math.max(600, Math.min(window.innerWidth * 0.85, 1100));
+        canvas.height = Math.max(400, Math.min(window.innerHeight * 0.65, 700));
+    }
+
+    /** frame: { snap (for edges/labels), items: [{ id, x, y, alpha, node }] } */
+    drawFrame(canvas, frame, { highlightId = null, alertId = null } = {}) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (frame.items.length === 0) {
+            ctx.fillStyle = '#666';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Tree is empty. Enter a positive number and click Insert.', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+        const at = new Map(frame.items.map(it => [it.id, it]));
+
+        ctx.strokeStyle = '#94A3B8';
+        ctx.lineWidth = 2.5;
+        for (const it of frame.items) {
+            const n = frame.snap.nodes[it.id];
+            if (!n) continue;
+            for (const c of [n.left, n.right]) {
+                const child = c !== null ? at.get(c) : null;
+                if (!child) continue;
+                ctx.globalAlpha = Math.min(it.alpha, child.alpha);
+                ctx.beginPath();
+                ctx.moveTo(it.x, it.y);
+                ctx.lineTo(child.x, child.y);
+                ctx.stroke();
+            }
+        }
+
+        for (const it of frame.items) {
+            const n = it.node;
+            const hi = it.id === highlightId;
+            const alert = it.id === alertId;
+            ctx.globalAlpha = it.alpha;
+            if (alert) {
+                ctx.beginPath();
+                ctx.arc(it.x, it.y, 29, 0, Math.PI * 2);
+                ctx.strokeStyle = '#DC2626';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            ctx.beginPath();
+            ctx.arc(it.x, it.y, 23, 0, Math.PI * 2);
+            ctx.fillStyle = hi ? 'rgba(245, 158, 11, 0.25)' : 'rgba(37, 99, 235, 0.15)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(it.x, it.y, 21, 0, Math.PI * 2);
+            ctx.fillStyle = alert ? '#DC2626' : hi ? '#F59E0B' : '#2563EB';
+            ctx.fill();
+            ctx.strokeStyle = alert ? '#991B1B' : hi ? '#B45309' : '#1E3A8A';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(n.value, it.x, it.y);
+
+            ctx.font = 'bold 11px ui-monospace, monospace';
+            ctx.fillStyle = Math.abs(n.bf) <= 1 ? '#059669' : '#DC2626';
+            ctx.fillText(`h:${n.height} | bf:${n.bf > 0 ? '+' + n.bf : n.bf}`, it.x, it.y + 35);
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    staticFrame(snap, width) {
+        const pos = TreeView.layout(snap, width);
+        return { snap, items: [...pos].map(([id, p]) => ({ id, x: p.x, y: p.y, alpha: 1, node: snap.nodes[id] })) };
+    }
+
+    showStatic(snap, opts = {}) {
+        this.token++;
+        this.current = snap;
+        const canvas = this.canvas();
+        if (!canvas) return;
+        this.sizeCanvas(canvas);
+        this.drawFrame(canvas, this.staticFrame(snap, canvas.width), opts);
+    }
+
+    /* ---------- animation ---------- */
+
+    /**
+     * requestAnimationFrame backed by a timer: browsers pause rAF in hidden tabs/panes,
+     * which would freeze the tree mid-rotation. Progress is time-based, so whichever
+     * callback fires first keeps the animation on schedule.
+     */
+    static nextFrame(fn) {
+        let done = false;
+        const run = () => { if (!done) { done = true; fn(performance.now()); } };
+        requestAnimationFrame(run);
+        setTimeout(run, 50);
+    }
+
+    static ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+    /** Tween node positions by id from snapshot a to b. Resolves false if cancelled. */
+    tween(canvas, a, b, ms, opts, token) {
+        const pa = TreeView.layout(a, canvas.width);
+        const pb = TreeView.layout(b, canvas.width);
+        const ids = new Set([...pa.keys(), ...pb.keys()]);
+        return new Promise((resolve) => {
+            const t0 = performance.now();
+            const step = (now) => {
+                if (token !== this.token) { resolve(false); return; }
+                const t = Math.min(1, (now - t0) / ms);
+                const e = TreeView.ease(t);
+                const items = [];
+                for (const id of ids) {
+                    const from = pa.get(id);
+                    const to = pb.get(id);
+                    const s = from || to;
+                    const d = to || from;
+                    items.push({
+                        id, x: s.x + (d.x - s.x) * e, y: s.y + (d.y - s.y) * e,
+                        alpha: from && to ? 1 : from ? 1 - e : e,
+                        node: (to ? b.nodes[id] : a.nodes[id]),
+                    });
+                }
+                this.drawFrame(canvas, { snap: b, items }, opts);
+                if (t < 1) TreeView.nextFrame(step); else resolve(true);
+            };
+            TreeView.nextFrame(step);
+        });
+    }
+
+    wait(ms, token) {
+        return new Promise((resolve) => setTimeout(() => resolve(token === this.token), ms));
+    }
+
+    setOutput(text) {
+        const out = typeof document !== 'undefined' ? document.getElementById('output') : null;
+        if (out) out.textContent = text;
+    }
+
+    /**
+     * before → (unbalanced, held so students can see the BF ±2 node) → after.
+     * Without a rotation: before → after. Reduced motion: jump straight to after.
+     */
+    async transition({ before, unbalanced, after, rotated, pauseText, doneText, highlightId = null }) {
+        const token = ++this.token;
+        this.current = after;
+        const canvas = this.canvas();
+        const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Browsers pause animation frames in background tabs; jump to the result instead of freezing.
+        const hidden = typeof document !== 'undefined' && document.hidden;
+        if (!canvas || reduce || hidden || typeof requestAnimationFrame === 'undefined') {
+            this.setOutput(doneText);
+            this.showStatic(after, { highlightId });
+            return;
+        }
+        this.sizeCanvas(canvas);
+        if (rotated) {
+            const pivot = TreeView.pivot(unbalanced);
+            const alertId = pivot ? pivot.id : null;
+            if (!(await this.tween(canvas, before, unbalanced, 350, { highlightId }, token))) return;
+            this.drawFrame(canvas, this.staticFrame(unbalanced, canvas.width), { highlightId, alertId });
+            if (pivot) this.setOutput(pauseText(pivot));
+            if (!(await this.wait(1100, token))) return;
+            if (!(await this.tween(canvas, unbalanced, after, 750, { highlightId, alertId }, token))) return;
+        } else {
+            if (!(await this.tween(canvas, before, after, 400, { highlightId }, token))) return;
+        }
+        this.setOutput(doneText);
+        this.drawFrame(canvas, this.staticFrame(after, canvas.width), { highlightId });
     }
 }
 
@@ -72,11 +368,14 @@ function toggleButtons() {
 class AVLTree {
     constructor() {
         this.root = null;
+        this.view = new TreeView('bstCanvas');
     }
 
     getHeight(node) {
         return node ? node.height : 0;
     }
+
+    fmtBf(bf) { return bf > 0 ? `+${bf}` : `${bf}`; }
 
     getBalance(node) {
         return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
@@ -192,20 +491,23 @@ class AVLTree {
         }
 
         clearAvlNotice();
+        const before = TreeView.snapshot(this.root);
+        // What a plain BST insert would produce: the real state just before AVL rebalancing.
+        const unbalanced = TreeView.plainInsert(before, value, TreeNode.nextId);
         this.lastRotationMessage = null;
         this.root = this.insert(this.root, value, null);
         if (this.root) this.root.parent = null;
         this.recalculateParents(this.root);
-        this.visualize(false);
 
-        const out = document.getElementById('output');
-        if (out) {
-            if (this.lastRotationMessage) {
-                out.innerHTML = `<strong>Inserted ${value}</strong> &bull; ${this.lastRotationMessage}`;
-            } else {
-                out.textContent = `Node ${value} inserted directly. Tree remains balanced (|BF| ≤ 1).`;
-            }
-        }
+        const doneText = this.lastRotationMessage
+            ? `Inserted ${value} • ${this.lastRotationMessage}`
+            : `Node ${value} inserted directly. Tree remains balanced (|BF| ≤ 1).`;
+        this.view.transition({
+            before, unbalanced, after: TreeView.snapshot(this.root), rotated: Boolean(this.lastRotationMessage),
+            pauseText: (pivot) => `Step 1 of 2: ${value} is placed as in a plain BST. Node ${pivot.value} now has BF ${this.fmtBf(pivot.bf)}, so the tree is unbalanced.`,
+            doneText: this.lastRotationMessage ? `Step 2 of 2: ${doneText}` : doneText,
+            highlightId: TreeNode.nextId - 1,
+        });
         toggleButtons();
         return true;
     }
@@ -218,20 +520,21 @@ class AVLTree {
         }
 
         clearAvlNotice();
+        const before = TreeView.snapshot(this.root);
+        const unbalanced = TreeView.plainDelete(before, value);
         this.lastRotationMessage = null;
         this.root = this.removeNode(this.root, value);
         if (this.root) this.root.parent = null;
         this.recalculateParents(this.root);
-        this.visualize(false);
 
-        const out = document.getElementById('output');
-        if (out) {
-            if (this.lastRotationMessage) {
-                out.innerHTML = `<strong>Deleted ${value}</strong> &bull; ${this.lastRotationMessage}`;
-            } else {
-                out.textContent = `Node ${value} removed. AVL balance verified across all nodes.`;
-            }
-        }
+        const doneText = this.lastRotationMessage
+            ? `Deleted ${value} • ${this.lastRotationMessage}`
+            : `Node ${value} removed. AVL balance verified across all nodes.`;
+        this.view.transition({
+            before, unbalanced, after: TreeView.snapshot(this.root), rotated: Boolean(this.lastRotationMessage),
+            pauseText: (pivot) => `Step 1 of 2: ${value} is removed as in a plain BST. Node ${pivot.value} now has BF ${this.fmtBf(pivot.bf)}, so the tree is unbalanced.`,
+            doneText: this.lastRotationMessage ? `Step 2 of 2: ${doneText}` : doneText,
+        });
         toggleButtons();
         return true;
     }
@@ -277,13 +580,18 @@ class AVLTree {
         const balance = this.getBalance(node);
 
         // AVL Rebalancing
+        const note = (msg) => {
+            this.lastRotationMessage = this.lastRotationMessage ? `${this.lastRotationMessage} Then: ${msg}` : msg;
+        };
         // LL Case
         if (balance > 1 && this.getBalance(node.left) >= 0) {
+            note(`[LL Rotation] Node ${node.value} became left-heavy (BF = +2, left child ${node.left.value} has BF ${this.fmtBf(this.getBalance(node.left))}). Right Rotation around ${node.value}; ${node.left.value} moves up.`);
             return this.rotateRight(node);
         }
 
         // LR Case
         if (balance > 1 && this.getBalance(node.left) < 0) {
+            note(`[LR Double Rotation] Node ${node.value} became left-heavy (BF = +2) but its left child ${node.left.value} leans right (BF = -1). Step 1: Left Rotate ${node.left.value}. Step 2: Right Rotate ${node.value}.`);
             node.left = this.rotateLeft(node.left);
             if (node.left) node.left.parent = node;
             return this.rotateRight(node);
@@ -291,11 +599,13 @@ class AVLTree {
 
         // RR Case
         if (balance < -1 && this.getBalance(node.right) <= 0) {
+            note(`[RR Rotation] Node ${node.value} became right-heavy (BF = -2, right child ${node.right.value} has BF ${this.fmtBf(this.getBalance(node.right))}). Left Rotation around ${node.value}; ${node.right.value} moves up.`);
             return this.rotateLeft(node);
         }
 
         // RL Case
         if (balance < -1 && this.getBalance(node.right) > 0) {
+            note(`[RL Double Rotation] Node ${node.value} became right-heavy (BF = -2) but its right child ${node.right.value} leans left (BF = +1). Step 1: Right Rotate ${node.right.value}. Step 2: Left Rotate ${node.value}.`);
             node.right = this.rotateRight(node.right);
             if (node.right) node.right.parent = node;
             return this.rotateLeft(node);
@@ -536,94 +846,7 @@ class AVLTree {
     }
 
     visualize(highlightRoot = false) {
-        const canvas = document.getElementById('bstCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = Math.max(600, Math.min(window.innerWidth * 0.85, 1100));
-        canvas.height = Math.max(400, Math.min(window.innerHeight * 0.65, 700));
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (!this.root) {
-            ctx.fillStyle = '#666';
-            ctx.font = '16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Tree is empty. Enter a positive number and click Enqueue.', canvas.width / 2, canvas.height / 2);
-            return;
-        }
-
-        const positions = new Map();
-
-        const calculatePositions = (node, x, y, depth, minGap) => {
-            if (!node) return;
-
-            positions.set(node, { x, y });
-
-            const gap = minGap / Math.pow(1.8, depth);
-            if (node.left) {
-                calculatePositions(node.left, x - gap, y + 80, depth + 1, minGap);
-            }
-            if (node.right) {
-                calculatePositions(node.right, x + gap, y + 80, depth + 1, minGap);
-            }
-        };
-
-        calculatePositions(this.root, canvas.width / 2, 60, 0, canvas.width / 3.8);
-
-        // Draw edges
-        ctx.strokeStyle = '#94A3B8';
-        ctx.lineWidth = 2.5;
-        for (const [node, pos] of positions) {
-            if (node.left && positions.has(node.left)) {
-                const childPos = positions.get(node.left);
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(childPos.x, childPos.y);
-                ctx.stroke();
-            }
-            if (node.right && positions.has(node.right)) {
-                const childPos = positions.get(node.right);
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(childPos.x, childPos.y);
-                ctx.stroke();
-            }
-        }
-
-        // Draw node circles and text
-        for (const [node, pos] of positions) {
-            const isRootNode = node === this.root;
-            const isHighlighted = highlightRoot && isRootNode;
-
-            // Outer shadow / glow ring
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 23, 0, Math.PI * 2);
-            ctx.fillStyle = isHighlighted ? 'rgba(245, 158, 11, 0.25)' : 'rgba(37, 99, 235, 0.15)';
-            ctx.fill();
-
-            // Inner circle
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 21, 0, Math.PI * 2);
-            ctx.fillStyle = isHighlighted ? '#F59E0B' : '#2563EB';
-            ctx.fill();
-            ctx.strokeStyle = isHighlighted ? '#B45309' : '#1E3A8A';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Value text
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(node.value, pos.x, pos.y);
-
-            // Height and Balance Factor badge
-            const bf = this.getBalance(node);
-            ctx.font = 'bold 11px ui-monospace, monospace';
-            ctx.fillStyle = Math.abs(bf) <= 1 ? '#059669' : '#DC2626';
-            ctx.fillText(`h:${node.height} | bf:${bf > 0 ? '+' + bf : bf}`, pos.x, pos.y + 35);
-        }
+        this.view.showStatic(TreeView.snapshot(this.root), { highlightId: highlightRoot && this.root ? this.root.id : null });
     }
 }
 

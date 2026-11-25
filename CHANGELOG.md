@@ -4,6 +4,18 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Changed (2026-11-25 22:00, Claude: C3)
+- AVL Tree: insert and delete now animate. When a rotation is needed, the page first
+  shows the tree right after the plain BST insert/delete, with the unbalanced node (BF ±2)
+  ringed in red and named in the output. Then every node slides to its post-rotation position,
+  tracked by a stable node id so students can follow it.
+  The intermediate tree comes from replaying a plain BST insert/delete on a snapshot. Tests
+  confirm that over 4,000 random operations it matches the real AVL code's state before rebalancing.
+- AVL Tree: rotations caused by **deletes** are now explained (LL/LR/RR/RL), including
+  cascades ("… Then: …"). Before, deletes never said a rotation happened.
+- Animations respect reduced-motion and do not freeze in background tabs.
+- AVL output text is set with `textContent` instead of `innerHTML`.
+
 ### Changed (2026-11-25 21:53, Claude: C2c)
 - Circular Queue and Priority Queue pages now run on the tested modules
   (`src/pages/circular-queue-page.js`, `src/pages/priority-queue-page.js`). Their

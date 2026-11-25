@@ -20,11 +20,11 @@ function loadAVL() {
         console,
     };
     vm.createContext(sandbox);
-    vm.runInContext(`${source}\n;globalThis.__AVLTree = AVLTree;`, sandbox);
-    return sandbox.__AVLTree;
+    vm.runInContext(`${source}\n;globalThis.__AVL = { AVLTree, TreeView, TreeNode };`, sandbox);
+    return sandbox.__AVL;
 }
 
-const AVLTree = loadAVL();
+const { AVLTree, TreeView, TreeNode } = loadAVL();
 
 function insertAll(values) {
     const t = new AVLTree();
@@ -105,4 +105,97 @@ test("deleting everything empties the tree", () => {
     const t = insertAll([2, 1, 3]);
     [1, 2, 3].forEach(v => remove(t, v));
     assert.equal(t.root, null);
+});
+
+/* ---------- C3: node identity, delete rotation messages, pre-rotation snapshots ---------- */
+
+function idsByValue(n, out = new Map()) {
+    if (n) { out.set(n.value, n.id); idsByValue(n.left, out); idsByValue(n.right, out); }
+    return out;
+}
+
+test("node ids are unique and survive rotations", () => {
+    const t = new AVLTree();
+    t.root = t.insert(t.root, 30, null);
+    t.root = t.insert(t.root, 20, null);
+    const before = idsByValue(t.root);
+    t.root = t.insert(t.root, 10, null); // LL rotation: 20 becomes root
+    const after = idsByValue(t.root);
+    assert.equal(t.root.value, 20);
+    assert.equal(after.get(30), before.get(30));
+    assert.equal(after.get(20), before.get(20));
+    assert.equal(new Set(after.values()).size, 3);
+});
+
+test("deleting can trigger a rotation, and it is explained", () => {
+    const t = insertAll([20, 10, 30, 40]);
+    t.lastRotationMessage = null;
+    remove(t, 10); // 20 becomes right-heavy: RR rotation, 30 moves up
+    assert.equal(t.root.value, 30);
+    assert.match(t.lastRotationMessage, /\[RR Rotation\] Node 20 became right-heavy/);
+});
+
+test("delete messages cover LL, LR, RL and stay null when no rotation happens", () => {
+    const cases = [
+        [[20, 10, 30, 5], 30, /\[LL Rotation\]/],
+        [[20, 10, 30, 15], 30, /\[LR Double Rotation\]/],
+        [[20, 10, 30, 25], 10, /\[RL Double Rotation\]/],
+    ];
+    for (const [seq, del, pattern] of cases) {
+        const t = insertAll(seq);
+        t.lastRotationMessage = null;
+        remove(t, del);
+        assert.match(t.lastRotationMessage, pattern, `delete ${del} from ${seq}`);
+        checkInvariants(t.root);
+    }
+    const t = insertAll([20, 10, 30]);
+    t.lastRotationMessage = null;
+    remove(t, 10);
+    assert.equal(t.lastRotationMessage, null);
+});
+
+/** Checks BST order inside a snapshot and returns its in-order values. */
+function snapInorder(snap) {
+    const out = [];
+    const walk = (id, lo, hi) => {
+        if (id === null) return;
+        const n = snap.nodes[id];
+        assert.ok(n.value > lo && n.value < hi, "snapshot BST order");
+        walk(n.left, lo, n.value); out.push(n.value); walk(n.right, n.value, hi);
+    };
+    walk(snap.rootId, -Infinity, Infinity);
+    return out;
+}
+
+test("pre-rotation snapshots are real plain-BST states with the same node ids", () => {
+    let seed = 7;
+    const rand = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+    let rotations = 0;
+    for (let round = 0; round < 100; round++) {
+        const t = new AVLTree();
+        const present = new Set();
+        for (let op = 0; op < 40; op++) {
+            const v = 1 + Math.floor(rand() * 40);
+            const before = TreeView.snapshot(t.root);
+            t.lastRotationMessage = null;
+            let pre;
+            if (!present.has(v)) {
+                pre = TreeView.plainInsert(before, v, TreeNode.nextId);
+                t.root = t.insert(t.root, v, null);
+                present.add(v);
+            } else {
+                pre = TreeView.plainDelete(before, v);
+                t.root = t.removeNode(t.root, v);
+                present.delete(v);
+            }
+            t.recalculateParents(t.root);
+            const after = TreeView.snapshot(t.root);
+            assert.deepEqual(snapInorder(pre), [...present].sort((a, b) => a - b), "plain BST op gives the same keys");
+            assert.deepEqual(Object.keys(pre.nodes).sort(), Object.keys(after.nodes).sort(), "same node ids before and after rebalancing");
+            // A node with |BF| > 1 exists in the plain-BST state exactly when AVL rotated.
+            assert.equal(TreeView.pivot(pre) !== null, t.lastRotationMessage !== null);
+            if (t.lastRotationMessage) rotations++;
+        }
+    }
+    assert.ok(rotations > 50, `expected many rotations to be exercised, got ${rotations}`);
 });

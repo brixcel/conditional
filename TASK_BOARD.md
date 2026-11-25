@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C3 | AVL: animate rotations by node id, explain delete rotations (started 2026-11-25 21:54) | Claude | main | `avl-tree.js`, `avl-tree.html`, `tests/avl-real.test.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -25,8 +25,7 @@ Queue page styles empty/freed slots with runtime styles (`EMPTY_SLOT_STYLE` in
 `src/pages/regular-queue-page.js`). After G3 merges, Claude moves that into a
 `main.css` class.
 
-**File conflicts to respect:** G1 and C3 both touch `avl-tree.js`, so C3 waits for G1.
-G3 is the only task that edits `main.css`. G1, G2 and G4 must reuse existing classes
+**File conflicts to respect:** G3 is the only task that edits `main.css`. G1, G2 and G4 must reuse existing classes
 and list any CSS they need in their handoff report.
 
 ## Review
@@ -45,6 +44,7 @@ and list any CSS they need in their handoff report.
 | C4 | Merge, Quick, Heap sort + recursion step context (`range`, `depth`, `key`) | Claude | 2026-11-25 |
 | C2 | Pure Stack, LinearQueue, CircularQueue, PriorityQueue modules + model-based tests; Regular Queue page migrated | Claude | 2026-11-25 |
 | G1 | Replace all native dialogs on AVL, Stack, Singly LL (24 calls → 0) | Gemini (reviewed by Claude) | 2026-11-25 |
+| C3 | AVL rotations animated by node id (unbalanced state shown first), delete rotations explained | Claude | 2026-11-25 22:00 |
 | C2c | Circular + Priority Queue pages now use `src/structures/queue.js` (inline scripts removed) | Claude | 2026-11-25 21:53 |
 | C2b | Stack page now uses `src/structures/stack.js` (old `stack.js` removed) | Claude | 2026-11-25 21:50 |
 | C1a | Sidebar a11y: `inert` when closed, `aria-expanded`/`aria-controls`, focus in/out, Tab trap, `aria-current`, main landmark | Claude | 2026-11-25 |

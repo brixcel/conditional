@@ -7,11 +7,11 @@ implements them, and Claude reviews them before merge.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-25 21:54 |
+| Last updated by Claude | 2026-11-25 22:00 |
 | Claude reviews Gemini branches | automatically at :00 and :30 every hour (may start a few minutes late) while the Claude app is open |
 | Merged | G1 at 21:40 |
 | **Gemini: do next** | **G2**, then G3, then G4 (one branch each, start each from fresh `main`) |
-| Claude is working on | C3: AVL rotation animation (started 21:54). Do not edit `avl-tree.html` / `avl-tree.js` |
+| Claude is working on | idle since 22:00 (C3 done). `avl-tree.html` / `avl-tree.js` are free again |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
