@@ -1,3 +1,53 @@
+const ADDRESS_RE = /^[A-Za-z0-9_-]{1,20}$/;
+
+function showCllMessage(message, type = 'info') {
+    const banner = document.getElementById('cllMessage');
+    if (banner) {
+        if (!message) {
+            banner.textContent = '';
+            banner.hidden = true;
+            return;
+        }
+        const isError = type === 'error';
+        banner.className = `alert-banner alert-live alert-${type}`;
+        banner.setAttribute('role', isError ? 'alert' : 'status');
+        banner.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+        banner.textContent = message;
+        banner.hidden = false;
+    }
+    if (message && window.DSA_UI && typeof window.DSA_UI.showToast === 'function') {
+        window.DSA_UI.showToast(message, type);
+    }
+}
+
+function parseStrictInt(raw, { min = -Infinity, max = Infinity, label = 'Value', disallowLeadingZeros = false } = {}) {
+    const trimmed = raw === null || raw === undefined ? '' : String(raw).trim();
+    if (trimmed === '') {
+        return { ok: false, error: `Please enter a ${label.toLowerCase()}.` };
+    }
+    if (disallowLeadingZeros && /^0[0-9]+$/.test(trimmed)) {
+        return { ok: false, error: `Invalid ${label.toLowerCase()}: leading zeros are not allowed.` };
+    }
+    if (!/^[+-]?\d+$/.test(trimmed)) {
+        return { ok: false, error: `${label} must be a whole number.` };
+    }
+    const value = Number(trimmed);
+    if (!Number.isSafeInteger(value)) {
+        return { ok: false, error: `${label} is out of safe integer range.` };
+    }
+    if (value < min) {
+        return { ok: false, error: `${label} must be at least ${min}.` };
+    }
+    if (value > max) {
+        return { ok: false, error: `${label} must be at most ${max}.` };
+    }
+    return { ok: true, value };
+}
+
+function isValidAddress(addr) {
+    return ADDRESS_RE.test(addr);
+}
+
 class Node {
     constructor(value) {
         this.value = value;
@@ -17,188 +67,142 @@ class LinkedList {
 
     append(value) {
         if (this.size >= this.maxSize) {
-            alert('List is full!');
+            showCllMessage('List is full! Maximum capacity reached.', 'error');
             return false;
         }
-    
+
         const newNode = new Node(value);
         newNode.address = 'abc_' + String(this.counter).padStart(3, '0');
         this.counter++;
-    
+
         if (!this.head) {
             this.head = newNode;
             newNode.next = newNode;
             newNode.prev = newNode;
         } else {
-            let lastNode = this.head.prev;
+            const lastNode = this.head.prev;
             lastNode.next = newNode;
             newNode.prev = lastNode;
             newNode.next = this.head;
             this.head.prev = newNode;
         }
-    
+
         this.size++;
         return true;
     }
-    
-    
 
     prepend(value) {
         if (this.size >= this.maxSize) {
-            alert('List is full!');
+            showCllMessage('List is full! Maximum capacity reached.', 'error');
             return false;
         }
-    
-        // Create a new node
+
         const newNode = new Node(value);
-        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padding for counter
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0');
         this.counter++;
-    
+
         if (!this.head) {
-            // If the list is empty, the new node points to itself
             this.head = newNode;
-            newNode.next = this.head;  // Circular next to itself
-            newNode.prev = this.head;  // Circular prev to itself
+            newNode.next = this.head;
+            newNode.prev = this.head;
         } else {
-            // If the list is not empty
             let lastNode = this.head;
-    
-            // Traverse to the last node
             while (lastNode.next !== this.head) {
                 lastNode = lastNode.next;
             }
-    
-            // Link the new node
-            newNode.next = this.head;  // New node points to current head
-            newNode.prev = lastNode;   // New node's prev points to the last node
-    
-            // Update the last node's next to point to the new node
+
+            newNode.next = this.head;
+            newNode.prev = lastNode;
             lastNode.next = newNode;
-    
-            // Update the head's prev pointer to point to the new node
             this.head.prev = newNode;
-    
-            // Update the head to be the new node
             this.head = newNode;
         }
-    
+
         this.size++;
         return true;
     }
-    
-    
 
     insertAt(value, index) {
-        console.log(`Inserting value: ${value} at index: ${index}`);
-    
-        // Check if the index is valid: it should be between 0 and the current size (inclusive)
         if (index < 0 || index > this.size) {
-            alert(`Error: Index ${index} is out of bounds. Valid index range is 0 to ${this.size}`);
+            showCllMessage(`Index ${index} is out of bounds. Valid index range is 0 to ${this.size}.`, 'error');
             return false;
         }
-    
-        // Check if the list is full
+
         if (this.size >= this.maxSize) {
-            alert('List is full!');
+            showCllMessage('List is full! Maximum capacity reached.', 'error');
             return false;
         }
-    
-        // Case 1: Inserting at the beginning (index 0)
+
         if (index === 0) {
             return this.prepend(value);
         }
 
-        // Create a new node with a zero-padded address
         const newNode = new Node(value);
-        newNode.address = 'abc_' + String(this.counter).padStart(3, '0'); // Zero-padded address
+        newNode.address = 'abc_' + String(this.counter).padStart(3, '0');
         this.counter++;
-    
+
         let current = this.head;
-        // Traverse to the node just before the desired index
         for (let i = 0; i < index - 1; i++) {
             current = current.next;
         }
-    
-        // Case 2: Inserting at the end (after the last node)
+
         if (current.next === this.head) {
-            // Handle insertion at the end
-            newNode.next = this.head;       // New node's next points to the head (circular)
-            newNode.prev = current;         // New node's prev points to the current (last) node
-            current.next = newNode;         // Last node's next points to the new node
-            this.head.prev = newNode;       // Head's prev points to the new node (circular)
+            newNode.next = this.head;
+            newNode.prev = current;
+            current.next = newNode;
+            this.head.prev = newNode;
         } else {
-            // Case 3: Inserting in the middle
-            newNode.next = current.next;    // New node's next points to the current node's next
-            current.next.prev = newNode;    // Current node's next's prev points to the new node
-            current.next = newNode;         // Current node's next points to the new node
-            newNode.prev = current;         // New node's prev points to the current node
+            newNode.next = current.next;
+            current.next.prev = newNode;
+            current.next = newNode;
+            newNode.prev = current;
         }
-    
-        // Increment the size after the insertion
+
         this.size++;
-        console.log('List after insertion:', this.head);
         return true;
     }
-    
-    
-    
 
     deleteHead() {
-        if (!this.head) return false;  // List is empty
-    
+        if (!this.head) return false;
+
         if (this.size === 1) {
-            // If there is only one node, clear the list
             this.head = null;
         } else {
-            // If there are multiple nodes
-            let current = this.head;
-    
-            // Update the tail to point to the second node
             let lastNode = this.head;
             while (lastNode.next !== this.head) {
                 lastNode = lastNode.next;
             }
-    
-            // Set the new head
+
             this.head = this.head.next;
-            // Update the new head's prev pointer to point to the last node
             this.head.prev = lastNode;
-            // Update the last node's next pointer to point to the new head
             lastNode.next = this.head;
-    
-            // Update the addresses
+
             this.head.prevAddress = lastNode.address;
-            this.head.nextAddress = this.head.next ? this.head.next.address : "n/a";
+            this.head.nextAddress = this.head.next ? this.head.next.address : 'n/a';
             lastNode.nextAddress = this.head.address;
         }
-    
+
         this.size--;
         return true;
     }
-    
 
     deleteTail() {
-        if (!this.head) return false;  // List is empty
+        if (!this.head) return false;
 
         if (this.size === 1) {
-            // If there is only one node, clear the list
             this.head = null;
         } else {
             let current = this.head;
             let previous = null;
 
-            // Traverse to the last node
             while (current.next !== this.head) {
                 previous = current;
                 current = current.next;
             }
 
-            // Update the second-to-last node's next to point to the head (circular link)
             previous.next = this.head;
-            // Update the head's prev to point to the new tail (second-to-last node)
             this.head.prev = previous;
 
-            // Now update the addresses accordingly
             previous.nextAddress = this.head.address;
             this.head.prevAddress = previous.address;
         }
@@ -208,47 +212,36 @@ class LinkedList {
     }
 
     deleteAt(index) {
-        // Check if the list is empty
         if (this.is_empty()) {
-            alert('The list is empty. Nothing to delete.');
+            showCllMessage('The list is empty. Nothing to delete.', 'error');
             return false;
         }
-    
-        // If deleting the head node
-        if (index === 0) {
-            return this.deleteHead(); // Reuse deleteHead for head deletion
-        }
-    
-        // If deleting the tail node
-        if (index === this.size - 1) {
-            return this.deleteTail(); // Reuse deleteTail for tail deletion
-        }
-    
-        // Check if the index is invalid
+
         if (index < 0 || index >= this.size) {
-            alert('Invalid index!');
+            showCllMessage(`Invalid index ${index}. Valid range is 0 to ${this.size - 1}.`, 'error');
             return false;
         }
-    
+
+        if (index === 0) {
+            return this.deleteHead();
+        }
+
+        if (index === this.size - 1) {
+            return this.deleteTail();
+        }
+
         let current = this.head;
         let count = 0;
-    
-        // Traverse to the node at the given index
         while (count < index) {
             current = current.next;
             count++;
         }
-    
-        // Update the pointers of adjacent nodes
+
         current.prev.next = current.next;
         current.next.prev = current.prev;
-    
-        // Decrement the size of the list
         this.size--;
-    
         return true;
     }
-    
 
     clear() {
         this.head = null;
@@ -260,7 +253,7 @@ class LinkedList {
         if (!this.head) {
             return array;
         }
-    
+
         let current = this.head;
         do {
             array.push({
@@ -271,87 +264,70 @@ class LinkedList {
             });
             current = current.next;
         } while (current !== this.head);
-    
+
         return array;
     }
-    
 
-    find(address) {
-        if (!this.head) return null;  // List is empty
-    
+    findNode(address) {
+        if (!this.head) return null;
+
         let current = this.head;
         do {
             if (current.address === address) {
-                return current.value;  // Return the value of the node that matches the address
+                return current;
             }
             current = current.next;
         } while (current !== this.head);
-    
-        return null;  // Address not found
+
+        return null;
     }
-    
+
+    find(address) {
+        const node = this.findNode(address);
+        return node ? node.value : null;
+    }
 
     reverse() {
-        if (this.size <= 1) return; // No need to reverse if the list has 1 or fewer nodes
-    
+        if (this.size <= 1) return;
+
         let prev = null;
         let current = this.head;
         let next;
-    
         const oldHead = this.head;
-        
+
         do {
             next = current.next;
-            current.next = prev;  // Reverse the next pointer
-            current.prev = next;  // Reverse the prev pointer
-    
-            // Move to the next node in the original list
+            current.next = prev;
+            current.prev = next;
             prev = current;
             current = next;
-        } while (current !== oldHead); // Continue until we reach the original head
-    
-        // After the loop, prev will be the new head
+        } while (current !== oldHead);
+
         this.head = prev;
-    
-        // Ensure the old head's next pointer points to the new head (circular structure)
         oldHead.next = this.head;
-        this.head.prev = oldHead;  // And the new head's prev pointer points to the old head
+        this.head.prev = oldHead;
     }
-    
 
     sort() {
-        if (this.size <= 1) return;  // No need to sort if the list has 1 or fewer nodes
-        
+        if (this.size <= 1) return;
+
         let current = this.head;
-        const nodes = []; // To hold nodes and preserve their order
-        
-        // Collect all nodes into an array with their address and value
+        const nodes = [];
+
         do {
-            nodes.push(current);  // Add the current node to the array
+            nodes.push(current);
             current = current.next;
         } while (current !== this.head);
-    
-        // Sort the nodes by value
+
         nodes.sort((a, b) => a.value - b.value);
-    
-        // Reassign the sorted values back to the nodes
+
         for (let i = 0; i < nodes.length; i++) {
-            nodes[i].value = nodes[i].value; // Assign the sorted value (addresses remain unchanged)
+            nodes[i].next = nodes[(i + 1) % nodes.length];
+            nodes[i].prev = nodes[(i - 1 + nodes.length) % nodes.length];
         }
-    
-        // Rebuild the circular links (next and prev pointers) to ensure proper circular structure
-        for (let i = 0; i < nodes.length; i++) {
-            nodes[i].next = nodes[(i + 1) % nodes.length]; // Next pointer
-            nodes[i].prev = nodes[(i - 1 + nodes.length) % nodes.length]; // Prev pointer
-        }
-    
-        // Reassign head to the first node
+
         this.head = nodes[0];
     }
-    
-    
-    
-    
 
     getSize() {
         return this.size;
@@ -379,87 +355,94 @@ class LinkedList {
     }
 
     updateValue(address, newValue) {
-        if (!this.head) return false;
-
-        let current = this.head;
-        do {
-            if (current.address === address) {
-                current.value = newValue;
-                return true;
-            }
-            current = current.next;
-        } while (current !== this.head);
-
-        return false;
+        const node = this.findNode(address);
+        if (!node) return false;
+        node.value = newValue;
+        return true;
     }
 }
 
-let linkedList;
+let linkedList = null;
+
+function requireListReady() {
+    if (!linkedList) {
+        showCllMessage('Please set the maximum list capacity first.', 'error');
+        const maxInput = document.getElementById('maxSizeInput');
+        if (maxInput) maxInput.focus();
+        return false;
+    }
+    return true;
+}
 
 function updateVisualization() {
     const currentList = document.getElementById('currentList');
-    if (!currentList) {
-        console.error('Current list container not found');
+    if (!currentList) return;
+
+    currentList.innerHTML = '';
+
+    const nodes = linkedList ? linkedList.toArray() : [];
+    if (nodes.length === 0) {
+        const empty = document.createElement('span');
+        empty.style.color = 'var(--text-muted)';
+        empty.style.fontStyle = 'italic';
+        empty.style.margin = 'auto';
+        empty.textContent = 'List is empty';
+        currentList.appendChild(empty);
         return;
     }
 
-    currentList.innerHTML = ''; // Clear current visualization
-
-    const nodes = linkedList.toArray(); // Get the nodes from the linked list
-
-    // Create each node element and append to the container
     nodes.forEach((node, index) => {
         const nodeElement = document.createElement('div');
         nodeElement.className = 'node';
 
-        // Create content for each node: Value, Address, Prev, and Next
-        nodeElement.innerHTML = `
-            <div class="node-value">${node.value}</div>
-            <div class="node-address">Address: ${node.address}</div>
-            <div class="node-prev">Prev: ${node.prevAddress !== 'N/A' ? node.prevAddress : 'N/A'}</div>
-            <div class="node-next">Next: ${node.nextAddress !== 'N/A' ? node.nextAddress : 'N/A'}</div>
-        `;
+        const valEl = document.createElement('div');
+        valEl.className = 'node-value';
+        valEl.textContent = String(node.value);
 
-        // Append the node element to the list
+        const addrEl = document.createElement('div');
+        addrEl.className = 'node-address';
+        addrEl.textContent = `Address: ${node.address}`;
+
+        const prevEl = document.createElement('div');
+        prevEl.className = 'node-prev';
+        prevEl.textContent = `Prev: ${node.prevAddress !== 'N/A' ? node.prevAddress : 'N/A'}`;
+
+        const nextEl = document.createElement('div');
+        nextEl.className = 'node-next';
+        nextEl.textContent = `Next: ${node.nextAddress !== 'N/A' ? node.nextAddress : 'N/A'}`;
+
+        nodeElement.append(valEl, addrEl, prevEl, nextEl);
         currentList.appendChild(nodeElement);
 
-        // Create arrows between nodes
         if (index < nodes.length - 1) {
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
-            arrow.textContent = '↔'; // Bidirectional arrow between nodes
-            currentList.appendChild(arrow); 
+            arrow.textContent = '↔';
+            currentList.appendChild(arrow);
         }
     });
 
-    // Draw the circular link if the list has more than 1 node
     if (nodes.length > 1) {
         const tailNode = currentList.lastElementChild;
         const headNode = currentList.firstElementChild;
-
         if (tailNode && headNode) {
             drawStraightLink(tailNode, headNode, currentList);
         }
     }
 }
 
-
 function drawStraightLink(tailNode, headNode, container) {
-    // Get the positions of the tail and head nodes relative to the container
     const tailPosition = tailNode.getBoundingClientRect();
     const headPosition = headNode.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    // Adjust positions to be relative to the container
     const tailX = tailPosition.left - containerRect.left + tailPosition.width / 2;
     const headX = headPosition.left - containerRect.left + headPosition.width / 2;
-    
-    // Calculate Y positions
+
     const tailBottom = tailPosition.bottom - containerRect.top;
     const headBottom = headPosition.bottom - containerRect.top;
     const lineY = Math.max(tailBottom, headBottom) + 20;
-    
-    // Create an SVG element
+
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', container.offsetWidth);
     svg.setAttribute('height', container.offsetHeight);
@@ -468,63 +451,47 @@ function drawStraightLink(tailNode, headNode, container) {
     svg.style.left = '0';
     svg.style.pointerEvents = 'none';
     svg.setAttribute('viewBox', `0 0 ${container.offsetWidth} ${container.offsetHeight}`);
-    
-    // Create a path for the line
+
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    
-    // Create the path data - moving in a continuous line
-    const arrowGap = 8; // Gap for the arrow
+    const arrowGap = 8;
     const d = `
         M ${tailX},${tailBottom}
         L ${tailX},${lineY}
         L ${headX},${lineY}
         L ${headX},${headBottom + arrowGap}
     `;
-    
+
     path.setAttribute('d', d);
-    path.setAttribute('stroke', 'black');
+    path.setAttribute('stroke', 'currentColor');
     path.setAttribute('stroke-width', '2');
     path.setAttribute('fill', 'none');
     path.setAttribute('marker-end', 'url(#arrowhead)');
 
-    // Create the arrowhead marker
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
     marker.setAttribute('id', 'arrowhead');
-    marker.setAttribute('markerWidth', '6');  // Smaller width
-    marker.setAttribute('markerHeight', '4'); // Smaller height
+    marker.setAttribute('markerWidth', '6');
+    marker.setAttribute('markerHeight', '4');
     marker.setAttribute('refX', '3');
     marker.setAttribute('refY', '4');
-    marker.setAttribute('orient', '0'); // Point arrow upward
+    marker.setAttribute('orient', '0');
 
     const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    polygon.setAttribute('points', '0 4, 3 0, 6 4'); // Smaller triangle
-    polygon.setAttribute('fill', 'black');
+    polygon.setAttribute('points', '0 4, 3 0, 6 4');
+    polygon.setAttribute('fill', 'currentColor');
 
     marker.appendChild(polygon);
     defs.appendChild(marker);
-
-    // Add the defs and path to the SVG
     svg.appendChild(defs);
     svg.appendChild(path);
-
-    // Append the SVG to the container
     container.appendChild(svg);
-}
-function showSuccess(message) {
-    const successMessage = document.getElementById('successMessage');
-    if (successMessage) {
-        successMessage.textContent = message;
-        successMessage.style.display = 'block';
-        setTimeout(() => {
-            successMessage.style.display = 'none';
-        }, 2000);
-    }
 }
 
 function clearInputs() {
-    document.getElementById('valueInput').value = '';
-    document.getElementById('indexInput').value = '';
+    ['valueInput', 'indexInput', 'nodeAddress', 'newAddressInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 }
 
 function addOperationLog(operation) {
@@ -540,356 +507,365 @@ function addOperationLog(operation) {
     logContainer.scrollTop = logContainer.scrollHeight;
 }
 
+function setControlsDisabled(disabled) {
+    const buttons = document.querySelectorAll('#cllOpsModify button, #cllOpsQuery button');
+    buttons.forEach(button => {
+        button.disabled = disabled;
+    });
+    ['valueInput', 'indexInput', 'nodeAddress', 'newAddressInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = disabled;
+    });
+}
 
-function setMaxSize() {
-    const maxSizeInput = document.getElementById('maxSizeInput');
-    let size = maxSizeInput.value.trim();
-
-    // Check if the input contains '00#' or has leading zeros (except for '0')
-    if (size === "00#" || /^0[0-9]+$/.test(size)) {
-        alert("Invalid input! Leading zeros are not allowed.");
-        return;
-    }
-
-    // Now attempt to parse the size to an integer
-    size = parseInt(size);
-
-    // Ensure the number is valid and positive
-    if (isNaN(size) || size <= 0) {
-        alert("Invalid size! Please enter a valid positive number.");
-        return;
-    }
-
-    linkedList = new LinkedList(size);
-    enableOperations();
-    maxSizeInput.disabled = true;
-    document.getElementById('setMaxSizeButton').disabled = true;
-    document.getElementById('sizeReminder').style.display = 'none';
-    showSuccess(`Maximum size set to ${size}`);
-    addOperationLog(`Set maximum size to ${size}`);
+function disableAllInputs() {
+    setControlsDisabled(true);
+    const reminder = document.getElementById('sizeReminder');
+    if (reminder) reminder.hidden = false;
 }
 
 function enableOperations() {
-    const buttons = document.querySelectorAll('.buttons-grid button');
-    buttons.forEach(button => {
-        button.disabled = false;
+    setControlsDisabled(false);
+    const reminder = document.getElementById('sizeReminder');
+    if (reminder) reminder.hidden = true;
+}
+
+function setMaxSize() {
+    const maxSizeInput = document.getElementById('maxSizeInput');
+    const parsed = parseStrictInt(maxSizeInput ? maxSizeInput.value : '', {
+        min: 1,
+        label: 'Maximum size',
+        disallowLeadingZeros: true
     });
-    document.getElementById('valueInput').disabled = false;
-    document.getElementById('indexInput').disabled = false;
+
+    if (!parsed.ok) {
+        showCllMessage(parsed.error, 'error');
+        if (maxSizeInput) maxSizeInput.focus();
+        return;
+    }
+
+    linkedList = new LinkedList(parsed.value);
+    enableOperations();
+    if (maxSizeInput) maxSizeInput.disabled = true;
+    const setBtn = document.getElementById('setMaxSizeButton');
+    if (setBtn) setBtn.disabled = true;
+    showCllMessage(`Maximum size set to ${parsed.value}.`, 'success');
+    addOperationLog(`Set maximum size to ${parsed.value}`);
+    updateVisualization();
 }
 
 function append() {
-    const value = document.getElementById('valueInput').value;
-    if (!value) {
-        alert('Please enter a value!');
+    if (!requireListReady()) return;
+    const valueInput = document.getElementById('valueInput');
+    const parsed = parseStrictInt(valueInput ? valueInput.value : '', { min: 1, label: 'Value' });
+    if (!parsed.ok) {
+        showCllMessage(parsed.error, 'error');
+        if (valueInput) valueInput.focus();
         return;
     }
-    if (linkedList.append(parseInt(value))) {
+    if (linkedList.append(parsed.value)) {
         updateVisualization();
-        addOperationLog(`Appended value: ${value}`);
+        showCllMessage(`Appended value ${parsed.value}.`, 'success');
+        addOperationLog(`Appended value: ${parsed.value}`);
         clearInputs();
     }
 }
 
 function prepend() {
-    const value = document.getElementById('valueInput').value;
-    if (!value) {
-        alert('Please enter a value!');
+    if (!requireListReady()) return;
+    const valueInput = document.getElementById('valueInput');
+    const parsed = parseStrictInt(valueInput ? valueInput.value : '', { min: 1, label: 'Value' });
+    if (!parsed.ok) {
+        showCllMessage(parsed.error, 'error');
+        if (valueInput) valueInput.focus();
         return;
     }
-    if (linkedList.prepend(parseInt(value))) {
+    if (linkedList.prepend(parsed.value)) {
         updateVisualization();
-        addOperationLog(`Prepended value: ${value}`);
+        showCllMessage(`Prepended value ${parsed.value}.`, 'success');
+        addOperationLog(`Prepended value: ${parsed.value}`);
         clearInputs();
     }
 }
 
 function insertAtIndex() {
-    const value = document.getElementById('valueInput').value;
-    const index = document.getElementById('indexInput').value;
-    if (!value || !index) {
-        alert('Please enter both value and index!');
+    if (!requireListReady()) return;
+    const valueInput = document.getElementById('valueInput');
+    const indexInput = document.getElementById('indexInput');
+
+    const parsedVal = parseStrictInt(valueInput ? valueInput.value : '', { min: 1, label: 'Value' });
+    if (!parsedVal.ok) {
+        showCllMessage(parsedVal.error, 'error');
+        if (valueInput) valueInput.focus();
         return;
     }
-    if (linkedList.insertAt(parseInt(value), parseInt(index))) {
+
+    const parsedIdx = parseStrictInt(indexInput ? indexInput.value : '', { min: 0, label: 'Index' });
+    if (!parsedIdx.ok) {
+        showCllMessage(parsedIdx.error, 'error');
+        if (indexInput) indexInput.focus();
+        return;
+    }
+
+    if (linkedList.insertAt(parsedVal.value, parsedIdx.value)) {
         updateVisualization();
-        addOperationLog(`Inserted value ${value} at index ${index}`);
+        showCllMessage(`Inserted value ${parsedVal.value} at index ${parsedIdx.value}.`, 'success');
+        addOperationLog(`Inserted value ${parsedVal.value} at index ${parsedIdx.value}`);
         clearInputs();
     }
 }
 
 function deleteHead() {
+    if (!requireListReady()) return;
     if (linkedList.deleteHead()) {
         updateVisualization();
+        showCllMessage('Deleted head node.', 'success');
         addOperationLog('Deleted head node');
     } else {
+        showCllMessage('Cannot delete head: the list is empty.', 'error');
         addOperationLog('Failed to delete head (list is empty)');
     }
 }
 
 function deleteTail() {
+    if (!requireListReady()) return;
     if (linkedList.deleteTail()) {
         updateVisualization();
+        showCllMessage('Deleted tail node.', 'success');
         addOperationLog('Deleted tail node');
     } else {
+        showCllMessage('Cannot delete tail: the list is empty.', 'error');
         addOperationLog('Failed to delete tail (list is empty)');
     }
 }
 
 function deleteByIndex() {
-    const index = document.getElementById('indexInput').value;
-    if (!index) {
-        alert('Please enter an index!');
+    if (!requireListReady()) return;
+    const indexInput = document.getElementById('indexInput');
+    const parsedIdx = parseStrictInt(indexInput ? indexInput.value : '', { min: 0, label: 'Index' });
+    if (!parsedIdx.ok) {
+        showCllMessage(parsedIdx.error, 'error');
+        if (indexInput) indexInput.focus();
         return;
     }
-    if (linkedList.deleteAt(parseInt(index))) {
+    if (linkedList.deleteAt(parsedIdx.value)) {
         updateVisualization();
-        addOperationLog(`Deleted node at index ${index}`);
+        showCllMessage(`Deleted node at index ${parsedIdx.value}.`, 'success');
+        addOperationLog(`Deleted node at index ${parsedIdx.value}`);
         clearInputs();
     }
 }
 
 function clearList() {
-    // Clear the linked list and update the visualization
+    if (!requireListReady()) return;
     linkedList.clear();
+    linkedList = null;
     updateVisualization();
-    
-    // Reset the max size
-    document.getElementById('maxSizeInput').value = ''; // Clear the max size input
-    document.getElementById('maxSizeInput').disabled = false; // Re-enable max size input
-    document.getElementById('setMaxSizeButton').disabled = false; // Re-enable set max size button
-    
-    // Reset the buttons to be disabled (as max size is cleared)
+    clearInputs();
+
+    const maxSizeInput = document.getElementById('maxSizeInput');
+    if (maxSizeInput) {
+        maxSizeInput.value = '';
+        maxSizeInput.disabled = false;
+    }
+    const setBtn = document.getElementById('setMaxSizeButton');
+    if (setBtn) setBtn.disabled = false;
+
     disableAllInputs();
-    
-    // Log the operation
+    showCllMessage('Cleared the list and reset maximum size.', 'info');
     addOperationLog('Cleared the list and reset max size');
 }
 
 function size() {
-    const size = linkedList.getSize();
-    addOperationLog(`Current list size: ${size}`);
+    if (!requireListReady()) return;
+    const currentSize = linkedList.getSize();
+    showCllMessage(`Current list size: ${currentSize} / ${linkedList.maxSize}`, 'info');
+    addOperationLog(`Current list size: ${currentSize}`);
 }
 
 function reverseList() {
-    // Check if the list is empty
+    if (!requireListReady()) return;
     if (linkedList.is_empty()) {
-        addOperationLog("The list is empty. Nothing to reverse.");
-        return;  // Exit the function if the list is empty
+        showCllMessage('The list is empty. Nothing to reverse.', 'info');
+        addOperationLog('The list is empty. Nothing to reverse.');
+        return;
     }
-
-    // Reverse the list
     linkedList.reverse();
     updateVisualization();
+    showCllMessage('Reversed the circular linked list.', 'success');
     addOperationLog('Reversed the list');
 }
 
-
 function find() {
-    const address = prompt('Please enter the address to find:');  // Ask user for address input
+    if (!requireListReady()) return;
+    const addressInput = document.getElementById('nodeAddress');
+    const address = addressInput ? addressInput.value.trim() : '';
     if (!address) {
-        alert('Please enter a valid address!');
+        showCllMessage('Enter a target address in the Target Address field to find.', 'error');
+        if (addressInput) addressInput.focus();
         return;
     }
-    
-    const result = linkedList.find(address.trim());  // Call find method using address
+
+    const result = linkedList.find(address);
     if (result !== null) {
+        showCllMessage(`Found node at address ${address}: value = ${result}.`, 'success');
         addOperationLog(`Found node with address ${address}. Value: ${result}`);
     } else {
+        showCllMessage(`Address ${address} not found in the list.`, 'error');
         addOperationLog(`Address ${address} not found in the list`);
     }
 }
 
-
 function showHead() {
+    if (!requireListReady()) return;
     const head = linkedList.headNode();
     if (head !== null) {
+        showCllMessage(`Head node value: ${head}`, 'info');
         addOperationLog(`Head node value: ${head}`);
     } else {
+        showCllMessage('List is empty.', 'info');
         addOperationLog('List is empty');
     }
 }
 
 function showTail() {
+    if (!requireListReady()) return;
     const tail = linkedList.tailNode();
     if (tail !== null) {
+        showCllMessage(`Tail node value: ${tail}`, 'info');
         addOperationLog(`Tail node value: ${tail}`);
     } else {
+        showCllMessage('List is empty.', 'info');
         addOperationLog('List is empty');
     }
 }
 
 function checkIfEmpty() {
-    const isEmpty = linkedList.is_empty();
-    addOperationLog(`Is the list empty? ${isEmpty}`);
+    if (!requireListReady()) return;
+    const empty = linkedList.is_empty();
+    showCllMessage(`Is the list empty? ${empty ? 'True' : 'False'}`, 'info');
+    addOperationLog(`Is the list empty? ${empty}`);
 }
 
 function checkIfFull() {
-    const isFull = linkedList.is_full();
-    addOperationLog(`Is the list full? ${isFull}`);
+    if (!requireListReady()) return;
+    const full = linkedList.is_full();
+    showCllMessage(`Is the list full? ${full ? 'True' : 'False'}`, 'info');
+    addOperationLog(`Is the list full? ${full}`);
 }
 
 function sortList() {
-    // Check if the list is empty
+    if (!requireListReady()) return;
     if (linkedList.is_empty()) {
-        addOperationLog("The list is empty. Nothing to sort.");
-        return;  // Exit the function if the list is empty
+        showCllMessage('The list is empty. Nothing to sort.', 'info');
+        addOperationLog('The list is empty. Nothing to sort.');
+        return;
     }
-
-    // Sort the list
     linkedList.sort();
     updateVisualization();
+    showCllMessage('Sorted the circular linked list in ascending order.', 'success');
     addOperationLog('Sorted the list');
 }
 
-
 function update() {
-    const address = prompt("Enter the address of the node you want to update:");
+    if (!requireListReady()) return;
+    if (linkedList.is_empty()) {
+        showCllMessage('The list is empty. Nothing to update.', 'error');
+        return;
+    }
+
+    const addressInput = document.getElementById('nodeAddress');
+    const valueInput = document.getElementById('valueInput');
+    const address = addressInput ? addressInput.value.trim() : '';
+
     if (!address) {
-        alert("Please enter a valid address!");
+        showCllMessage('Enter the target address in the Target Address field to update.', 'error');
+        if (addressInput) addressInput.focus();
         return;
     }
-    const newValue = prompt("Enter the new value for the node:");
-    if (newValue === null) {
-        alert("Please enter a valid value!");
+
+    const parsedVal = parseStrictInt(valueInput ? valueInput.value : '', { min: 1, label: 'New value' });
+    if (!parsedVal.ok) {
+        showCllMessage(parsedVal.error, 'error');
+        if (valueInput) valueInput.focus();
         return;
     }
-    if (linkedList.updateValue(address, parseInt(newValue))) {
+
+    if (linkedList.updateValue(address, parsedVal.value)) {
         updateVisualization();
-        addOperationLog(`Updated node at address ${address} to value ${newValue}`);
+        showCllMessage(`Updated node at address ${address} to value ${parsedVal.value}.`, 'success');
+        addOperationLog(`Updated node at address ${address} to value ${parsedVal.value}`);
+        clearInputs();
     } else {
+        showCllMessage(`Address ${address} not found in the list.`, 'error');
         addOperationLog(`Failed to update node at address ${address}`);
+        if (addressInput) addressInput.focus();
     }
 }
 
 function replace() {
-    // Check if the list is empty
+    if (!requireListReady()) return;
     if (linkedList.is_empty()) {
-        addOperationLog("Attempted to replace a node, but the list is empty.");
+        showCllMessage('The list is empty. Nothing to replace.', 'error');
+        addOperationLog('Attempted to replace a node, but the list is empty.');
         return;
     }
 
-    const address = prompt("Enter the address of the node you want to replace:");
+    const addressInput = document.getElementById('nodeAddress');
+    const newAddressInput = document.getElementById('newAddressInput');
+    const valueInput = document.getElementById('valueInput');
+
+    const address = addressInput ? addressInput.value.trim() : '';
+    const newAddress = newAddressInput ? newAddressInput.value.trim() : '';
+
     if (!address) {
-        alert("Please enter a valid address!");
+        showCllMessage('Enter the target address to replace in the Target Address field.', 'error');
+        if (addressInput) addressInput.focus();
         return;
     }
 
-    // Check if the node with the given address exists
-    let current = linkedList.head;
-    let nodeFound = false;
-    
-    while (current) {
-        if (current.address === address) {
-            nodeFound = true;
-            break;
-        }
-        current = current.next;
-    }
-
-    if (!nodeFound) {
-        alert("Node with the given address not found!");
+    const targetNode = linkedList.findNode(address);
+    if (!targetNode) {
+        showCllMessage(`Node with address ${address} not found.`, 'error');
         addOperationLog(`Failed to replace node with address ${address}. Node not found.`);
+        if (addressInput) addressInput.focus();
         return;
     }
 
-    const newAddress = prompt("Enter the new address:");
     if (!newAddress) {
-        alert("Please enter a valid new address!");
+        showCllMessage('Enter a replacement address in the New Address field.', 'error');
+        if (newAddressInput) newAddressInput.focus();
         return;
     }
 
-    const newValue = prompt("Enter the new value for the node:");
-    if (!newValue) {
-        alert("Please enter a valid new value!");
+    if (!isValidAddress(newAddress)) {
+        showCllMessage('New address must be 1–20 letters, digits, underscores, or hyphens.', 'error');
+        if (newAddressInput) newAddressInput.focus();
         return;
     }
 
-    // Replace the node's address and value
-    current.address = newAddress;
-    current.value = newValue;
+    if (newAddress !== address && linkedList.findNode(newAddress) !== null) {
+        showCllMessage(`Address ${newAddress} already exists in the list.`, 'error');
+        if (newAddressInput) newAddressInput.focus();
+        return;
+    }
 
-    // After replacement, update the visualization or any other relevant parts of the system
+    const parsedVal = parseStrictInt(valueInput ? valueInput.value : '', { min: 1, label: 'New value' });
+    if (!parsedVal.ok) {
+        showCllMessage(parsedVal.error, 'error');
+        if (valueInput) valueInput.focus();
+        return;
+    }
+
+    targetNode.address = newAddress;
+    targetNode.value = parsedVal.value;
+
     updateVisualization();
-    showSuccess("Node replaced successfully!");
-    addOperationLog(`Node at address ${address} replaced with new address ${newAddress} and new value "${newValue}"`);
-}
-
-function showAddressInput() {
-    const value = document.getElementById('valueInput').value;
-    
-    if (!value) {
-        alert("Please enter a value to update.");
-        return;
-    }
-
-    const addressInputContainer = document.getElementById('addressInputContainer');
-    addressInputContainer.style.display = 'block';
-
-    const valueInForm = document.getElementById('newValue');
-    valueInForm.value = value;
-}
-
-function closeAddressInput() {
-    const addressInputContainer = document.getElementById('addressInputContainer');
-    addressInputContainer.style.display = 'none';
-}
-
-function submitAddressUpdate() {
-    const address = document.getElementById('nodeAddress').value;
-    const newValue = document.getElementById('valueInput').value;
-
-    if (!address) {
-        alert("Please enter a valid address!");
-        return;
-    }
-
-    if (isNaN(newValue)) {
-        alert("Please enter a valid value!");
-        return;
-    }
-
-    if (linkedList.updateValue(address, parseInt(newValue))) {
-        updateVisualization();
-        showSuccess("Value updated successfully!");
-        closeAddressInput();
-    } else {
-        alert("Address not found! Please check the address and try again.");
-    }
+    showCllMessage(`Replaced ${address} with address ${newAddress} and value ${parsedVal.value}.`, 'success');
+    addOperationLog(`Node at address ${address} replaced with new address ${newAddress} and new value ${parsedVal.value}`);
+    clearInputs();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     disableAllInputs();
-    document.getElementById('setMaxSizeButton').addEventListener('click', setMaxSize);
 });
-
-function disableAllInputs() {
-    const buttons = document.querySelectorAll('.buttons-grid button');
-    buttons.forEach(button => {
-        button.disabled = true;
-    });
-
-    
-    document.getElementById('valueInput').disabled = true;
-    document.getElementById('indexInput').disabled = true;
-    document.getElementById('sizeReminder').style.display = 'block';
-}
-
-// Event listeners for buttons
-document.getElementById('appendButton').addEventListener('click', append);
-document.getElementById('prependButton').addEventListener('click', prepend);
-document.getElementById('insertAtIndexButton').addEventListener('click', insertAtIndex);
-document.getElementById('deleteHeadButton').addEventListener('click', deleteHead);
-document.getElementById('deleteTailButton').addEventListener('click', deleteTail);
-document.getElementById('deleteByIndexButton').addEventListener('click', deleteByIndex);
-document.getElementById('clearListButton').addEventListener('click', clearList);
-document.getElementById('sizeButton').addEventListener('click', size);
-document.getElementById('reverseListButton').addEventListener('click', reverseList);
-document.getElementById('findButton').addEventListener('click', find);
-document.getElementById('showHeadButton').addEventListener('click', showHead);
-document.getElementById('showTailButton').addEventListener('click', showTail);
-document.getElementById('checkIfEmptyButton').addEventListener('click', checkIfEmpty);
-document.getElementById('checkIfFullButton').addEventListener('click', checkIfFull);
-document.getElementById('sortListButton').addEventListener('click', sortList);
-document.getElementById('updateButton').addEventListener('click', update);
-document.getElementById('replaceButton').addEventListener('click', replace);

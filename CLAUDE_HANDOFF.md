@@ -32,6 +32,56 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G2: Replace native dialogs (Circular LL, Doubly LL)
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-25 21:59 (Philippine time)
+- Branch: `gemini/g2-replace-dialogs`
+- Commit(s): `9455e30`
+- Files changed: `circular-linked-list.html`, `circLL.js`, `doubly-linked-list.html`
+- Summary:
+  - Removed all 67 native `alert()` / `prompt()` calls across `circLL.js` (29) and `doubly-linked-list.html` (38); grep count for `alert(|prompt(|confirm(` is now `0` across all three owned files.
+  - **Circular Linked List:** Added labelled `.field` inputs (`#maxSizeInput`, `#valueInput`, `#indexInput`, `#nodeAddress`, `#newAddressInput`) and an inline `#cllMessage` (`.alert-banner.alert-live`). Fixed pre-existing bugs: removed null-element `addEventListener` crash at bottom of `circLL.js`, fixed infinite `while (current)` loop in `replace()` on missing address (now uses `findNode()` returning `null`), properly disabled operation controls before capacity is set, validated new address format (`/^[A-Za-z0-9_-]{1,20}$/`), and switched node rendering to `createElement`/`textContent` (no `innerHTML` injection). Confirmed `LinkedList.find()` returns `null` (no `-1` sentinel).
+  - **Doubly Linked List:** Added labelled `.field` inputs (`#list-limit`, `#value`, `#index`, `#address`, `#new-address`) and an inline `#dllMessage` (`.alert-banner.alert-live`). Replaced all 38 `alert()` calls with `showDllMessage()` (also triggering `DSA_UI.showToast` when available), added strict integer parsing (`parseStrictInt`) so `0` is handled without falsy bugs, validated new address format, and switched node rendering to `createElement`/`textContent`.
+- npm test output (paste the real lines):
+    # tests 75
+    # pass 75
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `circular-linked-list.html` and `doubly-linked-list.html` on `http://localhost:5501` at desktop (`1280px`) and mobile (`375px`) widths. Console clean: yes (0 console errors, 0 uncaught page errors, 0 native dialogs, 0 overflowing elements at 375px and 1280px). Tested capacity validation (`0` and `4`), append, prepend, insert at index (including `0` on DLL), size/head/tail/isEmpty/isFull, find (existing + missing), update, replace (existing + missing without hang), delete by index, reverse, sort, delete head/tail, and clear list.
+- Not done / not verified: Full keyboard-only Tab traversal and screen reader announcements were not manually audited. No CSS edits made (`main.css` owned by G3).
+- Requests for Claude: Ready for review and merge. No new CSS or nav changes required.
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-25 22:06 (Philippine time)
+- Reviewed commit: `cf7496e`
+- Verdict: **MERGE**
+- Scope: only `circLL.js`, `circular-linked-list.html`, `doubly-linked-list.html` + TASK_BOARD/CLAUDE_HANDOFF. Merged into current `main` with no conflicts.
+- Logic review (diffed with comments/blank lines ignored): the linked-list pointer code is unchanged except for
+  requested or safe fixes. `findNode()` returns the node (`find()` still returns value or `null`), and `deleteAt`
+  validates the index before the head/tail shortcuts. `insertAt(…, 0)` now goes straight to `prepend` (no wasted
+  node/address), and the no-op loop in `sort` was removed. Doubly LL `append` now uses `tail` instead of walking.
+- Checked by Claude:
+  - `npm test` on the merged result: `# tests 79 / # pass 79 / # fail 0`, legacy `24 / 24`.
+  - `alert(|prompt(|confirm(` count is 0 in all 3 files.
+  - Doubly LL: 300 seeded random append/prepend/insert/delete ops against a model. After every op,
+    forward (head→next) and backward (tail→prev) walks matched and `size` was correct (so `tail` stays valid).
+    Reverse, sort, find (+missing), update to `0`, replace (+missing) and size all checked. A `<img onerror>` address is rejected
+    and nothing is injected.
+  - Circular LL: same 300-op model test. Each walk returned to head in exactly `size` steps in both directions.
+    Reverse, sort, find (+missing), and replace on a missing address returned in 3 ms (the old version looped forever).
+    The HTML address is rejected, the operation log keeps history, and ops are blocked before capacity is set.
+  - 0 dialogs fired, no console errors, no horizontal overflow at 375px on both pages.
+- Blocking issues: none.
+- Non-blocking, for later:
+  1. `circLL.js` lost most explanatory comments in the pointer code (e.g. "New node's prev points to the last node").
+     Students read this file, so the comments were teaching material. Restore them when this logic moves to `src/structures/`.
+  2. The Circular LL operation log grows without limit (275 entries in the test). Cap it at ~50.
+  3. Doubly LL accepts 0 and negative values, while Circular LL requires ≥ 1. This was already inconsistent before G2;
+     pick one rule when the lists are migrated.
+- Merged in: see `git log` (merge of `gemini/g2-replace-dialogs`)
+
+---
+
 ### G1: Replace native dialogs (AVL, Stack, Singly LL)
 - Author: Gemini (Antigravity)
 - Branch: `gemini/g1-replace-dialogs`
