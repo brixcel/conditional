@@ -2382,3 +2382,164 @@ input:disabled, select:disabled {
         transition: none;
     }
 }
+
+/* --------------------------------------------------------------------------
+   17. Red-Black Tree (C21)
+   Reuses sections 14/15 (.hp-*, .bst-*) for the SVG tree, cells and scroll regions;
+   uses section 1 tokens only. Node fill shows the colour; the label under every
+   node spells it ("red" / "black") so hue is never the only cue. State (path,
+   comparing, rotated, error) is drawn on an outer halo ring with its own dash
+   pattern, so it never hides the node's red/black fill.
+   Classes: .rb-svg .rb-red .rb-black .rb-halo .rb-db-ring .rb-double-black
+            .rb-violation .rb-violation-edge .rb-flash-a .rb-flash-b .rb-nil
+            .rb-nil-circle .rb-nil-text .rb-nil-edge .rb-sw .rb-sw-red .rb-sw-black
+            .rb-sw-double .rb-sw-violation .rb-rules .rb-cell-red
+   -------------------------------------------------------------------------- */
+
+/* Node fill by colour (beats the .hp-* / .bst-path fills, which move to the halo). */
+.rb-svg .hp-node.rb-red .hp-node-circle,
+.rb-svg .hp-node.rb-black .hp-node-circle {
+    stroke-width: 2;
+    stroke-dasharray: none;
+}
+.rb-svg .hp-node.rb-red .hp-node-circle {
+    fill: var(--danger);
+    stroke: var(--danger-text);
+}
+/* --badge-dark-bg is dark in both themes; the light --text-secondary ring keeps
+   black nodes visible on the dark stage. */
+.rb-svg .hp-node.rb-black .hp-node-circle {
+    fill: var(--badge-dark-bg);
+    stroke: var(--text-secondary);
+}
+.rb-svg .hp-node.hp-root.rb-black .hp-node-circle,
+.rb-svg .hp-node.hp-root.rb-red .hp-node-circle {
+    stroke-width: 3;
+}
+.rb-svg .hp-node.rb-red .hp-node-value,
+.rb-svg .hp-node.rb-black .hp-node-value {
+    fill: var(--text-white);
+}
+.rb-svg .hp-node.rb-red .hp-node-index { fill: var(--danger-text); }
+
+/* State halo: hidden unless the node carries a state class. */
+.rb-halo {
+    fill: none;
+    stroke: none;
+    stroke-width: 2.5;
+    pointer-events: none;
+}
+.rb-svg .hp-node.bst-path .rb-halo    { stroke: var(--bar-select);  stroke-dasharray: 6 3; }
+.rb-svg .hp-node.hp-compare .rb-halo  { stroke: var(--bar-compare); stroke-width: 3; stroke-dasharray: 3 3; }
+.rb-svg .hp-node.hp-select .rb-halo   { stroke: var(--bar-select);  stroke-width: 3; stroke-dasharray: 1.5 2.5; stroke-linecap: round; }
+.rb-svg .hp-node.hp-settled .rb-halo  { stroke: var(--bar-sorted);  stroke-width: 3.5; }
+.rb-svg .hp-node.hp-swap .rb-halo,
+.rb-svg .hp-node.rb-violation .rb-halo {
+    stroke: var(--bar-swap);
+    stroke-width: 4;
+    stroke-dasharray: 6 2 2 2;
+}
+.rb-svg .hp-node.rb-violation .hp-node-index {
+    fill: var(--danger-text);
+    font-weight: 700;
+}
+
+/* Recolour flash: two identical keyframes so consecutive recolour steps restart it. */
+.rb-svg .hp-node.rb-flash-a .rb-halo,
+.rb-svg .hp-node.rb-flash-b .rb-halo {
+    stroke: var(--bar-select);
+    stroke-width: 3.5;
+    stroke-dasharray: none;
+}
+.rb-svg .hp-node.rb-flash-a .rb-halo { animation: rb-flash-a 0.7s ease-in-out 1; }
+.rb-svg .hp-node.rb-flash-b .rb-halo { animation: rb-flash-b 0.7s ease-in-out 1; }
+@keyframes rb-flash-a {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75%      { opacity: 0.15; }
+}
+@keyframes rb-flash-b {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75%      { opacity: 0.15; }
+}
+
+/* Double black: two concentric rings (shape cue, not colour). */
+.rb-db-ring {
+    display: none;
+    fill: none;
+    stroke: var(--text-primary);
+    stroke-width: 2;
+    pointer-events: none;
+}
+.rb-double-black .rb-db-ring { display: inline; }
+.rb-double-black .rb-halo { display: none; }
+
+.rb-svg .hp-edge.rb-violation-edge {
+    stroke: var(--bar-swap);
+    stroke-width: 4;
+    stroke-dasharray: 6 2 2 2;
+}
+
+/* Phantom NIL child carrying a double black (delete of a black leaf). */
+.rb-nil-edge {
+    stroke: var(--text-light);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+}
+.rb-nil-circle {
+    fill: var(--badge-dark-bg);
+    stroke: var(--text-secondary);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 2;
+}
+.rb-nil-text {
+    fill: var(--text-white);
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+/* Legend swatches. */
+.rb-sw {
+    border-radius: 50%;
+}
+.rb-sw-red {
+    background-color: var(--danger);
+    border: 2px solid var(--danger-text);
+}
+.rb-sw-black {
+    background-color: var(--badge-dark-bg);
+    border: 2px solid var(--text-secondary);
+}
+.rb-sw-double {
+    background-color: var(--badge-dark-bg);
+    border: 2px solid var(--text-primary);
+    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--text-primary);
+}
+.rb-sw-violation {
+    background-color: var(--danger-subtle);
+    border: 3px dashed var(--bar-swap);
+}
+
+/* In-order cells: red keys get a thick red left edge (plus the R/B text label). */
+.bst-cell.rb-cell-red {
+    border-left-width: 6px;
+    border-left-color: var(--danger);
+}
+
+.rb-rules {
+    padding-left: 1.4em;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+.rb-rules li + li { margin-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .rb-svg .hp-node.rb-flash-a .rb-halo,
+    .rb-svg .hp-node.rb-flash-b .rb-halo {
+        animation: none;
+    }
+}
