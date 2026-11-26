@@ -34,7 +34,7 @@
       "Any comparison sort needs Ω(n log n) comparisons in the worst case. It must tell apart all n! possible orderings, and each comparison has only two outcomes, so it needs at least log₂(n!) comparisons, which grows like n log n. Ω (big-omega) means at least this much. Merge Sort and Heap Sort meet this bound.",
       "Counting Sort makes no comparisons, so that bound does not apply. It costs O(n + k), where k = max − min + 1 is the range of values. It pays off only when k is small compared with n: if 8 values span 1 to 999, k is 999 and the count array is far larger than the input. This version subtracts min, so negative values work.",
       "Radix Sort (LSD, least significant digit first) runs one stable counting pass per decimal digit, ones first. Each pass costs O(n + 10), so d digits cost O(d·(n + 10)). Earlier passes survive only because each pass is stable. If there are negative values, every key is first shifted up by −min, which can add a digit.",
-      "This Quick Sort is also O(n²) on reverse-sorted input, where each pivot is the smallest or largest value left, and on all-equal input, where values equal to the pivot all go right. Recursion depth is O(log n) on average but n − 1 on sorted input, so the page's O(log n) avg stack is an average, not a worst-case bound.",
+      "This Quick Sort is also O(n²) on reverse-sorted input, where each pivot is the smallest or largest value left, and on all-equal input, where values equal to the pivot all go right. Recursion depth is O(log n) on average but n − 1 on sorted input, so the page lists its stack space as O(log n) on average and linear, O(n), in the worst case.",
       "Heap Sort first builds a max-heap bottom-up in O(n) time, then does n − 1 swap-and-sift-down steps of O(log n) each. The children of index i are at 2i + 1 and 2i + 2, so the tree needs no pointers. Its long-distance swaps are what make it unstable."
     ]
   },
@@ -128,7 +128,7 @@
     {
       "name": "Radix Sort (LSD)",
       "lines": [
-        "for place ← 1, 10, 100, … while place ≤ max",
+        "for place ← 1, 10, 100, … while place ≤ max (negatives first shifted up by −min)",
         "    count how many keys have each digit 0–9 at this place",
         "    prefix sums: count[d] = end position for digit d",
         "    for i ← n − 1 down to 0: B[−−count[digit(A[i])]] ← A[i]",
@@ -182,7 +182,7 @@
       "best": "O(n log n)",
       "average": "O(n log n)",
       "worst": "O(n²)",
-      "space": "O(log n) avg stack",
+      "space": "O(log n) avg · linear worst",
       "stable": false,
       "inPlace": true,
       "note": "Lomuto partition with the last element as pivot. Sorted, reverse-sorted and all-equal input give O(n²). Recursion depth is O(log n) on average but n − 1 in the worst case.",
