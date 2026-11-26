@@ -130,6 +130,7 @@ const NEEDS_NODES = ["deleteHeadBtn", "deleteTailBtn", "deleteIndexBtn", "showHe
 const NEEDS_TWO = ["sortBtn", "reverseBtn"];
 
 function updateState() {
+    const focused = document.activeElement;
     const ready = list !== null;
     const empty = !ready || list.isEmpty();
     els.maxSize.disabled = ready;
@@ -143,6 +144,8 @@ function updateState() {
     els.index.disabled = !ready;
     els.address.disabled = empty;
     els.newAddress.disabled = empty;
+    // Focused control may have just been disabled (e.g. Clear empties the list): keep focus on the page.
+    window.DSA_UI?.rescueFocus?.(focused, els.value, els.maxSize, els.reset);
 }
 
 function refresh(highlightAddress = null) {

@@ -35,6 +35,7 @@ function notify(message, type = "info") {
 }
 
 function updateState() {
+    const focused = document.activeElement;
     const ready = stack !== null && !busy;
     els.capacity.disabled = stack !== null;
     els.setCap.disabled = stack !== null;
@@ -42,6 +43,9 @@ function updateState() {
     OPS.forEach(b => { b.disabled = !ready; });
     els.count.textContent = stack ? `${stack.size} / ${stack.capacity}` : "0 / 0";
     els.top.textContent = stack && !stack.isEmpty() ? `${stack.peek()} (index ${stack.top})` : "Empty (None)";
+    // A focused control that was just disabled would drop focus to <body>. Skipped while
+    // the pop animation runs (everything is disabled); pop() restores focus afterwards.
+    if (!busy) window.DSA_UI?.rescueFocus?.(focused, els.value, els.capacity, els.reset);
 }
 
 /** Bars mirror stack.toArray() (bottom → top). Only the changed bar is added/removed so animations stay meaningful. */
@@ -107,11 +111,16 @@ function pop() {
     }
     const res = stack.pop();
     const bar = els.box.lastElementChild;
+    const returnFocus = document.activeElement;
     const finish = () => {
         bar?.remove();
         busy = false;
         els.value.value = "";
         updateState();
+        // The animation disabled the focused button; give focus back once it is enabled again.
+        if (returnFocus && returnFocus !== document.body && (!document.activeElement || document.activeElement === document.body)) {
+            returnFocus.focus();
+        }
         notify(`Popped ${res.value} from Top of Stack (LIFO). ` +
             (stack.isEmpty() ? "The stack is now empty (top = −1)." : `top is now ${stack.top}.`), "info");
     };

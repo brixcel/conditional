@@ -357,6 +357,19 @@
     window.DSA_UI = {
         announce: announce,
 
+        /**
+         * Call at the end of a re-render with the element that was focused before it.
+         * If that element is now disabled or was removed, focus the first usable
+         * fallback so keyboard and screen-reader users do not drop to <body>.
+         */
+        rescueFocus: function (previous) {
+            if (!previous || previous === document.body || previous === document.documentElement) return;
+            if (previous.isConnected && !previous.disabled) return;
+            const fallbacks = Array.prototype.slice.call(arguments, 1);
+            const target = fallbacks.find(function (el) { return el && el.isConnected && !el.disabled; });
+            if (target) target.focus();
+        },
+
         showToast: function (message, type = "info", duration = 3500) {
             let toastContainer = document.getElementById("toastContainer");
             if (!toastContainer) {

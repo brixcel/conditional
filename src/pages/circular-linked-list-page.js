@@ -130,12 +130,15 @@ function render(highlightAddress = null) {
 }
 
 function updateState() {
+    const focused = document.activeElement;
     const ready = list !== null;
     els.maxSize.disabled = ready;
     els.setMax.disabled = ready;
     els.reminder.hidden = ready;
     [els.value, els.index, els.address, els.newAddress].forEach((el) => { el.disabled = !ready; });
     OP_BUTTONS.forEach((id) => { $(id).disabled = !ready; });
+    // Set Max Size disables itself; keep focus on the page.
+    window.DSA_UI?.rescueFocus?.(focused, els.value, els.maxSize);
 }
 
 function refresh(highlightAddress = null) {
