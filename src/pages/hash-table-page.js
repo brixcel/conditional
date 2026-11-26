@@ -323,7 +323,7 @@ function render(step, index, p) {
     els.progress.value = index;
 
     els.playBtn.innerHTML = p.isPlaying ? "&#x23F8; Pause" : (p.atEnd ? "&#x21BB; Replay" : "&#x25B6; Play");
-    els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : "Play");
+    els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : (p.atEnd ? "Replay" : "Play"));
     els.prevBtn.disabled = p.atStart;
     els.resetBtn.disabled = p.atStart;
     els.nextBtn.disabled = p.atEnd;
