@@ -9,7 +9,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C17 | Player keys cleanup: BST on `bindPlayerKeys`, local scroll-box workarounds removed | Claude (visualization-engineer agent) | `claude/c17-keys-cleanup` | `src/pages/bst-page.js`, `trie-page.js`, `avl-page.js` |
 | C18 | Lesson format + validator | Claude (learning-content agent) | `claude/c18-lessons` | `content/lessons/*`, `src/learn/*`, `tests/lessons.test.js` |
 | C19 | Quiz engine + progress | Claude (quiz-challenges agent) | `claude/c19-quiz` | `content/quizzes/*`, `src/quiz/*`, `tests/quiz.test.js` |
 | G10 | Graph representation module + page | Gemini | `gemini/g10-graph` | see GEMINI_HANDOFF.md#g10 |
@@ -30,6 +29,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C17 | All player pages use `bindPlayerKeys` (BST moved over); local scroll-box key workarounds removed; static test guards it | Claude (visualization-engineer agent) | 2026-11-26 20:55 (merged to `main`) |
 | C16 | Player keys ignore focusable scroll boxes and the open nav drawer (`src/core/player-keys.js`) | Claude (visualization-engineer agent) | 2026-11-26 19:44 (merged to `main`) |
 | C15 | Hash table quadratic probing (prime m, α ≤ 0.5) + page; hash-table page has no `innerHTML` | Claude (data-structures + visualization-engineer agents) | 2026-11-26 19:44 (merged to `main`) |
 | C12 | AVL tree as a pure module (`src/structures/avl.js`) + module page; `avl-tree.js` removed; slider fix; button spacing on AVL/BST | Claude (data-structures agent) | 2026-11-26 19:44 (merged to `main`) |
