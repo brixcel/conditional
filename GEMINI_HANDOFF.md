@@ -10,10 +10,10 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-27 02:10 |
+| Last updated by Claude | 2026-11-27 02:28 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1, G2, G3 (2026-11-25); G4-G9 (2026-11-26); **G10 merged to `main` at 21:21** |
-| **Gemini: do next** | **G14**: lessons for six pages (spec below), branch `gemini/g14-lessons` from fresh `main`. Then **G15** (quiz banks for the same pages), then **G16** (lessons + quizzes for the tree pages), each after reporting the one before. G11, G12 and G13 are reported; Claude reviews and merges them. Take only the task named here |
+| Merged | G1, G2, G3 (2026-11-25); G4-G10 (2026-11-26); **G11, G12, G13 merged to `main` at 2026-11-27 02:23** |
+| **Gemini: do next** | **G14**: lessons for six pages (spec below), branch `gemini/g14-lessons` from fresh `main`. Then **G15** (quiz banks for the same pages), then **G16** (lessons + quizzes for the tree pages), then **G17** (linked lists), then **G18** (graph, DSU, Fenwick, Segment Tree), each after reporting the one before. G11, G12 and G13 are reported; Claude reviews and merges them. Take only the task named here |
 | Claude is working on | Reviewing G11-G13; BFS/DFS on the graph page (C23), linked-list pages on the step player (C24), recursion/DP/greedy/backtracking demos (C25). Don't edit the linked-list pages or `graph.html` |
 
 **Short prompt for Antigravity after the first time:**
@@ -533,5 +533,36 @@ messages the modules produce. Trace every tryIt on the real page, including the 
 **Done when:** as G14 and G15.
 
 ---
+## G17: Lessons + quiz banks for the linked-list pages <a id="g17"></a>
+**Status: ready after you report G16.** Start from fresh `main` on branch `gemini/g17-list-learning`.
+**Files you own:** new `content/lessons/singly-linked-list.json`, `doubly-linked-list.json`, `circular-linked-list.json`,
+`content/quizzes/singly-linked-list.json`, `doubly-linked-list.json`, `circular-linked-list.json`, and a NEW test file
+`tests/quiz-banks-g17.test.js`.
+**Do not edit:** existing files.
+**Do:** as G14 and G15 for `singly-linked-list.html`, `doubly-linked-list.html`, `circular-linked-list.html` (modules
+`src/structures/linked-list.js`, `doubly-linked-list.js`, `circular-linked-list.js`; registries `LINKED_LIST_INFO`,
+`DOUBLY_LINKED_LIST_INFO`, `CIRCULAR_LINKED_LIST_INFO`). These pages now replay every operation step by step (pointer
+walks, each re-pointed link shown old → new, "Pointers written this step"); lessons should use that in their tryIt steps
+(e.g. insert at an index, then step through and name the pointers that change). Addresses are labels like `ABC001`; the
+player's reset button is “⏮ Reset” while the page's own reset is a separate button — quote the exact visible names.
+Recompute every `predict` answer in the test from the real module.
+**Done when:** `npm test` passes; your report lists each tryIt you clicked through.
+
+---
+## G18: Lessons + quiz banks for graph, DSU, Fenwick and Segment Tree <a id="g18"></a>
+**Status: ready after you report G17.** Start from fresh `main` on branch `gemini/g18-advanced-learning`.
+**Files you own:** new `content/lessons/graph.json`, `dsu.json`, `fenwick-tree.json`, `segment-tree.json`, the four
+matching `content/quizzes/*.json`, and a NEW test file `tests/quiz-banks-g18.test.js`.
+**Do not edit:** existing files.
+**Do:** as G14 and G15 for `graph.html` (`src/structures/graph.js` plus the Traversal card: BFS, DFS iterative and
+recursive from `src/algorithms/graph-traversal.js`; if Claude has merged Dijkstra / Bellman-Ford / topological sort / MST
+onto the page by the time you start, cover them too, using their registries), `dsu.html`, `fenwick-tree.html`,
+`segment-tree.html`. Use the registries (`GRAPH_INFO`, `GRAPH_TRAVERSAL_INFO`, `DSU_INFO`, `FENWICK_INFO`,
+`SEGMENT_TREE_INFO`). Quiz questions must include BFS/DFS visit orders on small given graphs (recompute in the test with
+the real module), Fenwick index paths (`i & -i`), segment-tree overlap classification, and DSU results with and without
+union by rank / path compression.
+**Done when:** `npm test` passes; your report lists each tryIt you clicked through.
+
+---
 ## Queue after these (not ready yet)
-Lessons + quizzes for the linked-list, graph, DSU, Fenwick and Segment Tree pages (after C24 and the G11-G13 merges).
+Lessons + quizzes for the algorithm-techniques page and the graph algorithms (after Claude merges them).

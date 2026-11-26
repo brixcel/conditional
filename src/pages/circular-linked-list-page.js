@@ -2,6 +2,8 @@
  * Circular Linked List page controller. The list is a real CircularLinkedList
  * (src/structures/circular-linked-list.js): a ring of nodes with prev and next,
  * where tail.next is head and head.prev is tail. Replaces circLL.js.
+ * Playback: src/core/step-player.js; shortcuts: src/core/player-keys.js;
+ * drawing: src/core/list-renderer.js.
  *
  * Kept from the original page: values are whole numbers >= 1 and may repeat,
  * abc_001-style addresses, the same buttons and ids, every operation enabled once
@@ -13,9 +15,15 @@
  * the tail → head link is an explicit "back to HEAD" end cap instead of an SVG
  * measured from screen positions; the log keeps the last 50 entries; no duplicate
  * toast popups; messages explain each pointer change.
+ * C24: every operation loads its recorded steps into the step player: walks from the
+ * nearer end, each prev/next write shown old → new, the wrap back to head, and sort
+ * opening and closing the ring.
  */
-import { CircularLinkedList } from "../structures/circular-linked-list.js";
+import { CircularLinkedList, CIRCULAR_LINKED_LIST_INFO } from "../structures/circular-linked-list.js";
 import { parseInteger } from "../core/validate.js";
+import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
+import { createListRenderer, countUpTo } from "../core/list-renderer.js";
 
 const MAX_SIZE = 20;
 const VALUE_MAX = 999999;
@@ -24,14 +32,131 @@ const $ = (id) => document.getElementById(id);
 const els = {
     maxSize: $("maxSizeInput"), setMax: $("setMaxSizeButton"), reminder: $("sizeReminder"), message: $("cllMessage"),
     value: $("valueInput"), index: $("indexInput"), address: $("nodeAddress"), newAddress: $("newAddressInput"),
-    display: $("currentList"), log: $("operationsLog"),
+    display: $("currentList"), log: $("operationsLog"), detached: $("llDetached"), changes: $("llChanges"),
+    head: $("llHeadVal"), tail: $("llTailVal"), count: $("llSizeVal"),
+    visits: $("llVisitsVal"), compares: $("llComparesVal"), writes: $("llWritesVal"),
+    resetBtn: $("playerResetBtn"), prevBtn: $("prevBtn"), playBtn: $("playBtn"), nextBtn: $("nextBtn"),
+    speed: $("speedSelect"), progress: $("progress"), counter: $("stepCounter"),
+    stepMessage: $("stepMessage"), codeHeading: $("codeHeading"), code: $("pseudocode"),
 };
 const OP_BUTTONS = ["appendButton", "prependButton", "insertAtIndexButton", "deleteHeadButton", "deleteTailButton",
     "deleteByIndexButton", "clearListButton", "sizeButton", "showHeadButton", "showTailButton", "reverseListButton",
     "sortListButton", "findButton", "updateButton", "replaceButton", "checkIfEmptyButton", "checkIfFullButton"];
+const PLAYER_BUTTONS = [els.resetBtn, els.prevBtn, els.playBtn, els.nextBtn];
+const STEP_HINT = "Set a max size, then run an operation to watch each prev / next change and the wrap back to head.";
+const reduceMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
 /** @type {CircularLinkedList | null} */
 let list = null;
+
+/* ---------- player ---------- */
+
+const renderer = createListRenderer({ chain: els.display, detached: els.detached, changes: els.changes },
+    { kind: "circular", emptyClass: "text-muted text-italic m-auto", reduceMotion });
+const player = new StepPlayer({ onStep: render, baseDelay: 750 });
+player.setSpeed(Number(els.speed.value) || 1);
+let loaded = false;    // false until an operation records steps
+let quiet = false;     // true while loading steps: the result is announced through notify()
+let liveReady = false; // page setup stays silent
+let codeKey = "";
+let codeTitle = "";
+
+// Keys and buttons go through these wrappers so nothing replays before an operation has run.
+const whenLoaded = (fn) => () => { if (loaded) fn(); };
+const playerControls = {
+    toggle: whenLoaded(() => { if (player.length > 1) player.toggle(); }),
+    pause: whenLoaded(() => player.pause()),
+    next: whenLoaded(() => player.next()),
+    prev: whenLoaded(() => player.prev()),
+    reset: whenLoaded(() => player.reset()),
+};
+
+/** Loads an operation's steps. Autoplays unless reduced motion is on; then it shows the final step (Back replays). */
+function loadSteps(steps, title) {
+    loaded = true;
+    quiet = true;
+    codeTitle = title;
+    codeKey = null;      // force the heading to refresh even when the operation key repeats
+    player.load(steps);
+    const animate = steps.length > 1 && !reduceMotion();
+    if (!animate) player.goTo(steps.length - 1);
+    quiet = false;
+    if (animate) player.play();
+}
+
+/** A frame holding the real current state, used after Set Max Size (no operation has run yet). */
+function stateStep(message) {
+    return { type: "state", operation: "", line: 0, addresses: [], cursors: {}, changes: [], message, snapshot: list.snapshot() };
+}
+
+function unloadPlayer() {
+    player.pause();
+    loaded = false;
+    renderer.clear();
+    els.counter.textContent = "Step 0 / 0";
+    els.progress.max = 0;
+    els.progress.value = 0;
+    els.progress.disabled = true;
+    els.progress.setAttribute("aria-valuetext", "No steps");
+    PLAYER_BUTTONS.forEach((b) => { b.disabled = true; });
+    els.playBtn.textContent = "▶ Play";
+    els.playBtn.setAttribute("aria-label", "Play");
+    els.stepMessage.setAttribute("aria-live", "off");
+    els.stepMessage.textContent = STEP_HINT;
+    codeTitle = "";
+    setCode("", []);
+    paintMonitor(null, { visits: 0, comparisons: 0, writes: 0 });
+}
+
+function setCode(key, lines) {
+    if (key !== codeKey) {
+        codeKey = key;
+        els.codeHeading.textContent = key ? `Pseudocode: ${codeTitle || key}` : "Pseudocode";
+        els.code.replaceChildren(...(CIRCULAR_LINKED_LIST_INFO.pseudocode[key] ?? []).map((text) => {
+            const li = document.createElement("li");
+            li.textContent = text;
+            return li;
+        }));
+    }
+    const on = new Set(lines);
+    [...els.code.children].forEach((li, i) => li.classList.toggle("active", on.has(i + 1)));
+}
+
+function paintMonitor(snap, counts) {
+    els.head.textContent = snap?.head ?? "NULL";
+    els.tail.textContent = snap?.tail ? `${snap.tail} (head.prev)` : "NULL";
+    els.count.textContent = snap ? `${snap.size} / ${snap.capacity}` : "0 / 0";
+    els.visits.textContent = String(counts.visits);
+    els.compares.textContent = String(counts.comparisons);
+    els.writes.textContent = String(counts.writes);
+}
+
+function render(step, index, p) {
+    renderer.render(step);
+    paintMonitor(step.snapshot, countUpTo(p.steps, index));
+    setCode(step.operation, step.lines ?? (step.line ? [step.line] : []));
+
+    // aria-live is set before the text: autoplay and loads stay quiet; user steps and the last autoplay frame speak.
+    els.stepMessage.setAttribute("aria-live", p.isPlaying || quiet || !liveReady ? "off" : "polite");
+    els.stepMessage.textContent = step.message;
+
+    els.counter.textContent = `Step ${index + 1} / ${p.length}`;
+    els.progress.max = Math.max(0, p.length - 1);
+    els.progress.value = index;
+    els.progress.disabled = p.length <= 1;
+    els.progress.setAttribute("aria-valuetext", `Step ${index + 1} of ${p.length}`);
+
+    const label = p.isPlaying ? "Pause" : (p.atEnd && p.length > 1 ? "Replay" : "Play");
+    els.playBtn.textContent = p.isPlaying ? "⏸ Pause" : (p.atEnd && p.length > 1 ? "↻ Replay" : "▶ Play");
+    els.playBtn.setAttribute("aria-label", label);
+
+    const focused = document.activeElement;
+    els.playBtn.disabled = p.length <= 1;
+    els.prevBtn.disabled = p.atStart;
+    els.resetBtn.disabled = p.atStart;
+    els.nextBtn.disabled = p.atEnd;
+    window.DSA_UI?.rescueFocus?.(focused, els.playBtn, els.value, els.maxSize);
+}
 
 /* ---------- messages & log ---------- */
 
@@ -80,54 +205,7 @@ function readAddress(input, what) {
 
 const clearInputs = () => [els.value, els.index, els.address, els.newAddress].forEach((el) => { el.value = ""; });
 
-/* ---------- rendering ---------- */
-
-function textEl(tag, className, text) {
-    const el = document.createElement(tag);
-    el.className = className;
-    el.textContent = text;
-    return el;
-}
-
-function arrow(symbol) {
-    const a = textEl("span", "arrow", symbol);
-    a.setAttribute("aria-hidden", "true");
-    return a;
-}
-
-function render(highlightAddress = null) {
-    els.display.replaceChildren();
-    if (!list || list.isEmpty()) {
-        els.display.append(textEl("span", "text-muted text-italic m-auto", "List is empty"));
-        return;
-    }
-    for (const node of list.nodes()) {
-        if (node !== list.head) els.display.append(arrow("⇄"));
-        const box = document.createElement("div");
-        box.className = "node-box" + (node.address === highlightAddress ? " node-highlight" : "");
-        const isHead = node === list.head;
-        const isTail = node === list.tail;
-        if (isHead || isTail) {
-            box.append(textEl("span", "slot-label slot-label-active", isHead && isTail ? "HEAD & TAIL" : isHead ? "HEAD" : "TAIL"));
-        }
-        box.append(
-            textEl("div", "mono text-muted", node.address),
-            textEl("div", "mono text-secondary", `Prev: ${node.prev.address}`),
-            textEl("strong", "mono", String(node.value)),
-            textEl("div", "mono text-secondary", `Next: ${node.next.address}`),
-        );
-        box.setAttribute("aria-label", `${isHead ? "head, " : ""}${isTail ? "tail, " : ""}address ${node.address}, ` +
-            `value ${node.value}, prev ${node.prev.address}, next ${node.next.address}`);
-        els.display.append(box);
-    }
-    // The ring closes: tail.next is head. Show that instead of a NULL end.
-    els.display.append(arrow("→"));
-    const loop = document.createElement("div");
-    loop.className = "node-box car-empty";
-    loop.append(textEl("span", "slot-label", "BACK TO HEAD"), textEl("strong", "mono", `↺ ${list.head.address}`));
-    loop.setAttribute("aria-label", `tail.next points back to head ${list.head.address}`);
-    els.display.append(loop);
-}
+/* ---------- button state ---------- */
 
 function updateState() {
     const focused = document.activeElement;
@@ -141,8 +219,9 @@ function updateState() {
     window.DSA_UI?.rescueFocus?.(focused, els.value, els.maxSize);
 }
 
-function refresh(highlightAddress = null) {
-    render(highlightAddress);
+/** Shows the operation's steps, then re-applies the enable rules for the live list. */
+function show(result, title) {
+    loadSteps(result.steps, title);
     updateState();
 }
 
@@ -153,11 +232,14 @@ function setMaxSize() {
     const parsed = parseInteger(raw, { min: 1, max: MAX_SIZE, label: "Maximum size" });
     if (!parsed.ok) { error(raw.trim() === "" ? `Enter a maximum size from 1 to ${MAX_SIZE}.` : parsed.error, els.maxSize); return; }
     list = new CircularLinkedList(parsed.value);
+    updateState();
+    loadSteps([stateStep(`Maximum size ${parsed.value}. The ring is empty: head = NULL.`)], "");
     notify(`Maximum size set to ${parsed.value}. head = NULL (empty ring).`, "success");
     log(`Set maximum size to ${parsed.value}`);
-    refresh();
     els.value.focus();
 }
+
+const INSERT_TITLES = { head: "prepend(x) = insertAt(0, x)", tail: "append(x) = insertAt(size, x)", index: "insertAt(i, x)" };
 
 function insert(where) {
     if (list.isFull()) { error(`The list is full (${list.size} of ${list.capacity} nodes).`); return; }
@@ -169,13 +251,15 @@ function insert(where) {
         if (index === null) return;
     }
     const result = list.insertAt(index, value);
+    show(result, INSERT_TITLES[where]);
     if (!result.ok) { error(result.error, els.value); return; }
     clearInputs();
     const lead = where === "head" ? `Prepended ${value}` : where === "tail" ? `Appended ${value}` : `Inserted ${value} at index ${index}`;
     notify(`${lead} (${result.value}). ${lastStep(result)}`, "success");
     log(`${lead} (${result.value})`);
-    refresh(result.value);
 }
+
+const DELETE_TITLES = { head: "deleteHead() = deleteAt(0)", tail: "deleteTail() = deleteAt(size − 1)", index: "deleteAt(i)" };
 
 function remove(which) {
     if (list.isEmpty()) { error(`Cannot delete ${which === "index" ? "by index" : which}: the list is empty.`); return; }
@@ -185,39 +269,44 @@ function remove(which) {
         if (index === null) return;
     }
     const result = list.deleteAt(index);
+    show(result, DELETE_TITLES[which]);
     if (!result.ok) { error(result.error); return; }
     clearInputs();
     const what = which === "head" ? "head node" : which === "tail" ? "tail node" : `node at index ${index}`;
     notify(`Deleted ${what} (${result.value}). ${lastStep(result)}`, "success");
     log(`Deleted ${what} (value ${result.value})`);
-    refresh();
 }
 
 function clearList() {
     const count = list.size;
+    show(list.clear(), "clear()");   // replay shows the emptied ring; then the max size is reset as before
     list = null;
     clearInputs();
     els.maxSize.value = "";
+    updateState();
     notify(`Cleared ${count} node${count === 1 ? "" : "s"} and reset the maximum size. Set a new maximum size to continue.`, "info");
     log("Cleared the list and reset maximum size");
-    refresh();
     els.maxSize.focus();
 }
 
 function reorder(kind) {
     if (list.isEmpty()) { notify(`The list is empty. Nothing to ${kind}.`, "info"); return; }
     const result = kind === "reverse" ? list.reverse() : list.sort();
+    show(result, `${kind}()`);
     notify(lastStep(result), "success");
     log(kind === "reverse" ? "Reversed the list" : "Sorted the list ascending");
-    refresh();
+}
+
+function query(name, message) {
+    const result = list.query(name);
+    show(result, `${name}()`);
+    notify(message(result.value), "info");
 }
 
 function showEnd(which) {
-    const node = which === "head" ? list.head : list.tail;
-    if (!node) { notify("List is empty.", "info"); return; }
-    notify(`${which === "head" ? "Head" : "Tail"} node: value ${node.value}, address ${node.address}` +
-        (which === "tail" ? ` (found as head.prev, no walk).` : "."), "info");
-    refresh(node.address);
+    if (list.isEmpty()) { notify("List is empty.", "info"); return; }
+    query(which, (node) => `${which === "head" ? "Head" : "Tail"} node: value ${node.value}, address ${node.address}` +
+        (which === "tail" ? ` (found as head.prev, no walk).` : "."));
 }
 
 function findAddress() {
@@ -225,11 +314,11 @@ function findAddress() {
     if (!address) return;
     const result = list.find(address);
     clearInputs();
-    if (!result.ok) { error(result.error, els.address); log(`Find ${address}: not found`); refresh(); return; }
+    show(result, "find(a)");
+    if (!result.ok) { error(result.error, els.address); log(`Find ${address}: not found`); return; }
     const { index, value } = result.value;
     notify(`Found address ${address} at index ${index} after visiting ${result.steps.length} node${result.steps.length === 1 ? "" : "s"}. Value: ${value}.`, "success");
     log(`Found ${address} at index ${index}`);
-    refresh(address);
 }
 
 function updateValue() {
@@ -240,11 +329,11 @@ function updateValue() {
     const value = readValue();
     if (value === null) return;
     const result = list.updateValue(address, value);
+    show(result, "update(a, x)");
     if (!result.ok) { error(result.error, els.value); return; }
     clearInputs();
     notify(lastStep(result), "success");
     log(`Updated ${address} to ${value}`);
-    refresh(address);
 }
 
 function replaceNode() {
@@ -257,11 +346,11 @@ function replaceNode() {
     const value = readValue();
     if (value === null) return;
     const result = list.replaceNode(address, value, newAddress);
+    show(result, "replace(a, x, b)");
     if (!result.ok) { error(result.error, /address/i.test(result.error) ? els.newAddress : els.value); return; }
     clearInputs();
     notify(lastStep(result), "success");
     log(`Replaced ${address} with ${newAddress} = ${value}`);
-    refresh(newAddress);
 }
 
 /* ---------- wiring ---------- */
@@ -271,14 +360,30 @@ const actions = {
     appendButton: () => insert("tail"), prependButton: () => insert("head"), insertAtIndexButton: () => insert("index"),
     deleteHeadButton: () => remove("head"), deleteTailButton: () => remove("tail"), deleteByIndexButton: () => remove("index"),
     clearListButton: clearList,
-    sizeButton: () => notify(`Current list size: ${list.size} / ${list.capacity}`, "info"),
+    sizeButton: () => query("size", (n) => `Current list size: ${n} / ${list.capacity}`),
     showHeadButton: () => showEnd("head"), showTailButton: () => showEnd("tail"),
     reverseListButton: () => reorder("reverse"), sortListButton: () => reorder("sort"),
     findButton: findAddress, updateButton: updateValue, replaceButton: replaceNode,
-    checkIfEmptyButton: () => notify(`Is the list empty? ${list.isEmpty() ? "True" : "False"}`, "info"),
-    checkIfFullButton: () => notify(`Is the list full? ${list.isFull() ? "True" : "False"}`, "info"),
+    checkIfEmptyButton: () => query("isEmpty", (v) => `Is the list empty? ${v ? "True" : "False"}`),
+    checkIfFullButton: () => query("isFull", (v) => `Is the list full? ${v ? "True" : "False"}`),
 };
 for (const [id, fn] of Object.entries(actions)) $(id).addEventListener("click", fn);
 els.maxSize.addEventListener("keydown", (e) => { if (e.key === "Enter") setMaxSize(); });
 
-refresh();
+els.playBtn.addEventListener("click", playerControls.toggle);
+els.nextBtn.addEventListener("click", () => { playerControls.pause(); playerControls.next(); });
+els.prevBtn.addEventListener("click", playerControls.prev);
+els.resetBtn.addEventListener("click", playerControls.reset);
+els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value) || 1));
+els.progress.addEventListener("input", () => {
+    const target = Number(els.progress.value);
+    if (!loaded) return;
+    player.pause();
+    player.goTo(target);
+});
+bindPlayerKeys(document, playerControls);
+
+unloadPlayer();
+updateState();
+liveReady = true;
+els.stepMessage.setAttribute("aria-live", "polite");

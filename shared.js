@@ -20,6 +20,9 @@
         trie: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="4" cy="20" r="2"/><circle cx="10" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><line x1="10.8" y1="5.6" x2="7.2" y2="10.4"/><line x1="13.2" y1="5.6" x2="16.8" y2="10.4"/><line x1="5.5" y1="14" x2="4.5" y2="18"/><line x1="7" y1="13.8" x2="9.1" y2="18.2"/><line x1="18" y1="14" x2="18" y2="18"/></svg>`,
         redBlack: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3" fill="currentColor"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3" fill="currentColor"/><line x1="10.3" y1="7.5" x2="7.7" y2="14.5"/><line x1="13.7" y1="7.5" x2="16.3" y2="14.5"/></svg>`,
         graph: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><line x1="7.5" y1="6" x2="16.5" y2="6"/><line x1="6.4" y1="8.1" x2="10.6" y2="15.9"/><line x1="17.6" y1="8.1" x2="13.4" y2="15.9"/></svg>`,
+        dsu: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.2"/><circle cx="4" cy="15" r="2.2"/><circle cx="10" cy="15" r="2.2"/><line x1="6.1" y1="8" x2="4.8" y2="12.9"/><line x1="7.9" y1="8" x2="9.2" y2="12.9"/><circle cx="18" cy="8" r="2.2"/><circle cx="18" cy="17" r="2.2"/><line x1="18" y1="10.2" x2="18" y2="14.8"/></svg>`,
+        fenwick: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="8" height="4" rx="1"/><rect x="13" y="10" width="8" height="4" rx="1"/><rect x="3" y="16" width="3.5" height="4" rx="1"/><rect x="8" y="16" width="3.5" height="4" rx="1"/><rect x="13" y="16" width="3.5" height="4" rx="1"/><rect x="17.5" y="16" width="3.5" height="4" rx="1"/></svg>`,
+        segmentTree: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="4" rx="1"/><rect x="2" y="10" width="8" height="4" rx="1"/><rect x="14" y="10" width="8" height="4" rx="1"/><rect x="1.5" y="17" width="4" height="4" rx="1"/><rect x="6.5" y="17" width="4" height="4" rx="1"/><rect x="13.5" y="17" width="4" height="4" rx="1"/><rect x="18.5" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="6" y2="10"/><line x1="14" y1="7" x2="18" y2="10"/><line x1="5" y1="14" x2="3.5" y2="17"/><line x1="7" y1="14" x2="8.5" y2="17"/><line x1="17" y1="14" x2="15.5" y2="17"/><line x1="19" y1="14" x2="20.5" y2="17"/></svg>`,
         heap: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="10.5" y1="7.5" x2="7.5" y2="15.5"/><line x1="13.5" y1="7.5" x2="16.5" y2="15.5"/></svg>`,
         hashTable: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
         searching: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
@@ -149,6 +152,14 @@
             category: "Graphs",
             items: [
                 { label: "Graph Representation", href: "graph.html", iconKey: "graph" }
+            ]
+        },
+        {
+            category: "Advanced Structures",
+            items: [
+                { label: "Disjoint Set Union (DSU)", href: "dsu.html", iconKey: "dsu" },
+                { label: "Fenwick Tree (BIT)", href: "fenwick-tree.html", iconKey: "fenwick" },
+                { label: "Segment Tree", href: "segment-tree.html", iconKey: "segmentTree" }
             ]
         },
         {

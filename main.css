@@ -3280,6 +3280,1778 @@ input:disabled, select:disabled {
 }
 
 /* --------------------------------------------------------------------------
+   24. Disjoint Set Union (Union-Find) Visualizer (G11)
+   Reuses section 14 (.hp-*) and section 15 (.bst-*) classes; uses section 1 tokens only.
+   -------------------------------------------------------------------------- */
+.dsu-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+.dsu-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dsu-options-row {
+    align-items: center;
+    gap: 10px 16px;
+}
+
+.dsu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-min);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dsu-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    margin: 0;
+    flex: none;
+    accent-color: var(--primary-light);
+    cursor: pointer;
+}
+
+.dsu-mode-hint {
+    flex: 1 1 220px;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.dsu-viz-stage {
+    padding-top: 14px;
+}
+
+.dsu-viz-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.dsu-svg .dsu-edge {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-path .dsu-edge {
+    stroke: var(--bar-select);
+    stroke-width: 2.6;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-visit .dsu-edge {
+    stroke: var(--bar-compare);
+    stroke-width: 3.2;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-compress .dsu-edge {
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-link .dsu-edge {
+    stroke: var(--bar-sorted);
+    stroke-width: 3.6;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-old {
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 4;
+    stroke-linecap: butt;
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-edge-label {
+    fill: var(--success-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-path .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.6;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-visit .hp-node-circle {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--primary-text);
+    stroke-width: 2.8;
+}
+
+.dsu-svg .dsu-root-found-ring {
+    display: none;
+    fill: none;
+    stroke: var(--primary-text);
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .dsu-root-found-ring {
+    display: inline;
+}
+
+.dsu-svg .dsu-root-badge {
+    display: none;
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .dsu-root-badge {
+    display: inline;
+}
+
+.dsu-svg .dsu-node.dsu-node-compress .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-link .hp-node-circle,
+.dsu-svg .dsu-node.dsu-node-rank-up .hp-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3.4;
+}
+
+.dsu-svg .dsu-node.dsu-node-rank-up .dsu-rank-label {
+    fill: var(--success-text);
+    font-weight: 800;
+}
+
+.dsu-svg .dsu-node.dsu-node-same-set .hp-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3;
+}
+
+.dsu-svg .dsu-node.dsu-node-diff-set .hp-node-circle {
+    fill: var(--danger-subtle);
+    stroke: var(--bar-swap);
+    stroke-width: 3;
+    stroke-dasharray: 6 2 2 2;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-rank-label {
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-result-badge {
+    display: none;
+    fill: var(--success-text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-same-set .dsu-result-badge {
+    display: inline;
+    fill: var(--success-text);
+}
+
+.dsu-svg .dsu-node.dsu-node-diff-set .dsu-result-badge {
+    display: inline;
+    fill: var(--danger-text);
+}
+
+.dsu-arrays-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    margin: 0 auto;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.dsu-arr-rowhead {
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.dsu-arr-idx {
+    min-width: 42px;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+}
+
+.dsu-arr-idx.dsu-idx-active {
+    color: var(--primary-text);
+    background-color: var(--primary-subtle);
+}
+
+.dsu-arr-cell {
+    min-width: 42px;
+    height: 36px;
+    padding: 4px 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dsu-arr-cell.dsu-cell-root {
+    border-color: var(--primary-text);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-path {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+}
+
+.dsu-arr-cell.dsu-cell-visit {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-root-found {
+    border-color: var(--primary-text);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--primary-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-compress {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-compare {
+    border-color: var(--bar-compare);
+    border-style: dotted;
+    background-color: var(--warning-subtle);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-link,
+.dsu-arr-cell.dsu-cell-rank-up {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-same-set {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-diff-set {
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--danger-subtle);
+    font-weight: 800;
+}
+
+.dsu-sw-path {
+    border-radius: 50%;
+    background-color: var(--warning-subtle);
+    border: 2.5px dashed var(--bar-compare);
+}
+
+.dsu-sw-root-found {
+    border-radius: 50%;
+    background-color: var(--primary-subtle);
+    border: 2px solid var(--primary-text);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3.5px var(--primary-text);
+}
+
+.dsu-sw-compress {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+
+.dsu-sw-link {
+    background-color: var(--success-subtle);
+    border: 3px solid var(--bar-sorted);
+}
+
+.dsu-sw-same {
+    background-color: var(--success-subtle);
+    border: 2px solid var(--bar-sorted);
+}
+.dsu-sw-same::after {
+    content: "\2713";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--success-text);
+}
+
+.dsu-sw-diff {
+    background-color: var(--danger-subtle);
+    border: 2px dashed var(--bar-swap);
+}
+.dsu-sw-diff::after {
+    content: "\2717";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--danger-text);
+}
+
+@media (max-width: 640px) {
+    .dsu-options-row {
+        align-items: stretch;
+        gap: 8px;
+    }
+    .dsu-toggle input[type="checkbox"] {
+        width: 18px !important;
+        flex: none;
+    }
+    .dsu-mode-hint {
+        flex: 0 0 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dsu-svg .dsu-edge,
+    .dsu-arr-cell {
+        transition: none;
+    }
+}
+
+.dsu-hidden,
+.dsu-edge-group.dsu-hidden,
+.dsu-edge-old.dsu-hidden,
+.dsu-edge-label.dsu-hidden,
+.dsu-node.dsu-hidden,
+.dsu-rank-label.dsu-hidden,
+.dsu-svg .dsu-edge-old.dsu-hidden,
+.dsu-svg .dsu-edge-label.dsu-hidden,
+.dsu-svg .dsu-rank-label.dsu-hidden {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   25. Fenwick Tree (Binary Indexed Tree) Visualizer (G12)
+   Uses section 1 design tokens only; zero hardcoded colours.
+   -------------------------------------------------------------------------- */
+.fw-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.fw-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.fw-viz-stage {
+    padding: 16px;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+}
+
+.fw-viz-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.fw-viz-stage .scroll-box {
+    padding: 8px 4px;
+    min-height: 0;
+    max-width: 100%;
+}
+
+/* Stage 1: Index-aligned values[] & tree[1..n] table */
+.fw-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    margin: 0 auto;
+    font-size: 0.85rem;
+}
+
+.fw-row-head {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.fw-col-head {
+    min-width: 60px;
+    padding: 4px 6px;
+    text-align: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    vertical-align: middle;
+}
+
+.fw-col-head.fw-head-active {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+}
+
+.fw-head-j {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fw-head-bin {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.fw-head-zero {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.fw-cell {
+    position: relative;
+    min-width: 60px;
+    padding: 7px 6px;
+    text-align: center;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.fw-val-cell {
+    border-color: var(--border);
+}
+
+.fw-tree-cell {
+    font-weight: 700;
+    border-color: var(--primary-border);
+}
+
+.fw-lb-cell {
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-subtle);
+}
+
+.fw-lb-cell.fw-lb-active {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+}
+
+.fw-lb-num {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.fw-lb-range {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.fw-cell-val {
+    display: inline-block;
+}
+
+.fw-cell-badge {
+    position: absolute;
+    top: 1px;
+    right: 3px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* Table cell state cues (WCAG 1.4.1 non-colour border styles + badges) */
+.fw-cell.fw-visit {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-visit .fw-cell-badge { color: var(--warning-text); }
+
+.fw-cell.fw-add {
+    border-color: var(--bar-select);
+    border-style: dotted;
+    border-width: 2.5px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-add .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-move-up {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    color: var(--primary-text);
+}
+.fw-cell.fw-move-up .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-move-down {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    color: var(--warning-text);
+}
+.fw-cell.fw-move-down .fw-cell-badge { color: var(--warning-text); }
+
+.fw-cell.fw-range-right {
+    border-color: var(--bar-sorted);
+    border-style: double;
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-range-right .fw-cell-badge { color: var(--success-text); }
+
+.fw-cell.fw-range-left {
+    border-color: var(--bar-swap);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--danger-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-range-left .fw-cell-badge { color: var(--danger-text); }
+
+.fw-cell.fw-done-hit {
+    border-color: var(--bar-sorted);
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-done-hit .fw-cell-badge { color: var(--success-text); }
+
+.fw-cell.fw-visited {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-visited .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-covered {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.fw-cell.fw-jump-target {
+    outline: 2px dashed var(--border-focus);
+    outline-offset: -3px;
+}
+
+/* Stage 2: SVG Coverage Bars & Binary Jump Diagram */
+.fw-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.fw-col-guide {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    stroke-linecap: butt;
+}
+
+.fw-divider {
+    stroke: var(--border-strong);
+    stroke-width: 1;
+}
+
+.fw-tier-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+    stroke-linecap: butt;
+}
+
+.fw-gutter-label {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: end;
+    dominant-baseline: central;
+}
+
+.fw-tier-label {
+    font-size: 10px;
+}
+
+.fw-svg-idx {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-bin {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-col-active .fw-svg-idx,
+.fw-svg-col-active .fw-svg-bin {
+    fill: var(--primary-text);
+    font-weight: 700;
+}
+
+.fw-svg-cell-rect {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.5;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.fw-svg-tree-rect {
+    stroke: var(--border-focus);
+    stroke-width: 2;
+}
+
+.fw-svg-inner-rect,
+.fw-bar-inner-rect {
+    display: none;
+    fill: none;
+    stroke-width: 1.5;
+    pointer-events: none;
+}
+
+.fw-svg-cell-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-cell-badge {
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-bar-rect {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.75;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.fw-bar-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-bar-badge {
+    fill: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    text-anchor: end;
+    dominant-baseline: central;
+}
+
+/* SVG state cues (stroke-linecap: butt on all dashed/dotted strokes) */
+.fw-svg-val.fw-covered .fw-svg-cell-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2;
+    stroke-dasharray: 4 2;
+    stroke-linecap: butt;
+}
+
+.fw-svg-val.fw-visit .fw-svg-cell-rect,
+.fw-svg-tree.fw-visit .fw-svg-cell-rect,
+.fw-bar-group.fw-visit .fw-bar-rect {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-visit .fw-svg-cell-badge,
+.fw-bar-group.fw-visit .fw-bar-badge {
+    fill: var(--warning-text);
+}
+
+.fw-svg-val.fw-add .fw-svg-cell-rect,
+.fw-svg-tree.fw-add .fw-svg-cell-rect,
+.fw-bar-group.fw-add .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-add .fw-svg-cell-badge,
+.fw-bar-group.fw-add .fw-bar-badge {
+    fill: var(--primary-text);
+}
+
+.fw-svg-tree.fw-move-up .fw-svg-cell-rect,
+.fw-bar-group.fw-move-up .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-move-up .fw-svg-cell-badge,
+.fw-bar-group.fw-move-up .fw-bar-badge {
+    fill: var(--primary-text);
+}
+
+.fw-svg-tree.fw-move-down .fw-svg-cell-rect,
+.fw-bar-group.fw-move-down .fw-bar-rect {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-move-down .fw-svg-cell-badge,
+.fw-bar-group.fw-move-down .fw-bar-badge {
+    fill: var(--warning-text);
+}
+
+.fw-svg-tree.fw-range-right .fw-svg-cell-rect,
+.fw-bar-group.fw-range-right .fw-bar-rect {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+}
+.fw-svg-tree.fw-range-right .fw-svg-inner-rect,
+.fw-bar-group.fw-range-right .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--bar-sorted);
+}
+.fw-svg-tree.fw-range-right .fw-svg-cell-badge,
+.fw-bar-group.fw-range-right .fw-bar-badge {
+    fill: var(--success-text);
+}
+
+.fw-svg-tree.fw-range-left .fw-svg-cell-rect,
+.fw-bar-group.fw-range-left .fw-bar-rect {
+    fill: var(--danger-subtle);
+    stroke: var(--bar-swap);
+    stroke-width: 2.5;
+    stroke-dasharray: 6 2 2 2;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-range-left .fw-svg-inner-rect,
+.fw-bar-group.fw-range-left .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--bar-swap);
+}
+.fw-svg-tree.fw-range-left .fw-svg-cell-badge,
+.fw-bar-group.fw-range-left .fw-bar-badge {
+    fill: var(--danger-text);
+}
+
+.fw-svg-tree.fw-done-hit .fw-svg-cell-rect,
+.fw-bar-group.fw-done-hit .fw-bar-rect {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+}
+.fw-svg-tree.fw-done-hit .fw-svg-cell-badge,
+.fw-bar-group.fw-done-hit .fw-bar-badge {
+    fill: var(--success-text);
+}
+
+.fw-svg-tree.fw-visited .fw-svg-cell-rect,
+.fw-bar-group.fw-visited .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2;
+}
+
+.fw-svg-tree.fw-jump-target .fw-svg-inner-rect,
+.fw-bar-group.fw-jump-target .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--border-focus);
+    stroke-dasharray: 3 2;
+    stroke-linecap: butt;
+}
+
+/* Jump arcs */
+.fw-arc-path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.fw-arc-head {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.fw-arc-dot {
+    stroke: var(--bg-stage);
+    stroke-width: 1.5;
+}
+
+.fw-arc-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+}
+
+.fw-arc-up .fw-arc-path,
+.fw-arc-up .fw-arc-head {
+    stroke: var(--bar-select);
+}
+.fw-arc-up .fw-arc-dot {
+    fill: var(--bar-select);
+}
+.fw-arc-up .fw-arc-label {
+    fill: var(--primary-text);
+}
+
+.fw-arc-down .fw-arc-path,
+.fw-arc-down .fw-arc-head {
+    stroke: var(--bar-compare);
+}
+.fw-arc-down .fw-arc-dot {
+    fill: var(--bar-compare);
+}
+.fw-arc-down .fw-arc-label {
+    fill: var(--warning-text);
+}
+
+/* Legend swatches (WCAG 1.4.1 non-colour cues matching stage states) */
+.fw-sw-visit {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+}
+.fw-sw-visit::after {
+    content: "\2022";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--warning-text);
+}
+
+.fw-sw-add {
+    background-color: var(--primary-subtle);
+    border: 2.5px dotted var(--bar-select);
+}
+.fw-sw-add::after {
+    content: "+";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--primary-text);
+}
+
+.fw-sw-up {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+.fw-sw-up::after {
+    content: "\2191";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--primary-text);
+}
+
+.fw-sw-down {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+}
+.fw-sw-down::after {
+    content: "\2193";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--warning-text);
+}
+
+.fw-sw-right {
+    background-color: var(--success-subtle);
+    border: 3px double var(--bar-sorted);
+}
+.fw-sw-right::after {
+    content: "+";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--success-text);
+}
+
+.fw-sw-left {
+    background-color: var(--danger-subtle);
+    border: 2.5px dashed var(--bar-swap);
+}
+.fw-sw-left::after {
+    content: "\2212";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-cell,
+    .fw-svg-cell-rect,
+    .fw-bar-rect {
+        transition: none;
+    }
+}
+
+.fw-hidden,
+.fw-col-head.fw-hidden,
+.fw-cell.fw-hidden,
+.fw-col-guide.fw-hidden,
+.fw-tier-line.fw-hidden,
+.fw-tier-label.fw-hidden,
+.fw-svg-col.fw-hidden,
+.fw-bar-group.fw-hidden,
+.fw-arc-group.fw-hidden {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   26. Segment Tree (G13)
+   Reuses sections 14/15 (.hp-*, .bst-*) scroll regions and cells; uses
+   section 1 design tokens only (zero hardcoded colours). Every overlap and
+   step state pairs colour with border geometry + a glyph badge (WCAG 1.4.1).
+   -------------------------------------------------------------------------- */
+.st-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.st-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.st-input-xs {
+    width: 112px;
+    max-width: 100%;
+}
+
+.st-viz-stage,
+.st-array-stage {
+    padding-top: 14px;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+}
+
+.st-viz-stage .viz-stage-label,
+.st-array-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.st-array-region {
+    width: 100%;
+    padding: 6px 4px;
+}
+
+.st-array-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    justify-content: safe center;
+    gap: 8px;
+    padding: 4px 6px;
+    width: max-content;
+    min-width: 100%;
+    overflow-x: visible;
+}
+
+.st-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+/* Tree edges — stroke-linecap: butt on all dashed/dotted patterns. */
+.st-edge {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.st-edge.st-edge-full {
+    stroke: var(--bar-sorted);
+    stroke-width: 3;
+    stroke-dasharray: none;
+}
+
+.st-edge.st-edge-partial {
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-edge.st-edge-disjoint {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 2 3;
+}
+
+.st-edge.st-edge-combine {
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+}
+
+.st-edge.st-edge-visit {
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+/* Tree nodes */
+.st-node-box {
+    fill: var(--bg-card);
+    stroke: var(--primary-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.st-node-inner {
+    display: none;
+    fill: none;
+    stroke: var(--bar-sorted);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    pointer-events: none;
+}
+
+.st-active-halo {
+    display: none;
+    fill: none;
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-linecap: butt;
+    pointer-events: none;
+}
+
+.st-node.st-active .st-active-halo {
+    display: inline;
+}
+
+.st-node.st-root .st-node-box {
+    stroke: var(--primary-text);
+    stroke-width: 2.5;
+}
+
+.st-node.st-pending .st-node-box {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 3 3;
+}
+
+.st-node.st-pending .st-node-value {
+    fill: var(--text-muted);
+}
+
+/* Full overlap: double solid ring + success tokens */
+.st-node.st-full .st-node-box {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+    stroke-dasharray: none;
+}
+
+.st-node.st-full .st-node-inner {
+    display: inline;
+    stroke: var(--bar-sorted);
+}
+
+.st-node.st-full .st-active-halo {
+    stroke: var(--bar-sorted);
+}
+
+/* Partial overlap: dashed border + warning tokens */
+.st-node.st-partial .st-node-box {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-node.st-partial .st-active-halo {
+    stroke: var(--bar-compare);
+}
+
+/* Disjoint: dotted border + subdued surface (maintains >= 4.5:1 text & >= 3:1 stroke) */
+.st-node.st-disjoint .st-node-box {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 2 3;
+}
+
+.st-node.st-disjoint .st-node-value {
+    fill: var(--text-secondary);
+}
+
+.st-node.st-disjoint .st-active-halo {
+    stroke: var(--text-light);
+}
+
+/* Combine / Recompute: dotted thick border + primary-select tokens */
+.st-node.st-combine .st-node-box,
+.st-node.st-recompute .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+}
+
+.st-node.st-combine .st-active-halo,
+.st-node.st-recompute .st-active-halo {
+    stroke: var(--bar-select);
+}
+
+/* Update / Populate leaf: double solid ring + primary-select tokens */
+.st-node.st-update-leaf .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: none;
+}
+
+.st-node.st-update-leaf .st-node-inner {
+    display: inline;
+    stroke: var(--bar-select);
+}
+
+.st-node.st-update-leaf .st-active-halo {
+    stroke: var(--bar-select);
+}
+
+/* Active visiting: dashed focus border */
+.st-node.st-visit .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-node.st-visit .st-active-halo {
+    stroke: var(--border-focus);
+}
+
+.st-node-value {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.st-node-range {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.st-node.st-root .st-node-range,
+.st-node.st-combine .st-node-range,
+.st-node.st-recompute .st-node-range,
+.st-node.st-update-leaf .st-node-range,
+.st-node.st-visit .st-node-range {
+    fill: var(--primary-text);
+    font-weight: 700;
+}
+
+.st-node.st-full .st-node-range {
+    fill: var(--success-text);
+    font-weight: 700;
+}
+
+.st-node.st-partial .st-node-range {
+    fill: var(--warning-text);
+    font-weight: 700;
+}
+
+/* Top-right non-colour glyph badge on classified/active nodes */
+.st-badge {
+    display: none;
+    pointer-events: none;
+}
+
+.st-badge.st-badge-visible {
+    display: inline;
+}
+
+.st-badge-bg {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.5;
+}
+
+.st-badge-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.st-node.st-full .st-badge-bg {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+}
+
+.st-node.st-full .st-badge-text {
+    fill: var(--success-text);
+}
+
+.st-node.st-partial .st-badge-bg {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+}
+
+.st-node.st-partial .st-badge-text {
+    fill: var(--warning-text);
+}
+
+.st-node.st-disjoint .st-badge-bg {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+}
+
+.st-node.st-disjoint .st-badge-text {
+    fill: var(--text-secondary);
+}
+
+.st-node.st-combine .st-badge-bg,
+.st-node.st-recompute .st-badge-bg,
+.st-node.st-update-leaf .st-badge-bg {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+}
+
+.st-node.st-combine .st-badge-text,
+.st-node.st-recompute .st-badge-text,
+.st-node.st-update-leaf .st-badge-text {
+    fill: var(--primary-text);
+}
+
+.st-node.st-visit .st-badge-bg {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+}
+
+.st-node.st-visit .st-badge-text {
+    fill: var(--primary-text);
+}
+
+/* Legend swatches — 1:1 border style, token palette, and glyph cue */
+.st-sw {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+}
+
+.st-sw-full {
+    background-color: var(--success-subtle);
+    border: 2px solid var(--bar-sorted);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3px var(--bar-sorted);
+    color: var(--success-text);
+}
+
+.st-sw-full::after {
+    content: "\2713";
+}
+
+.st-sw-partial {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+    color: var(--warning-text);
+}
+
+.st-sw-partial::after {
+    content: "\00BD";
+}
+
+.st-sw-disjoint {
+    background-color: var(--bg-subtle);
+    border: 2px dotted var(--text-light);
+    color: var(--text-secondary);
+}
+
+.st-sw-disjoint::after {
+    content: "\2717";
+}
+
+.st-sw-combine {
+    background-color: var(--primary-subtle);
+    border: 2px dotted var(--bar-select);
+    color: var(--primary-text);
+}
+
+.st-sw-combine::after {
+    content: "+";
+}
+
+.st-sw-leaf {
+    background-color: var(--primary-subtle);
+    border: 2px solid var(--bar-select);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3px var(--bar-select);
+    color: var(--primary-text);
+}
+
+.st-sw-leaf::after {
+    content: "\2605";
+}
+
+.st-sw-visit {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--border-focus);
+    color: var(--primary-text);
+}
+
+.st-sw-visit::after {
+    content: "\2022";
+}
+
+/* Underlying array cells & target query range bracket */
+.st-arr-wrap {
+    padding: 6px 4px 2px;
+    border-top: 3px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+}
+
+.st-arr-wrap.st-arr-in-query {
+    border-top-color: var(--border-focus);
+    border-top-style: dashed;
+}
+
+.st-arr-wrap.st-arr-query-start {
+    border-left-color: var(--border-focus);
+    border-left-style: dashed;
+    border-top-left-radius: var(--radius-sm);
+}
+
+.st-arr-wrap.st-arr-query-end {
+    border-right-color: var(--border-focus);
+    border-right-style: dashed;
+    border-top-right-radius: var(--radius-sm);
+}
+
+.st-arr-cell {
+    min-width: 52px;
+    min-height: 38px;
+    padding: 6px 8px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.st-arr-cell.st-arr-in-range {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    border-width: 2px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-full {
+    border-color: var(--bar-sorted);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-partial {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--warning-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-disjoint {
+    border-color: var(--text-light);
+    border-style: dotted;
+    border-width: 2px;
+    background-color: var(--bg-subtle);
+    color: var(--text-secondary);
+}
+
+.st-arr-cell.st-arr-combine {
+    border-color: var(--bar-select);
+    border-style: dotted;
+    border-width: 3px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-leaf {
+    border-color: var(--bar-select);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-visit {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    min-height: 1.15em;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.st-arr-tag.st-tag-full {
+    color: var(--success-text);
+}
+
+.st-arr-tag.st-tag-partial {
+    color: var(--warning-text);
+}
+
+.st-arr-tag.st-tag-disjoint {
+    color: var(--text-secondary);
+}
+
+.st-arr-tag.st-tag-accent {
+    color: var(--primary-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .st-edge,
+    .st-node-box,
+    .st-arr-cell {
+        transition: none;
+    }
+}
+
+/* Kept last in the Segment Tree section so no display rule overrides it. */
+.st-hidden,
+.st-arr-wrap.st-hidden,
+.st-edge.st-hidden,
+.st-node.st-hidden {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   20. Linked List Player (C24)
+   Singly, doubly and circular list pages (src/core/list-renderer.js). Node boxes
+   reuse .node-box and the .ht-tone-* tones from section 13; tokens only, no
+   inline styles. Every state also has a text cue: walk pointers are named labels
+   (.ll-cursor), a changed pointer shows old -> new as <del>/<ins>, detached and
+   removed nodes are dashed and sit in a labelled row, a missing link is a dot.
+   -------------------------------------------------------------------------- */
+
+/* Boxes are reused between frames, so they must not replay the entrance animation;
+   identity moves are animated from JS (Element.animate) and skipped under reduced motion. */
+.ll-node,
+.ll-link {
+    animation: none;
+}
+
+.ll-cursors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.ll-cursor {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--primary-border);
+    background-color: var(--primary-subtle);
+    color: var(--primary-text);
+}
+
+.ll-field-changed {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ll-old {
+    color: var(--danger-text);
+    text-decoration: line-through;
+}
+
+.ll-new {
+    color: var(--success-text);
+    text-decoration: underline;
+}
+
+/* Doubly / circular gaps: next arrow on top, prev arrow underneath. */
+.ll-link-double {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+}
+
+.ll-link-row {
+    display: block;
+}
+
+.ll-link-none {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.ll-link-changed {
+    color: var(--danger-text);
+    outline: 2px dashed var(--bar-swap);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.ll-detached {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+}
+
+.ll-detached[hidden] {
+    display: none;
+}
+
+.ll-detached-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.ll-node-detached {
+    border-style: dashed;
+}
+
+.ll-node-removed {
+    opacity: 0.7;
+}
+
+.ll-changes {
+    margin: 10px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .ll-cursor { font-size: 0.65rem; }
+    .ll-detached { gap: 8px; padding: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ll-node,
+    .ll-link {
+        transition: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
    22. Shortest Paths & Topological Sort (C26)
    Dijkstra / Bellman-Ford / Kahn / DFS topo replay on graph.html. Reuses the
    section 21 .gr-trav-* states; adds removed edges (Kahn), cycle edges and the

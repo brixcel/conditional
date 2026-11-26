@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disjoint Set Union (Union-Find) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Forest Structure &bull; Disjoint Set Union (Union-Find)</div>
+            <h1 class="page-title">Disjoint Set Union (Union-Find) Visualization</h1>
+            <p class="page-desc">
+                Maintains a partition of elements <code>0..n&minus;1</code> as a forest of rooted trees stored in flat
+                <code>parent[]</code> and <code>rank[]</code> arrays. Each tree&rsquo;s root (<code>parent[x] = x</code>)
+                serves as the set&rsquo;s representative. Toggle <strong>Union by rank</strong> and
+                <strong>Path compression</strong> to compare tree height, pointer hops, and re-pointed parent edges step by step.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="dsuName">Disjoint Set Union (Union-Find)</h2>
+            <p class="concept-body" id="dsuSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Rank + Compression</div><div class="prop-value" id="cxBoth"></div></div>
+                <div class="prop-item"><div class="prop-label">Rank Only</div><div class="prop-value" id="cxRankOnly"></div></div>
+                <div class="prop-item"><div class="prop-label">Compression Only</div><div class="prop-value" id="cxCompressOnly"></div></div>
+                <div class="prop-item"><div class="prop-label">Neither Optimization</div><div class="prop-value" id="cxNeither"></div></div>
+                <div class="prop-item"><div class="prop-label">Make n Sets</div><div class="prop-value" id="cxMakeSet"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">DSU Controls &amp; Operations</h2>
+            </div>
+
+            <form class="control-section" id="sizeForm" novalidate>
+                <div class="control-section-title">1. Element Count (n) &amp; Optimizations (1&ndash;16 Elements)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="sizeInput">Size n (1&ndash;16)</label>
+                        <input type="text" inputmode="numeric" id="sizeInput" class="input-sm"
+                               value="8" autocomplete="off" placeholder="1–16">
+                    </div>
+                    <button type="submit" class="btn" id="makeSetsBtn">Make sets</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random unions</button>
+                    <button type="button" class="btn btn-secondary" id="resetSetsBtn">Reset sets</button>
+                </div>
+                <div class="controls-row dsu-options-row mt-sm">
+                    <label class="dsu-toggle" for="byRankToggle">
+                        <input type="checkbox" id="byRankToggle" aria-describedby="optionsHint" checked>
+                        <span>Union by rank</span>
+                    </label>
+                    <label class="dsu-toggle" for="compressToggle">
+                        <input type="checkbox" id="compressToggle" aria-describedby="optionsHint" checked>
+                        <span>Path compression</span>
+                    </label>
+                    <p class="dsu-mode-hint text-muted" id="optionsHint">
+                        Changing either option resets to <strong>n</strong> singleton sets and zeroes cumulative counters.
+                    </p>
+                </div>
+            </form>
+
+            <form class="control-section" id="opForm" novalidate>
+                <div class="control-section-title">2. Union, Find &amp; Connectivity Queries</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="elemAInput" id="elemALabel">Element A (0&ndash;7)</label>
+                        <input type="text" inputmode="numeric" id="elemAInput" class="input-sm"
+                               value="3" autocomplete="off" placeholder="0–7">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="elemBInput" id="elemBLabel">Element B (0&ndash;7)</label>
+                        <input type="text" inputmode="numeric" id="elemBInput" class="input-sm"
+                               value="5" autocomplete="off" placeholder="0–7">
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="unionBtn">Union (A, B)</button>
+                    <button type="button" class="btn btn-secondary" id="findBtn">Find (A)</button>
+                    <button type="button" class="btn btn-secondary" id="connectedBtn">Connected (A, B)?</button>
+                </div>
+            </form>
+
+            <div id="dsuError" class="alert-banner alert-live bst-live" role="alert"></div>
+            <div id="dsuStatus" class="alert-banner alert-live bst-live"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header dsu-card-header">
+                <h2 class="card-title">Forest &amp; Array Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span><span aria-hidden="true">&#x23EE;</span> Reset</span></button>
+                <button type="button" class="btn btn-secondary" id="stepBackBtn" title="Previous step (&larr;)"><span><span aria-hidden="true">&#x25C0;</span> Back</span></button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></span></button>
+                <button type="button" class="btn btn-secondary" id="stepFwdBtn" title="Next step (&rarr;)"><span>Step <span aria-hidden="true">&#x25B6;</span></span></button>
+                <div class="field field-inline">
+                    <label class="field-label" for="speedSelect">Speed</label>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="progress" class="visually-hidden">Execution step</label>
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0">
+
+            <div class="viz-stage dsu-viz-stage">
+                <span class="viz-stage-label" id="forestStageLabel">Forest View (Rooted Trees &bull; Rank Shown Above Roots)</span>
+                <div id="forestStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="forestStageLabel" tabindex="0">
+                    <svg id="dsuSvg" class="hp-svg bst-svg dsu-svg" role="img"
+                         aria-labelledby="dsuSvgTitle" aria-describedby="dsuSvgDesc">
+                        <title id="dsuSvgTitle">Disjoint Set Forest</title>
+                        <desc id="dsuSvgDesc">Interactive forest of disjoint set trees.</desc>
+                    </svg>
+                </div>
+
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw dsu-sw-path"></i> Visiting / path followed (dashed outline)</span>
+                    <span><i class="sw dsu-sw-root-found"></i> Root found (double ring + R)</span>
+                    <span><i class="sw dsu-sw-compress"></i> Re-pointed edge (dashed + faded old edge)</span>
+                    <span><i class="sw dsu-sw-link"></i> New link edge (thick line + &ldquo;linked&rdquo;)</span>
+                    <span><i class="sw dsu-sw-same"></i> Same set (&#x2713;)</span>
+                    <span><i class="sw dsu-sw-diff"></i> Different sets (&#x2717;)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage dsu-viz-stage">
+                <span class="viz-stage-label" id="arraysStageLabel">Aligned parent[] &amp; rank[] Arrays</span>
+                <div id="arraysStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="arraysStageLabel" tabindex="0">
+                    <table id="arraysTable" class="dsu-arrays-table">
+                        <caption id="arraysCaption" class="visually-hidden">Aligned parent and rank arrays for the disjoint set forest.</caption>
+                        <thead id="arraysHead"></thead>
+                        <tbody id="arraysBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Union)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" role="list"
+                        aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Cumulative Counters &amp; State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Finds</span><strong id="statFinds">0</strong></div>
+                        <div><span>Parent Hops</span><strong id="statHops">0</strong></div>
+                        <div><span>Pointers Compressed</span><strong id="statCompressed">0</strong></div>
+                        <div><span>Links</span><strong id="statLinks">0</strong></div>
+                        <div><span>Sets</span><strong id="statSets">0 / 0</strong></div>
+                        <div><span>Integrity</span><strong id="statIntegrity">OK</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Disjoint Set Complexity &amp; Properties</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Disjoint Set Union complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Configuration / Operation</th>
+                            <th scope="col">Complexity</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input, control, or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Parent Pointers &amp; Representative Roots</h2>
+                    <p>Each element <code>x</code> stores only its parent index <code>parent[x]</code>. Walking upward until <code>parent[x] = x</code> reaches the set&rsquo;s unique <strong>representative root</strong>. Two elements belong to the same set if and only if <code>find(a) = find(b)</code>.</p>
+                </div>
+                <div class="check">
+                    <h2>Why Union by Rank Bounds Tree Height</h2>
+                    <p>Every root tracks a <code>rank</code> that upper-bounds its subtree height (it equals exact height only when path compression is off, because compression flattens paths without lowering ranks). Merging attaches the lower-rank root under the higher-rank root; only an equal-rank merge increases rank by 1 (ties break to the smaller root ID). Since rank rises from <code>r&minus;1</code> to <code>r</code> only by combining two rank-<code>(r&minus;1)</code> trees, a tree of rank <code>r</code> contains at least <code>2<sup>r</sup></code> nodes by induction, keeping height <code>&le; &lfloor;log<sub>2</sub> n&rfloor;</code>. With Union by Rank off, <code>union(a, b)</code> attaches <code>rootA</code> under <code>rootB</code> and ignores <code>rank[]</code>.</p>
+                </div>
+                <div class="check">
+                    <h2>How Path Compression Flattens Chains</h2>
+                    <p>During <code>find(x)</code>, every visited node on the path to the root is re-parented directly to that root (<code>parent[v] &larr; root</code>). Future lookups on those nodes finish in a single hop. Combined with Union by Rank, <code>m</code> operations take <code>O(m &middot; &alpha;(n))</code> total time&mdash;effectively constant <code>O(&alpha;(n))</code> amortised per operation, where <code>&alpha;</code> is the inverse Ackermann function (<code>&le; 4</code> for all practical <code>n</code>).</p>
+                </div>
+                <div class="check">
+                    <h2>Real-World Uses (Connected Components &amp; Kruskal&rsquo;s MST)</h2>
+                    <p>Union-Find tracks <strong>dynamic connected components</strong> in undirected graphs as edges are added, detects cycles in real time, and powers <strong>Kruskal&rsquo;s Minimum Spanning Tree</strong> algorithm by sorting edges in ascending order of weight and adding an edge (uniting its endpoints) only when <code>find(u) &ne; find(v)</code> to avoid cycles.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/dsu-page.js"></script>
+</body>
+</html>

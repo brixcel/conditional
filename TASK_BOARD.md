@@ -16,6 +16,8 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | G14 | Lessons: regular/circular/priority queue, heap, hash table, searching | Gemini | `content/lessons/*` (new files) | GEMINI_HANDOFF.md#g14 |
 | G15 | Quiz banks for the same six pages | Gemini | `content/quizzes/*` (new), `tests/quiz-banks-g15.test.js` | GEMINI_HANDOFF.md#g15 (after G14) |
 | G16 | Lessons + quiz banks: BST, AVL, Trie, Red-Black | Gemini | new content files, `tests/quiz-banks-g16.test.js` | GEMINI_HANDOFF.md#g16 (after G15) |
+| G17 | Lessons + quiz banks: singly, doubly, circular linked list | Gemini | new content files, `tests/quiz-banks-g17.test.js` | GEMINI_HANDOFF.md#g17 (after G16) |
+| G18 | Lessons + quiz banks: graph, DSU, Fenwick, Segment Tree | Gemini | new content files, `tests/quiz-banks-g18.test.js` | GEMINI_HANDOFF.md#g18 (after G17) |
 
 **File conflicts to respect:** Gemini adds new files and appends one new section at the end of `main.css`; Claude edits shared files (`shared.js`, `index.html`, `src/core/*`) and merges one `main.css` append at a time.
 
@@ -27,6 +29,11 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C27 | Kruskal (reuses Gemini's DSU) and Prim (binary heap) module `src/algorithms/mst.js` with traced steps; 300 graphs vs brute force. Page panel follows after C26 | Claude (algorithms agent) | 2026-11-27 02:29 (merged to `main`, module only) |
+| C24 | Singly, doubly and circular linked-list pages on the step player (pointer walks, every re-pointed link old → new, head/tail changes, ring wrap); shared `src/core/list-renderer.js`; main.css section 20. Every page now has play/step/keyboard controls | Claude (visualization-engineer agent) | 2026-11-27 02:26 (merged to `main`) |
+| G13 | Segment Tree module + page; Claude renumbered its CSS section (26) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
+| G12 | Fenwick Tree (BIT) module + page; Claude renumbered its CSS section (25) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
+| G11 | Disjoint Set Union (Union-Find) module + page; Claude renumbered its CSS section (24) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
 | C23 | BFS, iterative and recursive DFS, all-components traversal (`src/algorithms/graph-traversal.js`, 600 seeded graphs vs reference) + traversal panel on graph.html (queue/stack, call stack, visit order, tree edges in all three views); main.css section 21 | Claude (algorithms agent) | 2026-11-27 02:14 (merged to `main`) |
 | C21 | Red-Black Tree module (CLRS insert/delete fix-ups, every case named, 300-seed invariant tests) + page with 20 case demos, double-black and NIL markers; main.css section 19 | Claude (data-structures + visualization-engineer agents) | 2026-11-26 21:25 (merged to `main`) |
 | C20 | Stack, regular, circular and priority queue pages on the step player with keyboard shortcuts and pseudocode; Stack Pop now always needs the typed top value (letters no longer slip through); circular ring drawn as SVG (main.css section 18); Stack lesson + quiz updated | Claude (visualization-engineer agent) | 2026-11-26 21:24 (merged to `main`) |

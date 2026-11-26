@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Tree (Range Query &amp; Point Update) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Tree Structure &bull; Segment Tree</div>
+            <h1 class="page-title">Segment Tree Visualization</h1>
+            <p class="page-desc">
+                A binary tree over an array <code>A[0..n&minus;1]</code> where each node stores an associative
+                aggregate (<strong>Range Sum</strong> or <strong>Range Minimum</strong>) for a contiguous interval
+                <code>[lo..hi]</code>. Step through <code>O(n)</code> recursive builds, <code>O(log n)</code>
+                range queries (comparing <strong>full</strong>, <strong>partial</strong>, and
+                <strong>disjoint</strong> overlaps), and <code>O(log n)</code> leaf-to-root point updates.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="segName">Segment Tree</h2>
+            <p class="concept-body" id="segSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Build</div><div class="prop-value" id="cxBuild"></div></div>
+                <div class="prop-item"><div class="prop-label">Range Query</div><div class="prop-value" id="cxQuery"></div></div>
+                <div class="prop-item"><div class="prop-label">Point Update</div><div class="prop-value" id="cxUpdate"></div></div>
+                <div class="prop-item"><div class="prop-label">Switch Mode</div><div class="prop-value" id="cxSetMode"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Segment Tree Controls &amp; Operations</h2>
+            </div>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">1. Build Array &amp; Aggregate Mode (1&ndash;16 Integers, &minus;999 to 999)</div>
+                <div class="controls-row">
+                    <div class="field field-grow">
+                        <label class="field-label" for="buildInput">Array Values (1&ndash;16 integers, &minus;999 to 999, comma or space separated)</label>
+                        <input type="text" id="buildInput" autocomplete="off" spellcheck="false"
+                               value="2, 5, 1, 4, 9, 3, 6, 8">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="modeSelect">Aggregate Mode</label>
+                        <select id="modeSelect">
+                            <option value="sum" selected>Sum (range sum)</option>
+                            <option value="min">Minimum (range min)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="queryForm" novalidate>
+                <div class="control-section-title">2. Range Query (Inclusive 0-Based Bounds <span id="queryRangeHint" class="mono">0..7</span>)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="leftInput">Left <span class="mono">l</span> (<span id="leftRangeHint">0..7</span>)</label>
+                        <input type="text" id="leftInput" class="input-sm st-input-xs" inputmode="numeric"
+                               autocomplete="off" value="1">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="rightInput">Right <span class="mono">r</span> (<span id="rightRangeHint">0..7</span>)</label>
+                        <input type="text" id="rightInput" class="input-sm st-input-xs" inputmode="numeric"
+                               autocomplete="off" value="5">
+                    </div>
+                    <button type="submit" class="btn" id="queryBtn">Query</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="updateForm" novalidate>
+                <div class="control-section-title">3. Point Update (0-Based Index <span id="updateRangeHint" class="mono">0..7</span>)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="indexInput">Index <span class="mono">i</span> (<span id="indexRangeHint">0..7</span>)</label>
+                        <input type="text" id="indexInput" class="input-sm st-input-xs" inputmode="numeric"
+                               autocomplete="off" value="2">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="valueInput">New Value (&minus;999 to 999)</label>
+                        <input type="text" id="valueInput" class="input-sm st-input-xs"
+                               autocomplete="off" value="10">
+                    </div>
+                    <button type="submit" class="btn" id="updateBtn">Update</button>
+                </div>
+            </form>
+
+            <div id="segError" class="alert-banner alert-live bst-live" role="alert"></div>
+            <div id="segStatus" class="alert-banner alert-live bst-live"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header st-card-header">
+                <h2 class="card-title">Segment Tree &amp; Backing Array Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span><span aria-hidden="true">&#x23EE;</span> Reset</span></button>
+                <button type="button" class="btn btn-secondary" id="stepBackBtn" title="Previous step (&larr;)"><span><span aria-hidden="true">&#x25C0;</span> Back</span></button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></span></button>
+                <button type="button" class="btn btn-secondary" id="stepFwdBtn" title="Next step (&rarr;)"><span>Step <span aria-hidden="true">&#x25B6;</span></span></button>
+                <div class="field field-inline">
+                    <label class="field-label" for="speedSelect">Speed</label>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="progress" class="visually-hidden">Execution step</label>
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0">
+
+            <div class="viz-stage st-viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">Segment Tree View — Sum Mode (Nodes Show Aggregate &amp; Interval [lo..hi])</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="treeStageLabel" tabindex="0">
+                    <svg id="segSvg" class="hp-svg st-svg" role="img"
+                         aria-labelledby="segSvgTitle" aria-describedby="segSvgDesc">
+                        <title id="segSvgTitle">Segment Tree</title>
+                        <desc id="segSvgDesc">Interactive segment tree visualization.</desc>
+                    </svg>
+                </div>
+
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw st-sw st-sw-full"></i> Full Overlap (double ring + &#x2713;)</span>
+                    <span><i class="sw st-sw st-sw-partial"></i> Partial Overlap (dashed + &frac12;)</span>
+                    <span><i class="sw st-sw st-sw-disjoint"></i> Disjoint / Skip (dotted + &#x2717;)</span>
+                    <span><i class="sw st-sw st-sw-combine"></i> Combine / Recompute (dotted + &plus; / &uarr;)</span>
+                    <span><i class="sw st-sw st-sw-leaf"></i> Update / Populate Leaf (double + &#x2605;)</span>
+                    <span><i class="sw st-sw st-sw-visit"></i> Visiting / Active (dashed + &bull;)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage st-array-stage">
+                <span class="viz-stage-label" id="arrayStageLabel">Underlying Array A[0..7]</span>
+                <div id="arrayScrollRegion" class="scroll-box scroll-box-clean hp-scroll-region st-array-region"
+                     role="region" aria-labelledby="arrayStageLabel" tabindex="0">
+                    <ol id="arrayStage" class="queue-display hp-array-list st-array-list" role="list"></ol>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Build &mdash; O(n))</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Segment Tree State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Subtree / Query Result</span><strong id="statResult">&mdash;</strong></div>
+                        <div><span>Nodes Visited</span><strong id="statVisited">0</strong></div>
+                        <div><span>Combines</span><strong id="statCombines">0</strong></div>
+                        <div><span>Active Node / Range</span><strong id="statActiveNode">&mdash;</strong></div>
+                        <div><span>Mode &amp; Size</span><strong id="statModeSize">Sum &middot; 8 / 16</strong></div>
+                        <div><span>Integrity</span><strong id="statIntegrity">OK</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Segment Tree Complexity &amp; Properties</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Segment tree complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Complexity</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input, control, or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>What a Segment Tree Stores</h2>
+                    <p>Each leaf holds a single array element <code>A[i]</code> covering interval <code>[i..i]</code>. Every internal node splits <code>[lo..hi]</code> at <code>mid = &lfloor;(lo + hi) / 2&rfloor;</code> into left child <code>2&middot;node + 1</code> (<code>[lo..mid]</code>) and right child <code>2&middot;node + 2</code> (<code>[mid + 1..hi]</code>), storing <code>combine(left, right)</code>. An array of length <code>n</code> has exactly <code>2n &minus; 1</code> populated nodes&mdash;so building visits every node once in <code>O(n)</code> time&mdash;and 0-based heap indices always fit within <code>4n</code> flat-array slots.</p>
+                </div>
+                <div class="check">
+                    <h2>The Three Overlap Cases: Full, Partial, and Disjoint</h2>
+                    <p>When querying <code>[l..r]</code> at a node covering <code>[lo..hi]</code>, exactly one case applies: <strong>Disjoint</strong> (<code>hi &lt; l</code> or <code>lo &gt; r</code>) returns the identity immediately without descending; <strong>Full overlap</strong> (<code>l &le; lo</code> and <code>hi &le; r</code>) returns the precomputed node value directly; <strong>Partial overlap</strong> recurses into both children and combines their answers.</p>
+                </div>
+                <div class="check">
+                    <h2>Why Range Queries Visit Only O(log n) Nodes</h2>
+                    <p>At any depth of the tree, at most <strong>two</strong> nodes can partially overlap <code>[l..r]</code>&mdash;at most one containing the left endpoint <code>l</code> and one containing the right endpoint <code>r</code>. Every interior node between them is a full-overlap base case, and every exterior sibling is a disjoint base case. Because each of those at most 2 partial nodes inspects 2 children, at most <strong>4</strong> nodes are visited per level; with height <code>h = &lceil;log<sub>2</sub> n&rceil;</code>, a query visits at most <code>4h + 1</code> nodes (<code>4h &minus; 1</code> for <code>n &ge; 2</code>), which is <code>O(log n)</code>.</p>
+                </div>
+                <div class="check">
+                    <h2>Point Update &amp; Associative Combine Modes: Sum vs. Min</h2>
+                    <p>Updating <code>A[i]</code> follows a single root-to-leaf path (<code>O(log n)</code>) and recomputes each ancestor from its two children on the way back up. Any associative operation&mdash;where grouping does not change the result, <code>(a &oplus; b) &oplus; c = a &oplus; (b &oplus; c)</code>&mdash;works, paired with an identity element (<code>combine(x, id) = x</code>) for disjoint branches: <strong>Sum</strong> uses <code>a + b</code> with identity <code>0</code>, while <strong>Minimum</strong> uses <code>min(a, b)</code> with identity <code>+&infin;</code>.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/segment-tree-page.js"></script>
+</body>
+</html>
