@@ -1,0 +1,197 @@
+{
+  "id": "stack",
+  "title": "Stack (LIFO)",
+  "topic": "stack",
+  "description": "Push, pop, peek, overflow and underflow on the bounded array-backed stack used by stack.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "stack-001",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "You push 4, then 7, then 9 onto an empty stack, then call pop(). Which value is removed?",
+      "choices": ["9", "4", "7", "Nothing: pop needs to be told which value to remove"],
+      "answer": "9",
+      "explanation": "A stack is Last-In, First-Out: pop always removes the most recently pushed value still on the stack, which is 9. 4 is the tempting wrong answer if you think of a queue (First-In, First-Out); in a stack 4 sits at the bottom and comes out last.",
+      "tags": ["lifo", "pop"],
+      "page": "On stack.html: allocate capacity 6, push 4, 7 and 9, then press Pop with the value box empty."
+    },
+    {
+      "id": "stack-002",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "peek() removes the top element and returns it.",
+      "answer": false,
+      "explanation": "peek() only reads the top value; the size and top index stay the same. Removing and returning the top value is what pop() does. Mixing the two up is the most common stack mistake.",
+      "tags": ["peek", "pop"],
+      "page": "On stack.html: push 5, press Peek twice, and watch Elements stay at 1."
+    },
+    {
+      "id": "stack-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Starting from an empty stack with capacity 6: push 3, push 8, pop, push 5. List the stack from bottom to top.",
+      "format": "list",
+      "answer": "3, 5",
+      "hint": "Write the stack down after every operation. pop removes whatever was pushed most recently.",
+      "explanation": "After push 3 and push 8 the stack is [3, 8] with 8 on top. pop removes 8 (the newest value), leaving [3]. push 5 puts 5 on top: [3, 5]. Answering \"3, 8, 5\" forgets that pop removed something; answering \"8, 5\" removes the oldest value, which is queue behaviour.",
+      "tags": ["push", "pop", "trace"],
+      "page": "On stack.html: push 3, push 8, Pop, push 5."
+    },
+    {
+      "id": "stack-004",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "A stack has capacity 3. You push 1, 2, 3 and then 4. What is the top index afterwards? (The bottom slot is index 0.)",
+      "answer": "2",
+      "hint": "What happens to a push when every slot is already used?",
+      "explanation": "Pushing 1, 2 and 3 fills indices 0, 1 and 2, so top is 2. The push of 4 is rejected with a stack overflow and changes nothing, so top stays 2. Answering 3 assumes the stack grew, but this stack has a fixed capacity.",
+      "tags": ["overflow", "top", "capacity"],
+      "page": "On stack.html: allocate capacity 3, push 1, 2, 3, then try to push 4."
+    },
+    {
+      "id": "stack-005",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the time complexity of push on this array-backed stack (which has a fixed capacity)?",
+      "choices": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+      "answer": "O(1)",
+      "explanation": "push writes one value at index top + 1 and increments top. That is the same amount of work whether the stack holds 1 element or 11, so it is O(1). O(n) would only apply if every existing element had to move, as it would when inserting at the front of an array.",
+      "tags": ["complexity", "push"]
+    },
+    {
+      "id": "stack-006",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "Using only push, pop and peek, how long does it take in the worst case to find out whether a value x is stored anywhere in a stack of n elements?",
+      "choices": ["O(n)", "O(1)", "O(log n)", "O(n log n)"],
+      "answer": "O(n)",
+      "explanation": "Only the top is visible, so in the worst case (x is at the bottom or missing) you must pop all n elements to look at each one, which is O(n). O(1) is tempting because push, pop and peek are each O(1), but a search needs up to n of those steps. O(log n) would need sorted, randomly accessible data, as in binary search.",
+      "tags": ["complexity", "search"]
+    },
+    {
+      "id": "stack-007",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these operations take O(1) time on this stack? Select all that apply.",
+      "choices": ["push", "pop", "peek", "isFull", "Listing every element from top to bottom"],
+      "answer": ["push", "pop", "peek", "isFull"],
+      "explanation": "push, pop and peek touch only the top slot, and isFull compares size with capacity; each costs the same no matter how many elements are stored. Listing every element has to visit all n elements, so it is O(n), not O(1).",
+      "tags": ["complexity", "operations"]
+    },
+    {
+      "id": "stack-008",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "A stack with capacity 4 already holds 4 values. What happens when you push 10?",
+      "choices": [
+        "The push is rejected as a stack overflow and the stack is unchanged",
+        "The bottom value is dropped to make room for 10",
+        "The capacity grows to 5 and 10 is pushed",
+        "10 replaces the current top value"
+      ],
+      "answer": "The push is rejected as a stack overflow and the stack is unchanged",
+      "explanation": "This stack has a fixed capacity. When it is full, push fails with \"Stack overflow: all 4 slots are used, so 10 cannot be pushed.\" and nothing changes. Growing the capacity is what a dynamic array does, but this visualizer models a bounded stack. Dropping the bottom value would be a ring buffer, not a stack.",
+      "tags": ["overflow", "capacity"],
+      "page": "On stack.html: allocate capacity 4, push four values, then push 10."
+    },
+    {
+      "id": "stack-009",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "In this visualizer, top is the index of the last element, so top is -1 when the stack is empty.",
+      "answer": true,
+      "explanation": "top equals size − 1. With one element top is 0, and with no elements it is −1, which is why the page says \"The stack is now empty (top = −1)\" after the last pop. Saying top is 0 when empty would make an empty stack look the same as a stack with one element.",
+      "tags": ["top", "underflow"],
+      "page": "On stack.html: push one value, then Pop, and read the message."
+    },
+    {
+      "id": "stack-010",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "The values 1, 2, 3, 4 are pushed in that order, and pops may happen at any time between the pushes. Which pop order is IMPOSSIBLE?",
+      "choices": ["3, 1, 2, 4", "2, 1, 4, 3", "3, 2, 4, 1", "1, 2, 3, 4"],
+      "answer": "3, 1, 2, 4",
+      "hint": "To pop 3 first, 1 and 2 must already be on the stack. Which of them is on top?",
+      "explanation": "To pop 3 first you must push 1, 2, 3 and pop 3. Now 2 is on top of 1, so the next pop must give 2 (or you push 4). Popping 1 next is impossible. The others are possible: 2, 1, 4, 3 (push 1, push 2, pop, pop, push 3, push 4, pop, pop); 3, 2, 4, 1 (push 1–3, pop, pop, push 4, pop, pop); 1, 2, 3, 4 (pop straight after each push).",
+      "tags": ["lifo", "permutations"]
+    },
+    {
+      "id": "stack-011",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Which of these problems are naturally solved with a stack? Select all that apply.",
+      "choices": [
+        "Checking that brackets like ( [ { } ] ) are balanced",
+        "Undo in a text editor",
+        "Remembering where to return to when functions call other functions",
+        "Serving print jobs in the order they arrived"
+      ],
+      "answer": [
+        "Checking that brackets like ( [ { } ] ) are balanced",
+        "Undo in a text editor",
+        "Remembering where to return to when functions call other functions"
+      ],
+      "explanation": "Bracket matching, undo and the call stack all need the most recent unfinished item first: the latest open bracket must close first, the latest edit is undone first, and the most recently called function returns first. Print jobs served in arrival order are First-In, First-Out, which is a queue, not a stack.",
+      "tags": ["applications"]
+    },
+    {
+      "id": "stack-012",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Evaluate the postfix expression 5 1 2 + 4 * + 3 - with a stack: push numbers, and for an operator pop b, pop a, then push a op b. What value is left on the stack?",
+      "answer": "14",
+      "hint": "After reading 5 1 2 + the stack is [5, 3].",
+      "explanation": "5 1 2 → [5, 1, 2]. + pops 2 and 1 and pushes 3 → [5, 3]. 4 → [5, 3, 4]. * → [5, 12]. + → [17]. 3 → [17, 3]. - pops b = 3 and a = 17 and pushes 17 − 3 = 14. Getting −14 means the operands were popped in the wrong order: the first value popped is the RIGHT operand.",
+      "tags": ["applications", "postfix", "trace"]
+    },
+    {
+      "id": "stack-013",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "In this visualizer, calling pop() on an empty stack returns null.",
+      "answer": false,
+      "explanation": "pop() on an empty stack fails as a stack underflow: it returns an error result (ok: false) and the page shows an underflow message. It is peek() that returns null on an empty stack, because peek is only a question (\"what is on top?\"), while pop is a request to remove something that does not exist.",
+      "tags": ["underflow", "pop", "peek"],
+      "page": "On stack.html: allocate a capacity, then press Pop and then Peek on the empty stack."
+    },
+    {
+      "id": "stack-014",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "You reverse an array of n values by pushing every value onto a stack and then popping them all back into the array. What is the total time?",
+      "choices": ["O(n)", "O(1)", "O(n²)", "O(n log n)"],
+      "answer": "O(n)",
+      "explanation": "There are n pushes and n pops, each O(1), so the total is 2n constant-time steps, which is O(n). O(n²) would mean each push or pop cost O(n), but they only touch the top slot.",
+      "tags": ["complexity", "applications"]
+    },
+    {
+      "id": "stack-015",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On stack.html, which capacity does Allocate Capacity reject?",
+      "choices": ["13", "1", "6", "12"],
+      "answer": "13",
+      "explanation": "The page accepts a whole-number capacity from 1 to 12, so 13 is rejected with a message. 1 is allowed: a one-slot stack is valid, and pushing a second value simply overflows. 12 is the largest allowed value, so it is accepted.",
+      "tags": ["capacity", "page"],
+      "page": "On stack.html: type 13 into Capacity and press Allocate Capacity."
+    },
+    {
+      "id": "stack-016",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "On stack.html the top value is 8. You type 5 in the value box and press Pop. What happens?",
+      "choices": [
+        "Nothing is removed: the page explains that the top element is 8, not 5",
+        "5 is found and removed from the middle of the stack",
+        "8 is popped anyway and 5 is ignored",
+        "5 is pushed instead"
+      ],
+      "answer": "Nothing is removed: the page explains that the top element is 8, not 5",
+      "explanation": "A stack can only remove its top. When you type a value before pressing Pop, the page checks that it matches the top, and because 8 ≠ 5 it shows \"LIFO Rule: Top element is 8, not 5.\" and leaves the stack alone. Removing 5 from the middle would break LIFO; leave the box empty to pop whatever is on top.",
+      "tags": ["lifo", "pop", "page"],
+      "page": "On stack.html: push 5, push 8, type 5 and press Pop."
+    }
+  ]
+}
