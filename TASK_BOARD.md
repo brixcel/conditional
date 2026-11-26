@@ -27,6 +27,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C21 | Red-Black Tree module (CLRS insert/delete fix-ups, every case named, 300-seed invariant tests) + page with 20 case demos, double-black and NIL markers; main.css section 19 | Claude (data-structures + visualization-engineer agents) | 2026-11-26 21:25 (merged to `main`) |
 | C20 | Stack, regular, circular and priority queue pages on the step player with keyboard shortcuts and pseudocode; Stack Pop now always needs the typed top value (letters no longer slip through); circular ring drawn as SVG (main.css section 18); Stack lesson + quiz updated | Claude (visualization-engineer agent) | 2026-11-26 21:24 (merged to `main`) |
 | G10 | Graph representation module + `layoutCircle` + 3-view page; Claude's agents removed a local key handler, fixed button spacing, made `Graph.from(snapshot)` round-trip, strengthened `integrityError`; Claude added a Graphs nav category + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 21:21 (merged to `main`) |
 | C22 | Sorting page accuracy: quick sort worst-case space and O(n²) inputs, heap sort best case note, radix pseudocode, Ω(n log n) wording; lesson + quiz kept in sync | Claude (algorithms agent) | 2026-11-26 21:12 (merged to `main`) |
