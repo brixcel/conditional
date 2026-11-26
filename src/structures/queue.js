@@ -36,6 +36,8 @@ export class LinearQueue {
 
     enqueue(value) {
         assertValue(value);
+        const rear = this.rear;
+        const last = this.capacity - 1;
         if (this.rearAtEnd()) {
             const waste = this.wastedSlots;
             const error = waste > 0
@@ -43,38 +45,60 @@ export class LinearQueue {
                   `${waste} slot${waste === 1 ? "" : "s"} at the front ${waste === 1 ? "is" : "are"} free, but a linear queue never moves ` +
                   `rear back to ${waste === 1 ? "it" : "them"}. This "false overflow" is why circular queues exist.`
                 : `Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`;
-            return fail(error, [{ type: waste > 0 ? "false-overflow" : "overflow", indices: [], message: error, snapshot: this.snapshot() }]);
+            return fail(error, [this.#step(waste > 0 ? "false-overflow" : "overflow", "enqueue", 1, [this.rear], error)]);
         }
+        const steps = [this.#step("check", "enqueue", 1, rear >= 0 ? [rear] : [],
+            `rear = ${rear}, capacity − 1 = ${last}: rear is not at the last index, so ${value} fits.`)];
+        let message = `rear ← ${rear} + 1 = ${rear + 1}.`;
         this.rear++;
+        steps.push(this.#step("move-rear", "enqueue", 2, [this.rear], message));
+        message = `Q[${this.rear}] ← ${value}; count ← ${this.count} + 1 = ${this.count + 1}. Enqueued ${value} at index ${this.rear}.`;
         this.slots[this.rear] = value;
         this.count++;
-        return ok(value, [{ type: "enqueue", indices: [this.rear], message: `Enqueued ${value} at index ${this.rear}. rear = ${this.rear}.`, snapshot: this.snapshot() }]);
+        steps.push(this.#step("enqueue", "enqueue", 3, [this.rear], message));
+        return ok(value, steps);
     }
 
     dequeue() {
         if (this.isEmpty()) {
             return fail("Queue underflow: the queue is empty, so there is nothing to dequeue.",
-                [{ type: "underflow", indices: [], message: "dequeue rejected (queue is empty)", snapshot: this.snapshot() }]);
+                [this.#step("underflow", "dequeue", 1, [], "count = 0, so the queue is empty. Underflow: there is nothing to dequeue.")]);
         }
         const from = this.front;
         const value = this.slots[from];
+        const steps = [this.#step("check", "dequeue", 1, [from],
+            `count = ${this.count}, not 0: the front element is at index ${from}.`)];
+        let message = `x ← Q[${from}] = ${value}; Q[${from}] ← empty; count ← ${this.count} − 1 = ${this.count - 1}. Only the front can leave (first in, first out).`;
         this.slots[from] = null;
         this.count--;
-        let message = `Dequeued ${value} from index ${from}.`;
+        steps.push(this.#step("dequeue", "dequeue", 2, [from], message));
         if (this.count === 0) {
             // Common textbook optimisation: when the queue empties, both pointers reset.
+            message = "count = 0, so the queue is now empty: front ← 0, rear ← −1 (both pointers reset to the start).";
             this.front = 0;
             this.rear = -1;
-            message += " The queue is now empty, so front and rear reset to the start.";
+            steps.push(this.#step("reset", "dequeue", 3, [], message));
         } else {
+            message = `front ← ${from} + 1 = ${from + 1}. Index ${from} is now freed, and a linear queue never reuses it.`;
             this.front++;
-            message += ` front moves to ${this.front}.`;
+            steps.push(this.#step("move-front", "dequeue", 4, [this.front], message));
         }
-        return ok(value, [{ type: "dequeue", indices: [from], message, snapshot: this.snapshot() }]);
+        steps.push(this.#step("done", "dequeue", 5, [], `Return ${value}. Dequeued ${value} from index ${from}.`));
+        return ok(value, steps);
     }
 
     peek() { return this.isEmpty() ? null : this.slots[this.front]; }
     peekRear() { return this.isEmpty() ? null : this.slots[this.rear]; }
+
+    /** Read-only operations with recorded steps: "peek", "rear", "isEmpty", "isFull", "size". Never mutates. */
+    query(name) {
+        return recordQuery(this, name, "count == 0", (s) => `count = ${s.count}`,
+            (s, full) => `count = ${s.count}, capacity = ${s.capacity}, so count == capacity is ${full}`);
+    }
+
+    #step(type, operation, line, indices, message) {
+        return { type, operation, line, indices, message, snapshot: this.snapshot() };
+    }
 
     clear() {
         this.slots.fill(null);
@@ -113,53 +137,111 @@ export class CircularQueue {
 
     enqueue(value) {
         assertValue(value);
+        const n = this.capacity;
+        const next = (this.rear + 1) % n;
         if (this.isFull()) {
             return fail(`Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`,
-                [{ type: "overflow", indices: [], message: "enqueue rejected (queue is full)", snapshot: this.snapshot() }]);
+                [this.#step("overflow", "enqueue", 1, [this.front],
+                    `(rear + 1) mod ${n} = (${this.rear} + 1) mod ${n} = ${next}, which is front (${this.front}): the ring is full. Overflow: ${value} is not enqueued.`)]);
         }
+        const steps = [this.#step("check", "enqueue", 1, [],
+            this.isEmpty()
+                ? `front = −1, so the ring is empty and not full. There is room for ${value}.`
+                : `(rear + 1) mod ${n} = (${this.rear} + 1) mod ${n} = ${next}, which is not front (${this.front}): not full.`)];
         let message;
         if (this.isEmpty()) {
+            message = "Queue was empty: front ← 0, rear ← 0.";
             this.front = 0;
             this.rear = 0;
-            message = `Queue was empty: front = rear = 0. Stored ${value} at index 0.`;
+            steps.push(this.#step("move-rear", "enqueue", 2, [0], message));
         } else {
             const prev = this.rear;
-            this.rear = (this.rear + 1) % this.capacity;
-            message = `rear = (${prev} + 1) mod ${this.capacity} = ${this.rear}` +
-                (this.rear < prev ? " (wrapped around to the start)" : "") + `. Stored ${value} there.`;
+            message = `rear ← (${prev} + 1) mod ${n} = ${next}` + (next < prev ? " (wrapped around to the start)." : ".");
+            this.rear = next;
+            steps.push(this.#step("move-rear", "enqueue", 3, [next], message));
         }
+        message = `Q[${this.rear}] ← ${value}. Stored ${value} at index ${this.rear}.`;
         this.slots[this.rear] = value;
-        return ok(value, [{ type: "enqueue", indices: [this.rear], message, snapshot: this.snapshot() }]);
+        steps.push(this.#step("enqueue", "enqueue", 4, [this.rear], message));
+        return ok(value, steps);
     }
 
     dequeue() {
         if (this.isEmpty()) {
             return fail("Queue underflow: the queue is empty, so there is nothing to dequeue.",
-                [{ type: "underflow", indices: [], message: "dequeue rejected (queue is empty)", snapshot: this.snapshot() }]);
+                [this.#step("underflow", "dequeue", 1, [], "front = −1, so the ring is empty. Underflow: there is nothing to dequeue.")]);
         }
+        const n = this.capacity;
         const from = this.front;
         const value = this.slots[from];
+        const steps = [this.#step("check", "dequeue", 1, [from], `front = ${from}, not −1: the front element is at index ${from}.`)];
+        let message = `x ← Q[${from}] = ${value}; Q[${from}] ← empty. Only the front can leave (first in, first out).`;
         this.slots[from] = null;
-        let message;
+        steps.push(this.#step("dequeue", "dequeue", 2, [from], message));
         if (this.front === this.rear) {
+            message = `front = rear = ${from}, so that was the only element: front ← −1, rear ← −1 (empty).`;
             this.front = -1;
             this.rear = -1;
-            message = `Dequeued ${value}. That was the only element, so front = rear = −1 (empty).`;
+            steps.push(this.#step("reset", "dequeue", 3, [], message));
         } else {
-            this.front = (this.front + 1) % this.capacity;
-            message = `Dequeued ${value} from index ${from}. front = (${from} + 1) mod ${this.capacity} = ${this.front}` +
-                (this.front < from ? " (wrapped around)." : ".");
+            const next = (from + 1) % n;
+            message = `front ← (${from} + 1) mod ${n} = ${next}` + (next < from ? " (wrapped around to the start)." : ".");
+            this.front = next;
+            steps.push(this.#step("move-front", "dequeue", 4, [next], message));
         }
-        return ok(value, [{ type: "dequeue", indices: [from], message, snapshot: this.snapshot() }]);
+        steps.push(this.#step("done", "dequeue", 5, [], `Return ${value}. Dequeued ${value} from index ${from}.`));
+        return ok(value, steps);
     }
 
     peek() { return this.isEmpty() ? null : this.slots[this.front]; }
     peekRear() { return this.isEmpty() ? null : this.slots[this.rear]; }
 
+    /** Read-only operations with recorded steps: "peek", "rear", "isEmpty", "isFull", "size". Never mutates. */
+    query(name) {
+        return recordQuery(this, name, "front == −1", (s) => `front = ${s.front}`,
+            (s, full) => s.front === -1
+                ? "front = −1, so the ring is empty and isFull is false"
+                : `(rear + 1) mod ${s.capacity} = (${s.rear} + 1) mod ${s.capacity} = ${(s.rear + 1) % s.capacity}, front = ${s.front}, so isFull is ${full}`);
+    }
+
+    #step(type, operation, line, indices, message) {
+        return { type, operation, line, indices, message, snapshot: this.snapshot() };
+    }
+
     clear() {
         this.slots.fill(null);
         this.front = -1;
         this.rear = -1;
+    }
+}
+
+/**
+ * Shared recorder for the read-only operations of LinearQueue and CircularQueue.
+ * One step for isEmpty / isFull / size; peek / rear record the empty check, then the read.
+ */
+function recordQuery(q, name, emptyTest, emptyText, fullText) {
+    const step = (type, line, indices, message) => ({ type, operation: name, line, indices, message, snapshot: q.snapshot() });
+    const s = q.snapshot();
+    switch (name) {
+        case "peek":
+        case "rear": {
+            const which = name === "peek" ? "front" : "rear";
+            if (q.isEmpty()) return ok(null, [step("empty", 1, [], `${emptyText(s)}, so the queue is empty: ${name} returns null.`)]);
+            const at = q[which];
+            const value = name === "peek" ? q.peek() : q.peekRear();
+            return ok(value, [
+                step("check", 1, [], `${emptyText(s)}: the queue is not empty.`),
+                step(name, 2, [at], `Return Q[${which}] = Q[${at}] = ${value} without removing it.`),
+            ]);
+        }
+        case "isEmpty":
+            return ok(q.isEmpty(), [step("query", 1, [], `${emptyText(s)}, so ${emptyTest} is ${q.isEmpty()}.`)]);
+        case "isFull":
+            return ok(q.isFull(), [step("query", 1, [], `${fullText(s, q.isFull())}.`)]);
+        case "size":
+            return ok(q.size, [step("query", 1, [], `The queue holds ${q.size} of ${q.capacity} slots.`)]);
+        default:
+            throw new RangeError(`Unknown queue query: ${name}`);
     }
 }
 
@@ -232,6 +314,7 @@ export class PriorityQueue {
     enqueue(value, priority = 0) {
         assertValue(value);
         assertValue(priority);
+        this.#op = "enqueue";
         if (this.isFull()) {
             return fail(`Queue overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} used, so ${value} cannot be enqueued.`,
                 [this.#step("overflow", [], "enqueue rejected (queue is full)")]);
@@ -270,6 +353,7 @@ export class PriorityQueue {
 
     /** Removes the front item (root), moves the last item into the root and sifts it down. O(log n). */
     dequeue() {
+        this.#op = "dequeue";
         if (this.isEmpty()) {
             return fail("Queue underflow: the queue is empty, so there is nothing to dequeue.",
                 [this.#step("underflow", [], "dequeue rejected (queue is empty)")]);
@@ -337,7 +421,12 @@ export class PriorityQueue {
     }
 
     #swap(a, b) { [this.heap[a], this.heap[b]] = [this.heap[b], this.heap[a]]; }
-    #step(type, indices, message) { return { type, indices, message, snapshot: this.snapshot() }; }
+    /** Operation being recorded ("enqueue" / "dequeue"); picks the pseudocode line map. */
+    #op = "enqueue";
+    #step(type, indices, message) {
+        const line = PQ_LINES[this.#op][type] ?? 0;
+        return { type, operation: this.#op, line, indices, message, snapshot: this.snapshot() };
+    }
 }
 
 /** "30 (priority 1, #4)": value, priority and arrival number. */
@@ -350,8 +439,79 @@ function reason(a, b) {
         : `same priority ${a.priority}, and #${a.id} arrived before #${b.id}`;
 }
 
+/** Step type -> 1-based line in QUEUE_INFO.priority.pseudocode[operation]. */
+const PQ_LINES = {
+    enqueue: { overflow: 1, duplicate: 1, enqueue: 2, compare: 3, swap: 4, settled: 5 },
+    dequeue: { underflow: 1, dequeue: 2, "move-last": 3, compare: 4, swap: 5, settled: 6 },
+};
+
 export const QUEUE_INFO = {
-    linear: { name: "Linear Queue", enqueue: "O(1)", dequeue: "O(1)", note: "Slots before front are never reused (false overflow)." },
-    circular: { name: "Circular Queue", enqueue: "O(1)", dequeue: "O(1)", note: "Indices wrap with (i + 1) mod capacity, so every slot is reused." },
-    priority: { name: "Priority Queue (binary heap)", enqueue: "O(log n)", dequeue: "O(log n)", note: "A binary heap is not stable, so an arrival counter breaks ties and keeps equal priorities first-in, first-out." },
+    linear: {
+        name: "Linear Queue", enqueue: "O(1)", dequeue: "O(1)", note: "Slots before front are never reused (false overflow).",
+        /** 1-based `line` in LinearQueue steps points into these arrays. Q = the backing array. */
+        pseudocode: Object.freeze({
+            enqueue: Object.freeze([
+                "if rear == capacity − 1: overflow, stop",
+                "rear ← rear + 1",
+                "Q[rear] ← x; count ← count + 1",
+            ]),
+            dequeue: Object.freeze([
+                "if count == 0: underflow, stop",
+                "x ← Q[front]; Q[front] ← empty; count ← count − 1",
+                "if count == 0: front ← 0; rear ← −1",
+                "else: front ← front + 1",
+                "return x",
+            ]),
+            peek: Object.freeze(["if count == 0: return null", "return Q[front]"]),
+            rear: Object.freeze(["if count == 0: return null", "return Q[rear]"]),
+            isEmpty: Object.freeze(["return count == 0"]),
+            isFull: Object.freeze(["return count == capacity"]),
+            size: Object.freeze(["return count"]),
+        }),
+    },
+    circular: {
+        name: "Circular Queue", enqueue: "O(1)", dequeue: "O(1)", note: "Indices wrap with (i + 1) mod capacity, so every slot is reused.",
+        /** 1-based `line` in CircularQueue steps points into these arrays. n = capacity. */
+        pseudocode: Object.freeze({
+            enqueue: Object.freeze([
+                "if (rear + 1) mod n == front: overflow, stop",
+                "if front == −1: front ← 0; rear ← 0",
+                "else: rear ← (rear + 1) mod n",
+                "Q[rear] ← x",
+            ]),
+            dequeue: Object.freeze([
+                "if front == −1: underflow, stop",
+                "x ← Q[front]; Q[front] ← empty",
+                "if front == rear: front ← −1; rear ← −1",
+                "else: front ← (front + 1) mod n",
+                "return x",
+            ]),
+            peek: Object.freeze(["if front == −1: return null", "return Q[front]"]),
+            rear: Object.freeze(["if front == −1: return null", "return Q[rear]"]),
+            isEmpty: Object.freeze(["return front == −1"]),
+            isFull: Object.freeze(["return (rear + 1) mod n == front"]),
+            size: Object.freeze(["return (rear − front + n) mod n + 1   (0 if empty)"]),
+        }),
+    },
+    priority: {
+        name: "Priority Queue (binary heap)", enqueue: "O(log n)", dequeue: "O(log n)", note: "A binary heap is not stable, so an arrival counter breaks ties and keeps equal priorities first-in, first-out.",
+        /** 1-based `line` in PriorityQueue steps (see PQ_LINES). "outranks" = higher priority, or equal priority and earlier arrival. */
+        pseudocode: Object.freeze({
+            enqueue: Object.freeze([
+                "if size == capacity or x is a rejected duplicate: stop",
+                "i ← size; A[i] ← item; size ← size + 1",
+                "while i > 0: compare A[i] with A[parent(i)]",
+                "    if A[i] outranks its parent: swap them; i ← parent(i), else stop",
+                "A[i] is in place: heap property holds",
+            ]),
+            dequeue: Object.freeze([
+                "if size == 0: underflow, stop",
+                "top ← A[0]",
+                "A[0] ← A[size − 1]; size ← size − 1; i ← 0",
+                "compare A[i] with its higher-ranked child c",
+                "    if c outranks A[i]: swap them; i ← c, else stop",
+                "heap property holds; return top",
+            ]),
+        }),
+    },
 };

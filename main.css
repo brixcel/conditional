@@ -2382,3 +2382,37 @@ input:disabled, select:disabled {
         transition: none;
     }
 }
+
+/* --------------------------------------------------------------------------
+   17. Circular Queue SVG Ring (C20)
+   The ring is an SVG (positions are attributes, no inline styles), so it scales
+   to the stage width. Slot tones reuse section 14 (.hp-node.hp-*); tokens only.
+   -------------------------------------------------------------------------- */
+.cq-ring {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+}
+
+.cq-ring-svg {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+}
+
+.cq-track {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 2;
+}
+
+.cq-slot-filled .hp-node-circle {
+    fill: var(--primary-subtle);
+}
+
+/* Empty slots are dashed and carry no value text, so "empty" is not shown by colour alone. */
+.cq-slot-empty .hp-node-circle {
+    stroke: var(--border-strong);
+    stroke-dasharray: 4 3;
+}
