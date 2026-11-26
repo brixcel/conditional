@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red-Black Tree (Self-Balancing BST) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge badge-tree">Self-Balancing Tree &bull; Red-Black Tree</div>
+            <h1 class="page-title">Red-Black Tree Visualization</h1>
+            <p class="page-desc">
+                A <strong>Binary Search Tree</strong> in which every node is coloured <strong>red</strong> or
+                <strong>black</strong>. Five colour rules keep the tree roughly balanced. Step through each insert
+                and delete: see the plain BST change, the rule it breaks (a <strong>red-red violation</strong> or a
+                <strong>double black</strong>), and the recolouring and rotations of the fix-up case that repairs it.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="rbName">Red-Black Tree</h2>
+            <p class="concept-body" id="rbSummary"></p>
+            <h3 class="control-section-title" id="rulesHeading">The five red-black properties</h3>
+            <ol class="rb-rules" aria-labelledby="rulesHeading">
+                <li>Every node is either <strong>red</strong> or <strong>black</strong>.</li>
+                <li>The <strong>root</strong> is black.</li>
+                <li>Every leaf (<strong>NIL</strong>, an empty child pointer) counts as black.</li>
+                <li>A red node has only black children: two reds are never parent and child.</li>
+                <li>For every node, all paths from it down to a NIL leaf pass the <strong>same number of black nodes</strong>
+                    (its black height).</li>
+            </ol>
+            <p class="concept-body">
+                Rules 4 and 5 together mean the longest root-to-leaf path is at most twice the shortest, so a tree
+                with n keys has height at most 2&middot;log&#8322;(n + 1). Search, insert and delete are
+                therefore <strong>O(log n)</strong>. An insert needs at most <strong>2 rotations</strong> and a delete at
+                most <strong>3</strong>; recolouring may repeat up the tree, but only O(log n) times.
+            </p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Search</div><div class="prop-value" id="cxSearch"></div></div>
+                <div class="prop-item"><div class="prop-label">Insert</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Delete</div><div class="prop-value" id="cxDelete"></div></div>
+                <div class="prop-item"><div class="prop-label">Min / Max</div><div class="prop-value" id="cxMinMax"></div></div>
+                <div class="prop-item"><div class="prop-label">Rotation</div><div class="prop-value" id="cxRotation"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Red-Black Tree Controls &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Single-Key Operations (Capacity 31)</div>
+                <form id="keyForm" novalidate>
+                    <div class="controls-row">
+                        <label class="field">
+                            <span class="field-label">Value (&minus;99 to 999)</span>
+                            <input type="text" id="valueInput" class="input-sm" autocomplete="off" inputmode="numeric"
+                                   placeholder="e.g. 25 or -10">
+                        </label>
+                    </div>
+                    <div class="controls-row mt-sm">
+                        <button type="submit" class="btn" id="insertBtn">Insert</button>
+                        <button type="button" class="btn btn-secondary" id="searchBtn">Search</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                        <button type="button" class="btn btn-secondary" id="minBtn">Min</button>
+                        <button type="button" class="btn btn-secondary" id="maxBtn">Max</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="control-section" id="demoForm" novalidate>
+                <div class="control-section-title">2. Fix-Up Case Demos</div>
+                <div class="controls-row">
+                    <label class="field field-grow">
+                        <span class="field-label">Case (start tree written as key + R/B colour, children in brackets, &ldquo;-&rdquo; = empty)</span>
+                        <select id="demoSelect"></select>
+                    </label>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="demoBtn">Run Demo</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">3. Build Tree from List (Unique Keys, Inserted in Order)</div>
+                <div class="controls-row">
+                    <label class="field field-grow">
+                        <span class="field-label">Values (1&ndash;31 unique whole numbers, &minus;99 to 999)</span>
+                        <input type="text" id="buildInput" autocomplete="off"
+                               value="10, 20, 30, 15, 25, 5, 1, 40">
+                    </label>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="inspectForm" novalidate>
+                <div class="control-section-title">4. Node Roles &amp; Colours</div>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Highlight</span>
+                        <select id="inspectSelect">
+                            <option value="root" selected>Root</option>
+                            <option value="leaves">Leaf nodes</option>
+                            <option value="internal">Internal (parent) nodes</option>
+                            <option value="red">Red nodes</option>
+                            <option value="black">Black nodes</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn btn-secondary" id="inspectBtn">Highlight</button>
+                </div>
+            </form>
+
+            <div id="rbMessage" class="alert-banner alert-live" hidden></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span><span aria-hidden="true">&#x23EE;</span> Reset</span></button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" title="Previous step (&larr;)"><span><span aria-hidden="true">&#x25C0;</span> Back</span></button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></span></button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" title="Next step (&rarr;)"><span>Step <span aria-hidden="true">&#x25B6;</span></span></button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">Red-Black Tree (label under each node: its colour)</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="treeStageLabel" tabindex="0"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw rb-sw rb-sw-red"></i> Red node (label &ldquo;red&rdquo;)</span>
+                    <span><i class="sw rb-sw rb-sw-black"></i> Black node (label &ldquo;black&rdquo;)</span>
+                    <span><i class="sw sw-compare"></i> Comparing / case nodes (dashed ring)</span>
+                    <span><i class="sw sw-select"></i> Path / recoloured (dotted or blinking ring)</span>
+                    <span><i class="sw sw-sorted"></i> Inserted / rotation pivot / found (solid ring)</span>
+                    <span><i class="sw rb-sw rb-sw-violation"></i> Red-red violation / error (dash-dot ring, label &ldquo;red!&rdquo;)</span>
+                    <span><i class="sw rb-sw rb-sw-double"></i> Double black (double ring; &ldquo;NIL&rdquo; = empty child)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="inorderStageLabel">In-Order Keys (Sorted, R = red, B = black)</span>
+                <ol id="inorderStage" class="queue-display hp-array-list hp-scroll-region"
+                    aria-labelledby="inorderStageLabel" tabindex="0"></ol>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Insert)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Red-Black State (This Step)</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Root</span><strong id="statRoot">&mdash;</strong></div>
+                        <div><span>Size / 31</span><strong id="statSize">0 / 31</strong></div>
+                        <div><span>Height</span><strong id="statHeight">&minus;1</strong></div>
+                        <div><span>Black Height</span><strong id="statBlackHeight">0</strong></div>
+                        <div><span>Fix-Up Case</span><strong id="statCase">&mdash;</strong></div>
+                        <div><span>Double Black</span><strong id="statDoubleBlack">&mdash;</strong></div>
+                        <div><span>Valid Red-Black Tree</span><strong id="statValid">Yes</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Red-Black Tree Complexity &amp; Fix-Up Cases</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Red-black tree complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside a control or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset. Each case below also has a mirror
+                image (left and right swapped); the demos show both sides.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Insert Case 1: Uncle Red &rarr; Recolour</h2>
+                    <p>The new red node z has a red parent, and the parent's sibling (the <strong>uncle</strong>) is also red. Colour the parent and uncle <strong>black</strong> and the grandparent <strong>red</strong>. No rotation; the check repeats from the grandparent, which may now clash with its own parent.</p>
+                </div>
+                <div class="check">
+                    <h2>Insert Case 2: Uncle Black, Triangle</h2>
+                    <p>The uncle is black (or NIL) and z is an <strong>inner</strong> child (a left child of a right child, or the mirror). <strong>Rotate the parent</strong> away from z so the three nodes form a straight line; this turns it into case 3.</p>
+                </div>
+                <div class="check">
+                    <h2>Insert Case 3: Uncle Black, Line</h2>
+                    <p>The uncle is black and z, its parent and grandparent lie in a <strong>straight line</strong>. <strong>Rotate the grandparent</strong> towards the uncle, then swap the colours of the old parent (now black) and old grandparent (now red). The fix-up ends.</p>
+                </div>
+                <div class="check">
+                    <h2>Delete: Where the Double Black Comes From</h2>
+                    <p>Removing a black node leaves its paths one black short. If the node that takes its place (x) is red, colour it black and stop. Otherwise x, possibly an empty NIL child, is treated as <strong>double black</strong> and one of the four sibling (w) cases below pushes the extra black away.</p>
+                </div>
+                <div class="check">
+                    <h2>Delete Case 1: Sibling Red</h2>
+                    <p>Colour the sibling w <strong>black</strong> and the parent <strong>red</strong>, then <strong>rotate the parent</strong> towards x. x now has a black sibling, so case 2, 3 or 4 follows.</p>
+                </div>
+                <div class="check">
+                    <h2>Delete Case 2: Sibling Black, Both Its Children Black</h2>
+                    <p>Colour w <strong>red</strong>, taking one black off both sides, and move the double black <strong>up to the parent</strong>. A red parent simply turns black and the fix-up ends; at the root the extra black is dropped.</p>
+                </div>
+                <div class="check">
+                    <h2>Delete Case 3: Sibling Black, Near Child Red, Far Child Black</h2>
+                    <p>Swap the colours of w and its near child, then <strong>rotate w</strong> away from x. The new sibling is black with a red far child: case 4.</p>
+                </div>
+                <div class="check">
+                    <h2>Delete Case 4: Sibling Black, Far Child Red</h2>
+                    <p>w takes the parent's colour; the parent and the far child become <strong>black</strong>; then <strong>rotate the parent</strong> towards x. The extra black is absorbed and the fix-up ends.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/red-black-page.js"></script>
+</body>
+</html>
