@@ -29,7 +29,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| C8 | Circular Linked List on real nodes (`src/structures/circular-linked-list.js`) + module page; `circLL.js` removed. Finished 2026-11-26 11:08 | Claude | `claude/c8-circular-linked-list` | the user (merge to `main`) |
 
 ## Done
 | ID | Task | Owner | Date |
