@@ -141,3 +141,100 @@ test("unbind removes the listener", () => {
     press(" ");
     assert.deepEqual(player.calls, []);
 });
+
+// --- Focusable scroll regions and the nav drawer (C16) ---------------------
+// Minimal fake DOM node with a `closest` that understands the simple selectors
+// used by player-keys: `.cls`, `tag.cls`, `[attr="value"]`.
+function node(tagName, { classes = [], attrs = {}, parent = null } = {}) {
+    const n = {
+        tagName,
+        parentElement: parent,
+        classList: { contains: (c) => classes.includes(c) },
+        getAttribute: (a) => (a in attrs ? attrs[a] : null),
+    };
+    const matchesOne = (el, sel) => {
+        sel = sel.trim();
+        const attr = sel.match(/^\[([\w-]+)="([^"]*)"\]$/);
+        if (attr) return el.getAttribute(attr[1]) === attr[2];
+        const m = sel.match(/^([a-z]*)\.([\w-]+)$/i);
+        if (!m) throw new Error(`fake closest: unsupported selector ${sel}`);
+        if (m[1] && el.tagName.toUpperCase() !== m[1].toUpperCase()) return false;
+        return el.classList.contains(m[2]);
+    };
+    n.closest = (selector) => {
+        for (let el = n; el; el = el.parentElement) {
+            if (selector.split(",").some((s) => matchesOne(el, s))) return el;
+        }
+        return null;
+    };
+    return n;
+}
+
+const PLAYER_KEYS = [" ", "ArrowRight", "ArrowLeft", "Home"];
+
+function tree(bodyClasses = []) {
+    const body = node("BODY", { classes: bodyClasses });
+    const main = node("MAIN", { parent: body });
+    return { body, main };
+}
+
+for (const [label, opts] of [
+    [".hp-scroll-region", { classes: ["hp-scroll-region"], attrs: { tabindex: "0", role: "region" } }],
+    [".scroll-box", { classes: ["scroll-box", "scroll-box-clean"], attrs: { tabindex: "0" } }],
+    ['[data-player-keys="ignore"]', { attrs: { "data-player-keys": "ignore", tabindex: "0" } }],
+]) {
+    test(`all player keys are ignored on a focused ${label} and on a child inside it`, () => {
+        const { main } = tree();
+        const region = node("DIV", { ...opts, parent: main });
+        const svg = node("svg", { parent: region });
+        const circle = node("circle", { parent: svg });
+        for (const t of [region, svg, circle]) {
+            const { player, press } = setup();
+            for (const k of PLAYER_KEYS) {
+                const ev = press(k, t);
+                assert.equal(ev.defaultPrevented, false, `${k} on ${t.tagName}`);
+            }
+            assert.deepEqual(player.calls, [], t.tagName);
+        }
+    });
+}
+
+test("a normal non-interactive target in the page still drives the player", () => {
+    const { body, main } = tree();
+    const stage = node("DIV", { classes: ["viz-stage"], parent: main });
+    const para = node("P", { parent: stage });
+    for (const t of [body, main, stage, para]) {
+        const { player, press } = setup();
+        const ev = press(" ", t);
+        assert.equal(ev.defaultPrevented, true, t.tagName);
+        press("ArrowRight", t);
+        press("ArrowLeft", t);
+        press("Home", t);
+        assert.deepEqual(player.calls, ["toggle", "pause", "next", "prev", "reset"], t.tagName);
+    }
+});
+
+test("player keys are ignored while the navigation drawer is open (body.nav-open)", () => {
+    const { body, main } = tree(["nav-open"]);
+    const stage = node("DIV", { parent: main });
+    for (const t of [body, stage]) {
+        const { player, press } = setup();
+        for (const k of PLAYER_KEYS) {
+            const ev = press(k, t);
+            assert.equal(ev.defaultPrevented, false, `${k} on ${t.tagName}`);
+        }
+        assert.deepEqual(player.calls, []);
+    }
+});
+
+test("nav-open is also detected via ownerDocument.body when closest is unavailable", () => {
+    const doc = { body: { classList: { contains: (c) => c === "nav-open" } } };
+    assert.equal(shouldHandlePlayerKey(keyEvent(" ", { tagName: "DIV", ownerDocument: doc })), false);
+    const closed = { body: { classList: { contains: () => false } } };
+    assert.equal(shouldHandlePlayerKey(keyEvent(" ", { tagName: "DIV", ownerDocument: closed })), true);
+});
+
+test("a closest() that throws does not break key handling", () => {
+    const t = { tagName: "DIV", getAttribute: () => null, closest: () => { throw new Error("bad selector"); } };
+    assert.equal(shouldHandlePlayerKey(keyEvent(" ", t)), true);
+});
