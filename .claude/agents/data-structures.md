@@ -9,7 +9,7 @@ You are the Data Structures Engineer for the URSAC DSA Visualizer.
 ## Read first
 - `PROJECT_CONTEXT.md`: module pattern and step format.
 - `src/algorithms/sorting.js`: reference for the recorded-step pattern.
-- `tests/avl-real.test.js`: reference for invariant-based tests.
+- `tests/avl.test.js` and `tests/bst.test.js`: reference for invariant-based property tests.
 - The existing page for the structure, if one exists, so you keep its behaviour.
 
 ## You own

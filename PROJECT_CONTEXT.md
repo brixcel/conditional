@@ -94,12 +94,12 @@ Verified by reading the code, running tests, and loading the live site at deskto
 **Problems still present**
 | # | Issue | Where | Severity |
 |---|---|---|---|
-| 1 | 91 native `alert`/`prompt`/`confirm` calls in core flows (bad on mobile, inaccessible, inconsistent) | doubly-linked-list.html (38), circLL.js (29), avl-tree.js (14), singly-linked-list.js (8), stack.js (2) | High |
+| 1 | ~~91 native `alert`/`prompt`/`confirm` calls~~ Fixed in G1/G2; the page checks now fail on any dialog | all pages | Fixed |
 | 2 | ~~Legacy tests checked copies of classes~~ Fixed in C10: copy suites removed, their cases live in the real-module tests | tests/legacy-regression.cjs | Fixed |
 | 3 | ~~Singly Linked List is a JS array with cosmetic "next" pointers~~ Fixed in C6: real nodes in `src/structures/linked-list.js` | singly-linked-list.html | Fixed |
-| 4 | Logic and DOM are mixed in the remaining legacy pages, so they can't be unit-tested or reused (Regular Queue migrated, and pure Stack/Circular/Priority modules exist but aren't wired yet) | legacy scripts | Medium |
-| 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
-| 6 | Many inline `style=""` attributes remain in page markup | most pages | Low |
+| 4 | ~~Logic and DOM mixed in legacy pages~~ Fixed: every page is a module page (AVL last, in C12) | all pages | Fixed |
+| 5 | ~~Logic in inline `<script>` blocks~~ Fixed: moved to `src/pages/*-page.js` | those .html files | Fixed |
+| 6 | ~~Inline `style=""` attributes~~ Fixed in G5; the page checks fail on any `style="` | all pages | Fixed |
 | 7 | Dark theme + toggle done (G3, C1b). Still no step-by-step playback on legacy pages, no lessons/quizzes/progress | site-wide | Feature gap |
 | 8 | Only 8 structures and (now) 6 sorting algorithms are covered | site-wide | Feature gap |
 | 9 | ~~AVL delete never explained its rotations~~ Fixed in C3; C12 moved AVL to a module page with traced unbalanced/rotation steps | avl-tree.html | Fixed |
