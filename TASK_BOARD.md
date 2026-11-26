@@ -13,9 +13,9 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G11 | Disjoint Set Union module + page | Gemini | see spec | GEMINI_HANDOFF.md#g11 (after G10) |
-| G12 | Fenwick Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g12 (after G11) |
-| G13 | Segment Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g13 (after G12) |
+| G14 | Lessons: regular/circular/priority queue, heap, hash table, searching | Gemini | `content/lessons/*` (new files) | GEMINI_HANDOFF.md#g14 |
+| G15 | Quiz banks for the same six pages | Gemini | `content/quizzes/*` (new), `tests/quiz-banks-g15.test.js` | GEMINI_HANDOFF.md#g15 (after G14) |
+| G16 | Lessons + quiz banks: BST, AVL, Trie, Red-Black | Gemini | new content files, `tests/quiz-banks-g16.test.js` | GEMINI_HANDOFF.md#g16 (after G15) |
 
 **File conflicts to respect:** Gemini adds new files and appends one new section at the end of `main.css`; Claude edits shared files (`shared.js`, `index.html`, `src/core/*`) and merges one `main.css` append at a time.
 
