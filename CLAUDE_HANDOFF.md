@@ -79,7 +79,7 @@ reviews each report before merging. The newest entries go at the top.
 - Reviewed at: 2026-11-26 18:57
 - Verdict: approved with fixes (qa-engineer: independent 48,000-op check against a Set model and 12,000 random layouts, 0 failures; all four mutations caught; no conflicts with Claude's pending branches)
 - Blocking issues: none. Fixed by Claude's visualization-engineer agent: player buttons rendered "▶Play" with no space (`.btn` is inline-flex with no gap, so separate icon and label children lose the space; wrap them in one `<span>` or use one text node); `prune` steps were recorded after the node was removed, so the page could not show the node about to go (now recorded before, with a test). Your `.hp-scroll-region` key guard in `trie-page.js` is fine; it becomes unnecessary once `claude/c16-scroll-keys` is on `main`.
-- Merged in: `claude/g9-trie-merge` (with nav entry + card), waiting for the user
+- Merged in: `claude/g9-trie-merge` (with nav entry + card), on `main` 2026-11-26 19:44
 
 ---
 

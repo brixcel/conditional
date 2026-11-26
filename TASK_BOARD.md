@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C12 | AVL tree as a pure module + module page | Claude (data-structures agent) | `claude/c12-avl` | `src/structures/avl.js`, `src/pages/avl-page.js`, `avl-tree.html`, `tests/avl.test.js` |
+| G10 | Graph representation module + page | Gemini | `gemini/g10-graph` | see GEMINI_HANDOFF.md#g10 |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -32,7 +32,10 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
-| G9 | Trie module + `layoutGeneralTree` + page; Claude's agents fixed button spacing and recorded prune frames before removal; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 18:57 (on `claude/g9-trie-merge`, waiting for merge) |
+| C16 | Player keys ignore focusable scroll boxes and the open nav drawer (`src/core/player-keys.js`) | Claude (visualization-engineer agent) | 2026-11-26 19:44 (merged to `main`) |
+| C15 | Hash table quadratic probing (prime m, α ≤ 0.5) + page; hash-table page has no `innerHTML` | Claude (data-structures + visualization-engineer agents) | 2026-11-26 19:44 (merged to `main`) |
+| C12 | AVL tree as a pure module (`src/structures/avl.js`) + module page; `avl-tree.js` removed; slider fix; button spacing on AVL/BST | Claude (data-structures agent) | 2026-11-26 19:44 (merged to `main`) |
+| G9 | Trie module + `layoutGeneralTree` + page; Claude's agents fixed button spacing and recorded prune frames before removal; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 18:57 (merged to `main` 2026-11-26 19:44) |
 | C13 | Priority Queue backed by a binary max-heap; equal priorities stay first-in, first-out (arrival id); heap-array step view | Claude (data-structures agent) | 2026-11-26 17:43 (merged to `main`) |
 | C14 | Sorting/searching bar states and legend use patterns and a check mark, not colour alone | Claude (ui-ux-designer agent) | 2026-11-26 17:43 (merged to `main`) |
 | C11 | Accessibility: labels, focus ring, `DSA_UI.announce` live regions, quiet autoplay, focus rescue, text alternatives | Claude (accessibility-performance agent) | 2026-11-26 17:43 (merged to `main`) |
