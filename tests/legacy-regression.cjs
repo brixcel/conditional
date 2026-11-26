@@ -8,7 +8,8 @@
  * History (C10, 2026-11): this file used to hold suites 1-8, which tested
  * COPIES of the Stack / Queue / Linked List / AVL classes pasted into this file.
  * They were removed; their behaviours are now asserted against the real code in
- * tests/structures.test.js, tests/*linked-list.test.js and tests/avl-real.test.js.
+ * tests/structures.test.js, tests/*linked-list.test.js and tests/avl.test.js
+ * (avl-real.test.js was replaced in C12 when the AVL page moved to src/structures/avl.js).
  *
  * What remains reads the real files on disk:
  *   - every *.html page in the repo root (discovered, not hard-coded)

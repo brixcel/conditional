@@ -1,136 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AVL Tree (Self-Balancing BST) - DSA Visualizer</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <div class="page-container">
+    <main class="page-container" id="main-content">
         <header class="page-header">
             <div class="badge badge-tree">Self-Balancing Tree &bull; AVL Tree</div>
             <h1 class="page-title">AVL Tree Visualization</h1>
             <p class="page-desc">
-                A height-balanced <strong>Binary Search Tree (BST)</strong> named after inventors Adelson-Velsky and Landis.
-                The difference between subtree heights (<em>Balance Factor</em>) for any node cannot exceed &plusmn;1.
+                A height-balanced <strong>Binary Search Tree</strong> named after Adelson-Velsky and Landis.
+                Every node stores its <strong>height</strong>; its <strong>balance factor</strong>
+                (height of left subtree &minus; height of right subtree) must stay &minus;1, 0 or +1.
+                Step through each insert and delete: watch heights update on the way back up, see the tree in its
+                unbalanced state, then the rotation (LL, RR, LR or RL) that repairs it.
             </p>
         </header>
 
-        <!-- Concept Card -->
         <div class="concept-card">
-            <h2 class="concept-title">Abstract Data Type Properties</h2>
-            <p class="concept-body">
-                Standard BSTs can degenerate into O(n) skewed lines. AVL Trees prevent skewing by calculating the 
-                <strong>Balance Factor (BF = Height(Left) - Height(Right))</strong> on every mutation and executing 
-                rotations (LL, RR, LR, RL) to maintain guaranteed <strong>O(log n)</strong> search, insertion, and deletion.
-            </p>
+            <h2 class="concept-title" id="avlName">AVL Tree</h2>
+            <p class="concept-body" id="avlSummary"></p>
             <div class="concept-props">
-                <div class="prop-item">
-                    <div class="prop-label">Invariant</div>
-                    <div class="prop-value">|BF| &le; 1 for all nodes</div>
-                </div>
-                <div class="prop-item">
-                    <div class="prop-label">Search / Insert / Delete</div>
-                    <div class="prop-value">O(log n) Guaranteed</div>
-                </div>
-                <div class="prop-item">
-                    <div class="prop-label">Rebalancing</div>
-                    <div class="prop-value">4 Rotation Types (LL, RR, LR, RL)</div>
-                </div>
+                <div class="prop-item"><div class="prop-label">Search</div><div class="prop-value" id="cxSearch"></div></div>
+                <div class="prop-item"><div class="prop-label">Insert</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Delete</div><div class="prop-value" id="cxDelete"></div></div>
+                <div class="prop-item"><div class="prop-label">Min / Max</div><div class="prop-value" id="cxMinMax"></div></div>
+                <div class="prop-item"><div class="prop-label">Rotation</div><div class="prop-value" id="cxRotation"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
             </div>
         </div>
 
-        <!-- Operations & Controls -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Operations Panel</h2>
+                <h2 class="card-title">AVL Controls &amp; Operations</h2>
             </div>
 
             <div class="control-section">
-                <div class="control-section-title">1. Insertions, Deletions &amp; Rebalancing</div>
+                <div class="control-section-title">1. Single-Key Operations (Capacity 31)</div>
+                <form id="keyForm" novalidate>
+                    <div class="controls-row">
+                        <label class="field">
+                            <span class="field-label">Value (&minus;99 to 999)</span>
+                            <input type="text" id="valueInput" class="input-sm" autocomplete="off" inputmode="numeric"
+                                   placeholder="e.g. 25 or -10">
+                        </label>
+                    </div>
+                    <div class="controls-row mt-sm">
+                        <button type="submit" class="btn" id="insertBtn">Insert</button>
+                        <button type="button" class="btn btn-secondary" id="searchBtn">Search</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                        <button type="button" class="btn btn-secondary" id="minBtn">Min</button>
+                        <button type="button" class="btn btn-secondary" id="maxBtn">Max</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="control-section" id="demoForm" novalidate>
+                <div class="control-section-title">2. Rotation Case Demos</div>
                 <div class="controls-row">
                     <label class="field">
-                        <span class="field-label">Node Key (Insert / Delete / Siblings)</span>
-                        <input type="number" id="numberInput" min="1" step="1" placeholder="Positive integer (e.g. 25)" aria-describedby="avlAlert" />
+                        <span class="field-label">Case</span>
+                        <select id="demoSelect">
+                            <option value="insert-LL" selected>Insert LL: 30, 20 then insert 10</option>
+                            <option value="insert-RR">Insert RR: 10, 20 then insert 30</option>
+                            <option value="insert-LR">Insert LR: 30, 10 then insert 20</option>
+                            <option value="insert-RL">Insert RL: 10, 30 then insert 20</option>
+                            <option value="delete-LL">Delete LL: 20, 10, 30, 5 then delete 30</option>
+                            <option value="delete-RR">Delete RR: 20, 10, 30, 40 then delete 10</option>
+                            <option value="delete-LR">Delete LR: 20, 10, 30, 15 then delete 30</option>
+                            <option value="delete-RL">Delete RL: 20, 10, 30, 25 then delete 10</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn" id="demoBtn">Run Demo</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">3. Build Tree from List (Unique Keys, Inserted in Order)</div>
+                <div class="controls-row">
+                    <label class="field field-grow">
+                        <span class="field-label">Values (1&ndash;31 unique whole numbers, &minus;99 to 999)</span>
+                        <input type="text" id="buildInput" autocomplete="off"
+                               value="10, 20, 30, 40, 50, 25">
                     </label>
                 </div>
-                <div class="controls-row">
-                    <button type="button" onclick="enqueueNumber()" class="btn" data-tooltip="Insert key & balance">Insert / Enqueue</button>
-                    <button type="button" onclick="dequeueNode()" class="btn btn-danger" data-tooltip="Delete key from Node Key input">Delete / Dequeue</button>
-                    <button type="button" onclick="clearTree()" class="btn btn-danger" data-tooltip="Clear entire tree">Delete All</button>
-                    <button type="button" onclick="balanceTree()" class="btn btn-success" data-tooltip="Balance BST structure">Balance Tree</button>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
                 </div>
-            </div>
+            </form>
 
-            <div id="avlAlert" class="alert-banner alert-live" role="alert" hidden></div>
-
-            <div class="control-section">
-                <div class="control-section-title">2. Tree Queries &amp; Node Inspection</div>
-                <div class="controls-row">
-                    <button type="button" onclick="showTreeHeight()" class="btn btn-secondary" data-tooltip="Calculate tree height">Tree Height</button>
-                    <button type="button" onclick="peekRoot()" class="btn btn-secondary" data-tooltip="Highlight root node">Root</button>
-                    <button type="button" onclick="peekParentNodes()" class="btn btn-secondary" data-tooltip="Highlight parent nodes">Parents</button>
-                    <button type="button" onclick="peekChildren()" class="btn btn-secondary" data-tooltip="Highlight children nodes">Children</button>
-                    <button type="button" onclick="peekLeafNodes()" class="btn btn-secondary" data-tooltip="Highlight leaf nodes (degree 0)">Leaf Nodes</button>
-                    <button type="button" onclick="peekSiblings()" class="btn btn-secondary" data-tooltip="Find siblings of Node Key">Show Siblings</button>
-                    <button type="button" onclick="showSubtree()" class="btn btn-secondary" data-tooltip="Highlight branching subtrees">Show Subtree</button>
-                </div>
-            </div>
-
-            <div class="control-section">
-                <div class="control-section-title">3. Update Existing Node</div>
+            <form class="control-section" id="inspectForm" novalidate>
+                <div class="control-section-title">4. Node Roles</div>
                 <div class="controls-row">
                     <label class="field">
-                        <span class="field-label">Target Key to Update</span>
-                        <input type="number" id="updateTargetInput" min="1" step="1" placeholder="Existing key" disabled />
+                        <span class="field-label">Highlight</span>
+                        <select id="inspectSelect">
+                            <option value="root" selected>Root</option>
+                            <option value="leaves">Leaf nodes</option>
+                            <option value="internal">Internal (parent) nodes</option>
+                        </select>
                     </label>
-                    <label class="field">
-                        <span class="field-label">New Key Value</span>
-                        <input type="number" id="updateNewInput" min="1" step="1" placeholder="New positive integer" disabled />
-                    </label>
+                    <button type="submit" class="btn btn-secondary" id="inspectBtn">Highlight</button>
                 </div>
-                <div class="controls-row">
-                    <button type="button" onclick="updateNode()" id="updateNodeBtn" class="btn btn-secondary" data-tooltip="Replace target node with new value">Update Node</button>
-                </div>
-            </div>
+            </form>
 
-            <!-- Visualization Stage -->
-            <div class="viz-stage">
-                <span class="viz-stage-label">Self-Balancing Binary Search Tree Canvas</span>
-                <canvas id="bstCanvas" width="900" height="400" class="avl-canvas"></canvas>
-            </div>
-
-            <!-- Output Monitor -->
-            <div id="output" class="output-box" role="status" aria-live="polite">Perform an operation to inspect tree state and balance factors</div>
+            <div id="avlMessage" class="alert-banner alert-live" hidden></div>
         </div>
 
-        <!-- Educational Reference -->
         <div class="card">
-            <h2 class="card-title">Educational Reference: Rotations &amp; Balancing</h2>
+            <div class="card-header">
+                <h2 class="card-title">Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span aria-hidden="true">&#x23EE;</span> Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" title="Previous step (&larr;)"><span aria-hidden="true">&#x25C0;</span> Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" title="Next step (&rarr;)">Step <span aria-hidden="true">&#x25B6;</span></button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">AVL Tree (label under each node: h = height, bf = balance factor)</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="treeStageLabel" tabindex="0"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i> Comparing (dashed)</span>
+                    <span><i class="sw sw-select"></i> Path / Height Update / Successor</span>
+                    <span><i class="sw sw-sorted"></i> Inserted / Rotated / Done</span>
+                    <span><i class="sw sw-swap"></i> Unbalanced (|bf| = 2) / Removed / Error (thick)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="inorderStageLabel">In-Order Keys (Sorted)</span>
+                <ol id="inorderStage" class="queue-display hp-array-list hp-scroll-region"
+                    aria-labelledby="inorderStageLabel" tabindex="0"></ol>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Insert)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">AVL State (This Step)</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Root</span><strong id="statRoot">&mdash;</strong></div>
+                        <div><span>Size / 31</span><strong id="statSize">0 / 31</strong></div>
+                        <div><span>Height</span><strong id="statHeight">&minus;1</strong></div>
+                        <div><span>Min</span><strong id="statMin">&mdash;</strong></div>
+                        <div><span>Max</span><strong id="statMax">&mdash;</strong></div>
+                        <div><span>Rotation Case</span><strong id="statRotation">&mdash;</strong></div>
+                        <div><span>Balanced</span><strong id="statBalanced">Yes</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">AVL Tree Complexity &amp; Rotation Cases</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="AVL complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside a control or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
             <div class="grid-2">
                 <div class="check">
-                    <h2>Left-Left (LL) Rotation &rarr; Right Rotation</h2>
-                    <p>Triggered when a node is inserted into the left subtree of the left child (BF = +2, Child BF = +1). Resolved with a single <b>Right Rotation</b> around the unbalanced node.</p>
+                    <h2>Left-Left (LL) &rarr; Right Rotation</h2>
+                    <p>A node has balance factor <strong>+2</strong> and its left child has balance factor +1 (or 0 after a delete). One <strong>right rotation</strong> around the node lifts the left child into its place.</p>
                 </div>
                 <div class="check">
-                    <h2>Right-Right (RR) Rotation &rarr; Left Rotation</h2>
-                    <p>Triggered when a node is inserted into the right subtree of the right child (BF = -2, Child BF = -1). Resolved with a single <b>Left Rotation</b> around the unbalanced node.</p>
+                    <h2>Right-Right (RR) &rarr; Left Rotation</h2>
+                    <p>A node has balance factor <strong>&minus;2</strong> and its right child has balance factor &minus;1 (or 0 after a delete). One <strong>left rotation</strong> around the node lifts the right child into its place.</p>
                 </div>
                 <div class="check">
                     <h2>Left-Right (LR) Double Rotation</h2>
-                    <p>Triggered when a node is inserted into the right subtree of the left child (BF = +2, Child BF = -1). Resolved via a <b>Left Rotation on Child</b> followed by a <b>Right Rotation on Parent</b>.</p>
+                    <p>A node has balance factor <strong>+2</strong> but its left child leans right (balance factor &minus;1). First a <strong>left rotation on the child</strong> turns it into the LL case, then a <strong>right rotation on the node</strong>.</p>
                 </div>
                 <div class="check">
                     <h2>Right-Left (RL) Double Rotation</h2>
-                    <p>Triggered when a node is inserted into the left subtree of the right child (BF = -2, Child BF = +1). Resolved via a <b>Right Rotation on Child</b> followed by a <b>Left Rotation on Parent</b>.</p>
+                    <p>A node has balance factor <strong>&minus;2</strong> but its right child leans left (balance factor +1). First a <strong>right rotation on the child</strong> turns it into the RR case, then a <strong>left rotation on the node</strong>.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="shared.js"></script>
-    <script src="avl-tree.js"></script>
+    <script type="module" src="src/pages/avl-page.js"></script>
 </body>
 </html>
