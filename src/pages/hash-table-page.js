@@ -1,6 +1,6 @@
 /**
  * Hash Table page controller.
- * All hashing, chaining, linear probing, tombstone and rehash logic lives in
+ * All hashing, chaining, linear/quadratic probing, tombstone and rehash logic lives in
  * src/structures/hash-table.js; this file renders snapshots via StepPlayer.
  */
 import { StepPlayer } from "../core/step-player.js";
@@ -8,6 +8,9 @@ import { bindPlayerKeys } from "../core/player-keys.js";
 import {
     HashTable,
     HASH_STRATEGIES,
+    QUADRATIC_CAPACITIES,
+    fitCapacity,
+    maxEntriesFor,
     parseKeyInput,
     parseCapacityInput,
     parseValueInput,
@@ -19,6 +22,7 @@ const $ = (id) => document.getElementById(id);
 const els = {
     strategy: $("strategySelect"),
     capacity: $("capacityInput"),
+    capacityHint: $("capacityHint"),
     rehashBtn: $("rehashBtn"),
     demoBtn: $("demoBtn"),
     clearBtn: $("clearBtn"),
@@ -47,6 +51,7 @@ const els = {
     statLoad: $("statLoad"),
     statTombstones: $("statTombstones"),
     statProbes: $("statProbes"),
+    statProbeStep: $("statProbeStep"),
     statCollisions: $("statCollisions"),
 };
 
@@ -58,6 +63,12 @@ const TONE_CLASSES = {
     swap: "ht-tone-swap",
 };
 
+const STAGE_LABELS = {
+    chaining: "Separate Chaining — Bucket Array & Linked Chains",
+    linear: "Linear Probing — Open-Addressing Slot Array",
+    quadratic: "Quadratic Probing — Open-Addressing Slot Array (h + i²)",
+};
+
 const OP_LABELS = {
     insert: "Insert / Update",
     search: "Search",
@@ -66,6 +77,30 @@ const OP_LABELS = {
 };
 
 let table = new HashTable(HashTable.DEFAULT_CAPACITY, { strategy: "chaining" });
+
+/**
+ * Build a table without letting a RangeError escape into the page.
+ * Returns { ok: true, table } or { ok: false, error } with the module's readable message.
+ */
+function makeTable(capacity, strategy) {
+    try {
+        return { ok: true, table: new HashTable(capacity, { strategy }) };
+    } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    }
+}
+
+/** Allowed table sizes for the field label: a range, or the prime list for quadratic. */
+function capacityHintText(strategy) {
+    return strategy === "quadratic"
+        ? `(prime: ${QUADRATIC_CAPACITIES.join(", ")})`
+        : `(${HashTable.MIN_CAPACITY}–${HashTable.MAX_CAPACITY})`;
+}
+
+function updateCapacityHint(strategy) {
+    const text = capacityHintText(strategy);
+    if (els.capacityHint.textContent !== text) els.capacityHint.textContent = text;
+}
 let currentCodeKey = "";
 let announceReady = false; // no banner announcements during page setup
 
@@ -127,9 +162,21 @@ function updateStrategyInfo(strategyKey) {
     $("cxDelete").textContent = info.complexity.deleteAvg;
     $("cxWorst").textContent = info.complexity.worst;
     $("cxLoad").textContent = info.complexity.loadFactor;
-    els.stageLabel.textContent = strategyKey === "chaining"
-        ? "Separate Chaining — Bucket Array & Linked Chains"
-        : "Linear Probing — Open-Addressing Slot Array";
+    els.stageLabel.textContent = STAGE_LABELS[strategyKey] ?? info.name;
+    updateCapacityHint(strategyKey);
+}
+
+/**
+ * Quadratic probe detail for a recorded step, e.g. "i=2: (h + 2²) mod m = (3 + 4) mod 11 = slot 7".
+ * Uses only fields the module recorded (probeIndex, offset, homeIndex, indices); null otherwise.
+ */
+function probeDetail(step) {
+    if (step.probeIndex === null || step.probeIndex === undefined) return null;
+    const i = step.probeIndex;
+    const slot = step.indices.length ? step.indices[0] : null;
+    const base = `i=${i}: (h + ${i}²) mod m`;
+    if (step.homeIndex === null || slot === null) return base;
+    return `${base} = (${step.homeIndex} + ${step.offset}) mod ${step.snapshot.capacity} = slot ${slot}`;
 }
 
 function renderPseudocode(strategyKey, operation) {
@@ -255,7 +302,8 @@ function revealActive() {
     }
 }
 
-function renderLinearStage(step) {
+/** Slot strip for the open-addressing strategies (linear and quadratic probing). */
+function renderSlotStage(step) {
     const snap = step.snapshot;
     const activeSet = new Set(step.indices);
     const tone = stepTone(step.type);
@@ -274,6 +322,7 @@ function renderLinearStage(step) {
         lbl.className = isActive || isHome ? "slot-label slot-label-active mono" : "slot-label mono";
         const tags = [];
         if (isHome) tags.push("HOME");
+        if (isActive && step.probeIndex !== null && step.probeIndex !== undefined) tags.push(`i=${step.probeIndex}`);
         if (isActive && step.type === "probe") tags.push("PROBE");
         else if (isActive && (step.type === "found" || step.type === "insert" || step.type === "update")) tags.push("HIT");
         else if (isActive && step.type === "delete") tags.push("DEL");
@@ -328,16 +377,19 @@ function render(step, index, p) {
     renderPseudocode(snap.strategy, step.operation);
 
     if (snap.strategy === "chaining") renderChainingStage(step);
-    else renderLinearStage(step);
+    else renderSlotStage(step);
 
     [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === step.line));
 
     setStepMessage(step.message, p);
     els.statFormula.textContent = `h(k) = ((k mod ${snap.capacity}) + ${snap.capacity}) mod ${snap.capacity}`;
-    els.statSize.textContent = String(snap.size);
+    els.statSize.textContent = snap.maxSize === null || snap.maxSize === undefined
+        ? String(snap.size)
+        : `${snap.size} / max ${snap.maxSize}${snap.strategy === "quadratic" ? " (α ≤ 0.5)" : ""}`;
     els.statCap.textContent = String(snap.capacity);
     els.statLoad.textContent = `${snap.loadFactor.toFixed(2)} (${snap.size}/${snap.capacity})`;
-    els.statTombstones.textContent = snap.strategy === "linear" ? String(snap.tombstones) : "N/A";
+    els.statTombstones.textContent = snap.strategy !== "chaining" ? String(snap.tombstones) : "N/A";
+    els.statProbeStep.textContent = probeDetail(step) ?? "N/A";
     els.statProbes.textContent = String(step.probes);
     els.statCollisions.textContent = String(snap.totalCollisions);
 
@@ -345,7 +397,9 @@ function render(step, index, p) {
     els.progress.max = Math.max(0, p.length - 1);
     els.progress.value = index;
 
-    els.playBtn.innerHTML = p.isPlaying ? "&#x23F8; Pause" : (p.atEnd ? "&#x21BB; Replay" : "&#x25B6; Play");
+    // One text node (icon + space + label), as in the static markup: .btn is inline-flex with no gap.
+    const playLabel = p.isPlaying ? "\u23F8 Pause" : (p.atEnd ? "\u21BB Replay" : "\u25B6 Play");
+    if (els.playBtn.textContent !== playLabel) els.playBtn.textContent = playLabel;
     els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : (p.atEnd ? "Replay" : "Play"));
     els.progress.setAttribute("aria-valuetext", `Step ${index + 1} of ${p.length}`);
     const focused = document.activeElement;
@@ -362,15 +416,28 @@ function playSteps(steps, { autoPlay = true } = {}) {
     if (autoPlay && steps.length > 1) player.play();
 }
 
-function loadDemoData() {
+function loadDemoData({ initial = false } = {}) {
     clearNotify();
     const strategy = els.strategy.value;
-    const capRes = parseCapacityInput(els.capacity.value);
-    const capacity = capRes.ok ? capRes.value : table.capacity;
+    const capRes = parseCapacityInput(els.capacity.value, strategy);
+    let capacity;
+    if (capRes.ok) {
+        capacity = capRes.value;
+    } else if (initial) {
+        // Page setup (e.g. the browser restored an odd field value): fall back quietly to a valid size.
+        capacity = fitCapacity(strategy, HashTable.DEFAULT_CAPACITY, 0) ?? HashTable.DEFAULT_CAPACITY;
+    } else {
+        notify(capRes.error, "error", "capacity");
+        els.capacity.focus();
+        return;
+    }
+    const made = makeTable(capacity, strategy);
+    if (!made.ok) { notify(made.error, "error", "capacity"); els.capacity.focus(); return; }
     els.capacity.value = String(capacity);
 
-    table = new HashTable(capacity, { strategy });
-    const items = sampleDataset(capacity);
+    table = made.table;
+    currentCodeKey = "";
+    const items = sampleDataset(capacity, Math.random, strategy);
     let lastSteps = [];
     for (const item of items) {
         const res = table.insert(item.key, item.value);
@@ -380,6 +447,8 @@ function loadDemoData() {
         // Show final populated table immediately on the last step, while letting users scrub back through the last insert.
         player.load(lastSteps);
         player.goTo(lastSteps.length - 1);
+    } else {
+        player.load(table.clear().steps);
     }
     notify(`Loaded ${items.length} sample entries into a ${HASH_STRATEGIES[strategy].name} table (m = ${capacity}) with intentional collisions.`, "info");
 }
@@ -439,7 +508,7 @@ function handleDelete() {
 }
 
 function handleRehash() {
-    const capRes = parseCapacityInput(els.capacity.value);
+    const capRes = parseCapacityInput(els.capacity.value, table.strategy);
     if (!capRes.ok) { notify(capRes.error, "error", "capacity"); els.capacity.focus(); return; }
 
     clearNotify();
@@ -455,22 +524,41 @@ function handleRehash() {
 
 function handleStrategyChange() {
     const nextStrategy = els.strategy.value;
-    const capRes = parseCapacityInput(els.capacity.value);
-    const nextCap = capRes.ok ? capRes.value : table.capacity;
     const existing = table.entries();
 
-    // Ensure linear probing has room for carried-over entries.
-    const requiredCap = nextStrategy === "linear"
-        ? Math.min(HashTable.MAX_CAPACITY, Math.max(nextCap, existing.length))
-        : nextCap;
-    els.capacity.value = String(requiredCap);
+    // Requested size: the typed value if valid for the new strategy, else the typed integer
+    // (fitCapacity rounds it up to an allowed size, e.g. the next prime), else the current size.
+    const capRes = parseCapacityInput(els.capacity.value, nextStrategy);
+    const rawRes = capRes.ok ? capRes : parseCapacityInput(els.capacity.value);
+    const requested = rawRes.ok ? rawRes.value : table.capacity;
 
-    table = new HashTable(requiredCap, { strategy: nextStrategy });
-    const carried = existing.slice(0, nextStrategy === "linear" ? requiredCap : existing.length);
+    // Smallest allowed size >= requested that holds every carried-over entry. If none exists,
+    // use the largest allowed size and carry over only as many entries as it may hold.
+    let nextCap = fitCapacity(nextStrategy, requested, existing.length);
+    let carryLimit = existing.length;
+    if (nextCap === null) {
+        nextCap = largestCapacity(nextStrategy);
+        const limit = maxEntriesFor(nextCap, nextStrategy);
+        carryLimit = limit === null ? existing.length : Math.min(existing.length, limit);
+    }
+
+    const made = makeTable(nextCap, nextStrategy);
+    if (!made.ok) {
+        // Not expected (fitCapacity only returns allowed sizes): keep the old table and selection.
+        els.strategy.value = table.strategy;
+        notify(made.error, "error", "capacity");
+        return;
+    }
+    els.capacity.value = String(nextCap);
+    table = made.table;
+
+    const carried = existing.slice(0, carryLimit);
     let lastSteps = [];
+    let failed = 0;
     for (const entry of carried) {
         const res = table.insert(entry.key, entry.value);
         if (res.ok) lastSteps = res.steps;
+        else failed++;
     }
 
     currentCodeKey = "";
@@ -482,11 +570,29 @@ function handleStrategyChange() {
         player.load(cleared.steps);
     }
 
-    const dropped = existing.length - carried.length;
-    notify(
-        `Switched to ${HASH_STRATEGIES[nextStrategy].name} (m = ${requiredCap}, ${carried.length} entries carried over${dropped > 0 ? `, ${dropped} omitted due to max capacity ${HashTable.MAX_CAPACITY}` : ""}).`,
-        "info",
-    );
+    const kept = carried.length - failed;
+    const dropped = existing.length - kept;
+    const parts = [`m = ${nextCap}`, `${kept} entries carried over`];
+    if (nextCap !== requested) {
+        parts.push(nextStrategy === "quadratic"
+            ? `size changed from ${requested} to the prime ${nextCap} so the entries fit at α ≤ 0.5`
+            : `size changed from ${requested} to ${nextCap} so the entries fit`);
+    }
+    if (dropped > 0) {
+        const limit = maxEntriesFor(nextCap, nextStrategy);
+        parts.push(nextStrategy === "quadratic"
+            ? `${dropped} omitted: the largest prime size ${nextCap} holds at most ${limit} entries at α ≤ 0.5`
+            : `${dropped} omitted due to max capacity ${HashTable.MAX_CAPACITY}`);
+    }
+    notify(`Switched to ${HASH_STRATEGIES[nextStrategy].name} (${parts.join(", ")}).`, dropped > 0 ? "warning" : "info");
+}
+
+/** Largest table size allowed for `strategy` (searched from MAX_CAPACITY down). */
+function largestCapacity(strategy) {
+    for (let m = HashTable.MAX_CAPACITY; m >= HashTable.MIN_CAPACITY; m--) {
+        if (fitCapacity(strategy, m, 0) === m) return m;
+    }
+    return HashTable.DEFAULT_CAPACITY;
 }
 
 function handleClear() {
@@ -521,12 +627,22 @@ els.progress.addEventListener("input", byUser(() => {
 
 bindPlayerKeys(document, userControls);
 
-// Populate comparison table from the static HASH_STRATEGIES registry (no user text).
-$("cxTable").innerHTML = Object.values(HASH_STRATEGIES).map(s =>
-    `<tr><th scope="row">${s.name}</th><td>${s.complexity.insertAvg}</td><td>${s.complexity.searchAvg}</td>` +
-    `<td>${s.complexity.deleteAvg}</td><td>${s.complexity.worst}</td><td>${s.complexity.space}</td></tr>`
-).join("");
+// Populate comparison table from the static HASH_STRATEGIES registry.
+$("cxTable").replaceChildren(...Object.values(HASH_STRATEGIES).map(s => {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = s.name;
+    tr.append(th);
+    const c = s.complexity;
+    for (const text of [c.insertAvg, c.searchAvg, c.deleteAvg, c.worst, c.space]) {
+        const td = document.createElement("td");
+        td.textContent = text;
+        tr.append(td);
+    }
+    return tr;
+}));
 
-loadDemoData();
+loadDemoData({ initial: true });
 announceReady = true;
 liveReady = true;

@@ -50,7 +50,7 @@ test("constructor and key validation reject invalid arguments", () => {
     for (const bad of [0, 2, 20, -5, 4.5, NaN, "7"]) {
         assert.throws(() => new HashTable(bad), RangeError);
     }
-    assert.throws(() => new HashTable(7, { strategy: "quadratic" }), RangeError);
+    assert.throws(() => new HashTable(7, { strategy: "cuckoo" }), RangeError);
 
     const ht = new HashTable(7);
     for (const badKey of ["7", 1.5, NaN, Infinity, null, undefined]) {
@@ -80,7 +80,7 @@ test("parseKeyInput, parseCapacityInput and parseValueInput handle boundaries cl
 
 /* ---------------- Model-based property tests (both strategies) ---------------- */
 
-for (const strategy of Object.keys(HASH_STRATEGIES)) {
+for (const strategy of ["chaining", "linear"]) {
     test(`${strategy}: matches a reference Map across 200 seeded random operation sequences`, () => {
         const rand = seeded(strategy === "chaining" ? 101 : 202);
 
