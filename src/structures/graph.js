@@ -113,7 +113,8 @@ export class Graph {
 
     /**
      * Validates inputs and builds a `Graph` from `{ directed, weighted, vertices, edges }`.
-     * Accepts edge items as `{ from, to, weight? }`.
+     * Accepts edge items as `{ from, to, weight? }`. In unweighted mode `weight` may be omitted,
+     * `null`, or `1` (the value `snapshot()` reports), so `Graph.from(g.snapshot())` round-trips.
      * Returns `{ ok: true, value: graph, steps }` or `{ ok: false, error, steps: [] }`.
      *
      * @param {{
@@ -162,7 +163,11 @@ export class Graph {
             if (item === null || typeof item !== "object" || Array.isArray(item)) {
                 return fail(`Edge at index ${i} must be an object { from, to, weight? }.`);
             }
-            const res = graph.addEdge(item.from, item.to, item.weight);
+            // snapshot() reports unweighted edges with weight 1, so accept 1 (or
+            // undefined/null) here and store it as unweighted; any other weight is
+            // still rejected by addEdge in unweighted mode.
+            const weightArg = !weighted && item.weight === 1 ? undefined : item.weight;
+            const res = graph.addEdge(item.from, item.to, weightArg);
             if (!res.ok) return fail(res.error);
             const edge = res.value;
             steps.push(
@@ -421,8 +426,11 @@ export class Graph {
      *    no dangling edges to missing vertices, and valid weights (`1..99` if weighted, `1` if unweighted).
      * 4. Undirected adjacency lists are symmetric with matching weights.
      * 5. `edgeCount` matches the actual number of stored edges.
-     * 6. `toAdjacencyMatrix()` agrees 100% with the internal adjacency list, has `null`
-     *    for absent edges and on the diagonal, and is symmetric in undirected mode.
+     * 6. No two vertices share a neighbor array and no neighbor entry object is aliased
+     *    between slots (mutating one edge must never silently change another).
+     * 7. The derived views are well formed: `toAdjacencyMatrix()` is square, has `null` on the
+     *    diagonal, is symmetric in undirected mode, and its filled-cell count, like
+     *    `edges().length`, agrees with `edgeCount`.
      *
      * @returns {string | null} `null` when sound, otherwise a descriptive error string.
      */
@@ -447,12 +455,22 @@ export class Graph {
         }
 
         let directedEntries = 0;
+        const seenLists = new Set();
+        const seenEntries = new Set();
         for (const [u, list] of this._adj.entries()) {
+            if (seenLists.has(list)) {
+                return `vertex ${u} shares its neighbor array with another vertex`;
+            }
+            seenLists.add(list);
             let prevTo = null;
             for (const entry of list) {
                 if (entry === null || typeof entry !== "object") {
                     return `malformed neighbor entry in vertex ${u}'s adjacency list`;
                 }
+                if (seenEntries.has(entry)) {
+                    return `neighbor entry ${u} -> ${entry.to} is shared with another adjacency list slot`;
+                }
+                seenEntries.add(entry);
                 const { to, weight } = entry;
                 if (typeof to !== "number" || !Number.isInteger(to) || to < GRAPH_LIMITS.minId || to > GRAPH_LIMITS.maxId) {
                     return `neighbor ID ${formatValue(to)} in vertex ${u}'s list is outside ${GRAPH_LIMITS.minId}..${GRAPH_LIMITS.maxId}`;
@@ -504,7 +522,11 @@ export class Graph {
             return `edgeCount (${this._edgeCount}) does not match stored edges (${expectedEdgeCount})`;
         }
 
+        // The matrix is derived from the adjacency list on demand, so comparing them
+        // cell by cell would be circular. Instead check the derived views' shape and
+        // cross-check their totals against the independently maintained edgeCount.
         const { ids, matrix } = this.toAdjacencyMatrix();
+        let filledCells = 0;
         if (ids.length !== this._adj.size || matrix.length !== ids.length) {
             return "adjacency matrix dimensions do not match vertex count";
         }
@@ -518,19 +540,20 @@ export class Graph {
             if (matrix[i][i] !== null) {
                 return `adjacency matrix diagonal at vertex ${ids[i]} must be null (got ${matrix[i][i]})`;
             }
-            const u = ids[i];
-            const list = this._adj.get(u);
             for (let j = 0; j < ids.length; j++) {
-                const v = ids[j];
-                const idx = findNeighborIndex(list, v);
-                const expected = idx === null ? null : list[idx].weight;
-                if (matrix[i][j] !== expected) {
-                    return `adjacency list/matrix mismatch at (${u}, ${v}): list has ${expected}, matrix has ${matrix[i][j]}`;
-                }
+                if (matrix[i][j] !== null) filledCells++;
                 if (!this._directed && matrix[i][j] !== matrix[j][i]) {
-                    return `undirected adjacency matrix is not symmetric at (${u}, ${v})`;
+                    return `undirected adjacency matrix is not symmetric at (${ids[i]}, ${ids[j]})`;
                 }
             }
+        }
+        const expectedCells = this._directed ? this._edgeCount : this._edgeCount * 2;
+        if (filledCells !== expectedCells) {
+            return `adjacency matrix has ${filledCells} filled cells but edgeCount implies ${expectedCells}`;
+        }
+        const edgeList = this.edges();
+        if (edgeList.length !== this._edgeCount) {
+            return `edges() lists ${edgeList.length} edges but edgeCount is ${this._edgeCount}`;
         }
 
         return null;

@@ -751,4 +751,62 @@ test("integrityError() detects internal corruption violations", () => {
     const g10 = makeBase();
     g10._edgeCount = 99;
     assert.match(g10.integrityError(), /edgeCount/i);
+
+    // 11. Two vertices aliasing one neighbor array (passes symmetry/count checks otherwise)
+    const g11 = makeBase({ directed: true });
+    assert.equal(g11.integrityError(), null);
+    g11._adj.set(0, g11._adj.get(1));
+    assert.match(g11.integrityError(), /shares its neighbor array/i);
+
+    // 12. One neighbor entry object aliased into two lists
+    const g12 = Graph.from({ directed: true, vertices: [0, 1, 2], edges: [{ from: 1, to: 2 }] }).value;
+    const shared = g12._adj.get(1)[0];
+    g12._adj.get(0).push(shared);
+    g12._edgeCount++;
+    assert.match(g12.integrityError(), /shared with another/i);
+});
+
+test("Graph.from(g.snapshot()) round-trips in all 4 modes over seeded random graphs", () => {
+    const modes = [
+        { directed: false, weighted: false },
+        { directed: false, weighted: true },
+        { directed: true, weighted: false },
+        { directed: true, weighted: true },
+    ];
+    for (const [m, mode] of modes.entries()) {
+        for (let seq = 0; seq < 40; seq++) {
+            const rng = mulberry32(7000 + m * 1000 + seq);
+            const g = new Graph(mode);
+            const vCount = randInt(rng, 0, 12);
+            for (let i = 0; i < vCount; i++) g.addVertex(randInt(rng, 0, 11));
+            const verts = g.vertices();
+            const tries = randInt(rng, 0, 30);
+            for (let i = 0; i < tries && verts.length >= 2; i++) {
+                const u = verts[randInt(rng, 0, verts.length - 1)];
+                const v = verts[randInt(rng, 0, verts.length - 1)];
+                g.addEdge(u, v, mode.weighted ? randInt(rng, 1, 99) : undefined);
+            }
+            const snap = g.snapshot();
+            const res = Graph.from(snap);
+            const label = `mode ${JSON.stringify(mode)} seq ${seq}`;
+            assert.equal(res.ok, true, `${label}: ${res.error}`);
+            const copy = res.value;
+            assert.equal(copy.directed, g.directed, label);
+            assert.equal(copy.weighted, g.weighted, label);
+            assert.deepEqual(copy.vertices(), g.vertices(), label);
+            assert.deepEqual(copy.edges(), g.edges(), label);
+            assert.deepEqual(copy.snapshot(), snap, label);
+            assert.deepEqual(copy.toAdjacencyMatrix(), g.toAdjacencyMatrix(), label);
+            assert.equal(copy.edgeCount, g.edgeCount, label);
+            assert.equal(copy.integrityError(), null, label);
+        }
+    }
+
+    // Unweighted mode still rejects any weight other than 1 / undefined / null.
+    const bad = Graph.from({ vertices: [0, 1], edges: [{ from: 0, to: 1, weight: 2 }] });
+    assert.equal(bad.ok, false);
+    assert.match(bad.error, /only allowed in weighted mode/i);
+    const nul = Graph.from({ vertices: [0, 1], edges: [{ from: 0, to: 1, weight: null }] });
+    assert.equal(nul.ok, true);
+    assert.deepEqual(nul.value.edges(), [{ from: 0, to: 1, weight: 1 }]);
 });

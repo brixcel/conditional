@@ -1394,15 +1394,6 @@ els.progress.addEventListener("input", byUser(() => {
 
 bindPlayerKeys(document, playerControls);
 
-const SCROLL_STOP_KEYS = new Set([" ", "ArrowLeft", "ArrowRight", "Home"]);
-document.querySelectorAll(".hp-scroll-region").forEach((region) => {
-    region.addEventListener("keydown", (e) => {
-        if (SCROLL_STOP_KEYS.has(e.key)) {
-            e.stopPropagation();
-        }
-    });
-});
-
 /* ---------- Static Metadata & Complexity Table (from GRAPH_INFO) ---------- */
 
 function parseComplexityPair(entry) {
