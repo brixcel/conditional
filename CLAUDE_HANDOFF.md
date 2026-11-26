@@ -91,7 +91,7 @@ reviews each report before merging. The newest entries go at the top.
 - Non-blocking, for later (site-wide, not G7): Space on a focused button can both toggle Play and press the button
   (same in `searching-page.js`); Random Values only draws 1..99.
 - Blocking issues: none.
-- Merged in: branch `claude/g7-heap-merge` (merge of `gemini/g7-heap-page` into `main` at `29edd0a`); the user puts it on `main`.
+- Merged in: `0d3eb38`, on `main` 2026-11-26 11:17 (together with C8).
 
 ---
 

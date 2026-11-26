@@ -13,8 +13,8 @@ times came from this PC's clock, which was about 8 minutes slow.
 | Last updated by Claude | 2026-11-26 11:16 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1, G2, G3 (2026-11-25); G4, G5, G6 (2026-11-26, G5/G6 at 10:56) |
-| **Gemini: do next** | **G8**: Binary Search Tree module + page (spec below). Start from fresh `main` on branch `gemini/g8-bst` **once `main` contains `heap.html`** (G7 merged). If `heap.html` is not on `main` yet, wait. Take only the task named here |
-| Claude is working on | G7 approved at 11:16 (qa-engineer agent + Claude) and C8 done; both on branch `claude/g7-heap-merge`, waiting for the user to merge |
+| **Gemini: do next** | **G8**: Binary Search Tree module + page (spec below). Start from fresh `main` on branch `gemini/g8-bst` (G7 is merged, so start now). Take only the task named here |
+| Claude is working on | G7 and C8 merged to `main` at 11:17. Claude reviews G8 with the qa-engineer agent when you report it |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -198,7 +198,7 @@ clear and invalid input all behave; `grep -c 'style="' heap.html` is 0 and `src/
 In your report: the nav entry and homepage card you want (Claude adds them), and every class you added to section 14.
 
 ## G8: Binary Search Tree module + page <a id="g8"></a>
-**Status: ready once G7 is on `main`** (check that `heap.html` and `src/core/tree-layout.js` exist on `main`).
+**Status: ready** (G7 merged 2026-11-26 11:17).
 **Why:** a BST is the base for the AVL and Red-Black trees later. Students need to see search paths, the three delete cases
 and the four traversals on real nodes.
 **Files you own:** new `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js`; in
