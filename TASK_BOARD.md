@@ -27,6 +27,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C22 | Sorting page accuracy: quick sort worst-case space and O(n²) inputs, heap sort best case note, radix pseudocode, Ω(n log n) wording; lesson + quiz kept in sync | Claude (algorithms agent) | 2026-11-26 21:12 (merged to `main`) |
 | C18 | Lesson format (`content/lessons/_schema.md`), validator (`src/learn/lesson.js`, checks registry equality and real page controls), Stack + Sorting lessons (reviewed: null) | Claude (learning-content + qa-engineer agents) | 2026-11-26 21:08 (merged to `main`; no page yet) |
 | C19 | Quiz engine (`src/quiz/quiz.js`: validate, seeded prepare, grade, score) + progress store (`src/quiz/progress.js`, survives reload/private mode/corrupt data) + Stack and Sorting banks (16 + 18 questions, reviewed: null) | Claude (quiz-challenges agent) | 2026-11-26 21:03 (merged to `main`; no page yet) |
 | C17 | All player pages use `bindPlayerKeys` (BST moved over); local scroll-box key workarounds removed; static test guards it | Claude (visualization-engineer agent) | 2026-11-26 20:55 (merged to `main`) |
