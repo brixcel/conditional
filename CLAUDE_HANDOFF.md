@@ -32,6 +32,51 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G13: Segment Tree module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 23:10 (Philippine time)
+- Branch: `gemini/g13-segment-tree` (branched from fresh `origin/main` @ `e942ec0`)
+- Commit(s): `bf5799f`
+- Files changed: `src/structures/segment-tree.js`, `tests/segment-tree.test.js`, `segment-tree.html`, `src/pages/segment-tree-page.js`, `main.css` (new section 20 "Segment Tree" appended at end, lines 3071–3622, `+553 / -0` lines; sections 1–19 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/segment-tree.js` (`SegmentTree`, `SEGMENT_TREE_LIMITS`, `SEGMENT_TREE_INFO`) supporting `mode` `"sum"` | `"min"`, sizes `n` in `1..16`, integer values `-999..999`, 0-based complete-tree node indexing (`2*idx + 1`, `2*idx + 2`, splitting at `Math.floor((lo + hi) / 2)`) directly compatible with `layoutCompleteTree(maxIndex + 1)` from `src/core/tree-layout.js` without editing `tree-layout.js`. Implements `build(values)`, `setMode(mode)`, `query(l, r)` (explicit `full` / `partial` / `disjoint` overlap classification with finite `{ hasValue, value }` identity handling — zero raw `Infinity` leaks), `update(i, value)` (leaf update + ancestor recompute), `toArray()`, `snapshot()`, and `integrityError()`. Normalizes `-0` to `0`, uses `null` instead of `-1` sentinels, returns defensive copies, and rejects invalid arguments atomically.
+  - Created `tests/segment-tree.test.js` (12 tests): **600 seeded mulberry32 sequences** (300 `sum` + 300 `min`) checked after every operation against a plain array model + `integrityError() === null` + full step contract (`step.node` exists in `snapshot.nodes` with matching `[lo, hi]`, valid `step.line` in `1..pseudocode.length`, monotonic `nodesVisited`/`combines`), exact hand-written `query(1, 5)` on `n = 8` asserting `partial: [0, 1, 3, 2]`, `full: [8, 4, 5]`, `disjoint: [7, 6]`, `combine: [3, 1, 2, 0]` in both `"sum"` (`22`) and `"min"` (`1`) modes, `layoutCompleteTree` geometry verification across all `n = 1..16`, non-power-of-two sizes (`3, 5, 6, 7, 9, 13`), `-999`/`-0`, defensive copies, invalid input atomicity, and `integrityError()` corruption detection.
+  - **Mutation check (partial overlap treated as full):** Temporarily mutated `query()` in `src/structures/segment-tree.js` (`if (ql <= lo && hi <= qr || true)`) so partial overlap returned `node.value` as full instead of recursing. Running `node --test tests/segment-tree.test.js` failed **5 of 12** tests (`sum query(1, 5) — 38 !== 22`, `n=3 mode=sum [0..0] — -81 !== -100`, `-1049 !== -999`, `seq=0 op=1 query(1,5) mode=sum — -702 !== -1890`, `seq=0 op=2 query(4,5) mode=min — -765 !== -101`). Restored the code and re-verified 100% pass.
+  - Created `segment-tree.html`, `src/pages/segment-tree-page.js`, and token-only `main.css` section 20 (`0` `style=` in `segment-tree.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/segment-tree-page.js`, `0` hardcoded colors in section 20). Reuses `layoutCompleteTree`, `StepPlayer`, `bindPlayerKeys`, `parseInteger`, `parseArrayInput`, `DSA_UI.announce`, and `rescueFocus`. Renders pooled SVG tree (showing only populated nodes/edges for non-power-of-two sizes, value + haloed `[lo..hi]` interval + top-right glyph badge) with persistent full (`✓`, double ring) / partial (`½`, dashed) / disjoint (`✗`, dotted) / combine (`+`) / recompute (`↑`) / leaf (`★`) / visit (`•`) cues, pooled underlying array `A[0..n−1]` with dashed `[l..r]` bracket, matching legend, state monitor (`Subtree / Query Result`, `Nodes Visited`, `Combines`, `Active Node / Range`, `Mode & Size`, `Integrity`), synced pseudocode, complexity table, and 4 concept cards.
+  - Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents; fixed all Critical/Major/Minor findings (including nested `.queue-display` scroll-container trap on `#arrayScrollRegion`, WCAG 1.4.11 contrast on `.st-pending` / `.st-badge-bg` / `.st-arr-in-range`, `Replay` from `atEnd` live-region guard, `inputmode="numeric"` removed from `#buildInput`/`#valueInput`, `NODE_W = 56` for `-15984`, `setMode` `visitLine: 4`, static `.viz-stage-label` reflow safety, legend `↑` parity, and `4h + 1` node bound for `n = 1`) before commit.
+- npm test output (paste the real lines):
+    # tests 662
+    # suites 0
+    # pass 662
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+      [FAIL] Every HTML page except index.html is listed in navCategories
+     SUMMARY: 80 / 81 assertions passed (99%)
+  *(Note: the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected check for `segment-tree.html` missing from `shared.js` `navCategories` until Claude adds the nav entry on merge. All 5 `segment-tree.html` checks in `tests/a11y-static.test.js` and all 4 `segment-tree.html` page checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `segment-tree.html` on `http://127.0.0.1:5513/segment-tree.html` at both `1280×800` desktop and `375×812` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (`consoleEntries: []`, `networkEntries: []`, 0 uncaught errors/rejections, 0 native dialogs). Zero horizontal page scroll (`scrollWidth - clientWidth === 0`) at `1280px` and `375px` in both themes even at `n = 16` (`-999 × 16`, root `"-15984"`), with both `#treeStage` and `#arrayScrollRegion` scrolling internally (`arrayScrollRegionScrollable: true`, `arrayStageScrollOverflow: 0`) and `10px` label clearance at `375px`. Verified **Play / Replay** advances (`Step 1 / 23` → `Step 3 / 23`, button displays `"⏸ Pause"`, `aria-live="polite"` re-arms on completion); verified `Query(1, 5)` visibly displays all three overlap kinds simultaneously (`3` full `✓`, `4` partial `½`, `2` disjoint `✗`) in both **Sum** (`22`, `9` visited, `4` combines) and **Min** (`1`) modes plus `5 (subtree)` mid-query stat; verified `Update(2, 10)` recomputes 3 ancestors (`root = 47`), non-power-of-two `n = 6` renders `11` nodes / `10` edges, `Random`, and inline `role="alert"` + `aria-invalid="true"` errors for `l > r` and values `> 999`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, or `main.css` sections 1–19.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures`):**
+     - `SVG_ICONS.segmentTree`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="4" rx="1"/><rect x="2" y="10" width="8" height="4" rx="1"/><rect x="14" y="10" width="8" height="4" rx="1"/><rect x="1.5" y="17" width="4" height="4" rx="1"/><rect x="6.5" y="17" width="4" height="4" rx="1"/><rect x="13.5" y="17" width="4" height="4" rx="1"/><rect x="18.5" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="6" y2="10"/><line x1="14" y1="7" x2="18" y2="10"/><line x1="5" y1="14" x2="3.5" y2="17"/><line x1="7" y1="14" x2="8.5" y2="17"/><line x1="17" y1="14" x2="15.5" y2="17"/><line x1="19" y1="14" x2="20.5" y2="17"/></svg>`
+     - Item: `{ label: "Segment Tree", href: "segment-tree.html", iconKey: "segmentTree" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `segment-tree.html`
+     - Title: `Segment Tree`
+     - Description: `Visualize range sum and range minimum queries through full, partial, and disjoint interval overlaps, O(n) recursive builds, and O(log n) leaf-to-root point updates.`
+     - Footer: `O(log n) Query & Update · O(n) Build` &rarr; `Launch Visualizer`
+  3. **CSS classes added to `main.css` section 20 (lines 3071–3622, token-only, `+553 / -0`):**
+     - `.st-active`, `.st-active-halo`, `.st-array-list`, `.st-array-region`, `.st-array-stage`, `.st-arr-cell`, `.st-arr-combine`, `.st-arr-disjoint`, `.st-arr-full`, `.st-arr-in-query`, `.st-arr-in-range`, `.st-arr-leaf`, `.st-arr-partial`, `.st-arr-query-end`, `.st-arr-query-start`, `.st-arr-tag`, `.st-arr-visit`, `.st-arr-wrap`, `.st-badge`, `.st-badge-bg`, `.st-badge-text`, `.st-badge-visible`, `.st-card-header`, `.st-combine`, `.st-disjoint`, `.st-edge`, `.st-edge-combine`, `.st-edge-disjoint`, `.st-edge-full`, `.st-edge-partial`, `.st-edge-visit`, `.st-full`, `.st-hidden`, `.st-input-xs`, `.st-node`, `.st-node-box`, `.st-node-inner`, `.st-node-range`, `.st-node-value`, `.st-partial`, `.st-pending`, `.st-recompute`, `.st-root`, `.st-svg`, `.st-sw`, `.st-sw-combine`, `.st-sw-disjoint`, `.st-sw-full`, `.st-sw-leaf`, `.st-sw-partial`, `.st-sw-visit`, `.st-tag-accent`, `.st-tag-disjoint`, `.st-tag-full`, `.st-tag-partial`, `.st-update-leaf`, `.st-visit`, `.st-viz-stage`
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G10: Graph representation module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 19:18 (Philippine time)
