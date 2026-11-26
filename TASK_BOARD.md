@@ -28,6 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G11 | Disjoint Set Union (Union-Find) module + forest/array page | Gemini | `gemini/g11-dsu` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |

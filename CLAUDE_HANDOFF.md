@@ -32,6 +32,45 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G11: Disjoint Set Union (Union-Find) module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 20:17 (Philippine time)
+- Branch: `gemini/g11-dsu` (branched from fresh `origin/main` @ `cfef17c`)
+- Commit(s): `4c7bc23`
+- Files changed: `src/structures/dsu.js`, `tests/dsu.test.js`, `dsu.html`, `src/pages/dsu-page.js`, `main.css` (new section 17 "Disjoint Set Union" appended at end; sections 1–16 untouched, `0` deletions)
+- Summary:
+  - Created pure, DOM-free `src/structures/dsu.js` (`DisjointSet`, `DSU_LIMITS`, `DSU_INFO`) over elements `0..n-1` (`n` integer `1..16`, `parent[x] = x` for roots, zero `-1` sentinels, `-0` normalized). Implements `find(x)` (ending with terminal `done` step on line 5 `return root`), `union(a, b)` (returns new root, or `{ ok: true, value: false }` with `same-set` when already united; Union by Rank breaks ties to smaller root ID and increments rank; with `byRank: false`, `rootA` always links under `rootB`), `connected(a, b)`, `reset(n?)`, `setCount`, `sets()` (sorted ascending per set, ordered by smallest element), `parentArray()`, `rankArray()`, `snapshot()`, and `integrityError()` (checks array bounds, cycle-free root reachability within `n` hops, `setCount === rootCount`, and when `byRank`: `rank[parent[x]] > rank[x]` and every rank-`r` root has `>= 2^r` elements). `compress` steps carry `edge: { from, to, oldParent }` so the visualizer renders the faded old edge for one step.
+  - Added `tests/dsu.test.js` (13 tests): **1,200 seeded mulberry32 sequences** (300 for each of the four `byRank × compress` combinations, 20–30 ops each on `n` in `1..16`) verified after every operation against an independent label-array model (`integrityError() === null`, `setCount`, `sets()`, all-pair connectivity, post-`find` path compression, step/line/snapshot validity), plus edge cases (`union(x, x)`, same-set union, `n = 1`/`16`, invalid IDs/constructor args, tall chain compression, flat rank trees including `rankA < rankB`, `byRank: false` `rootA > rootB` direction, `find` line 5 `done` step, and `integrityError()` corruption tests).
+  - **Union mutation check:** Temporarily mutated `this._parent[rootA] = rootB` to `this._parent[a] = rootB` in `DisjointSet.prototype.union`. Running `node --test tests/dsu.test.js` immediately failed **2 of 13** tests: `300 seeded property sequences: byRank=false, compress=true` (`pathA compressed node 1 -> 3: 0 !== 3`) and `300 seeded property sequences: byRank=false, compress=false` (`integrityError: setCount mismatch: stored 2, actual root count is 3`). Restored and re-verified 100% pass.
+  - Created `dsu.html`, `src/pages/dsu-page.js`, and token-only `main.css` section 17 (`0` `style=""` in `dsu.html`, `0` `.style` / `.innerHTML` / dialogs in `src/pages/dsu-page.js`, `0` hardcoded colors in section 17). Imports `layoutGeneralTree` from `src/core/tree-layout.js` (not copied) to lay out each root tree left-to-right with `TREE_GAP = 40`, shows `r=k` above roots when `byRank` is on (hidden with `"Rank Unused"` when off), renders aligned `parent[]` & `rank[]` rows in one pooled `.hp-scroll-region` table, and implements every required non-colour cue (dashed outline + `"visiting"` in `<title>`, double ring + `"R"`, dashed re-pointed edge + one-step `0.72`-opacity faded old edge passing WCAG 1.4.11, thick `3.6` link edge + `"linked"` label, `"✓"` same set, `"✗"` different sets). Uses `StepPlayer`, `bindPlayerKeys(document, playerControls)`, `DSA_UI.announce(...)` + `rescueFocus`, single-`<span>` player button labels (`▶ Play`, `⏮ Reset`, `◀ Back`, `Step ▶`), cumulative step-synced counters (`Finds`, `Parent Hops`, `Pointers Compressed`, `Links`, `Sets`, `Integrity`), complexity table, and 4 concept cards. Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents with all findings resolved prior to commit.
+- npm test output (paste the real lines):
+    # tests 419
+    # pass 419
+    # fail 0
+    # todo 0
+    [FAIL] Every HTML page except index.html is listed in navCategories
+    SUMMARY: 72 / 73 assertions passed (99%)
+  *(Note: all 419 Node tests — including all 5 `dsu.html` checks in `tests/a11y-static.test.js` — pass with 0 failures and 0 todos; the sole `[FAIL]` in `tests/legacy-regression.cjs` is the expected C10 nav check for `dsu.html` awaiting Claude's `shared.js` nav entry on merge.)*
+- Browser checks done: Verified `dsu.html` on `http://localhost:5511/dsu.html` at `1280px` desktop and `375px` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (`consoleEntries: []`, 0 uncaught errors/rejections, 0 dialogs). Verified player button spacing (`"↻ Replay"`, `"⏮ Reset"`, `"⏸ Pause"`) and **Play** advancing (`Step 1 / 32` → `Step 4 / 32`); verified both options OFF resets to 8 singletons, hides `r=0` labels, and builds a **height-5 tall chain** (`depthLevels: 6`, `parent[] = [1,2,3,4,5,5,6,7]`) across 5 unions; verified Path Compression on chain `[1,2,3,4,4,5,6,7]` visibly displays faded old edge (`opacity: 0.72`), `"R"` root-found badge, and `"visiting"` node `<title>`, then hides the faded old edge cleanly on the final `done` step (`"Return representative root 4 for element 0."`) with flattened `parent[] = [4,4,4,4,4,5,6,7]` (`depthLevels: 2`, `compressed: 3`); verified exact same 5 unions with both options ON stay flat (`depthLevels: 2`, `parent[] = [0,0,0,0,0,0,6,7]`, `r=1`); verified `Connected (A, B)?` renders `"✓"` for same set and `"✗"` on both roots for different sets; verified inline `role="alert"` on invalid `size = 25`; verified at `375px` with `n = 16` in both themes: `scrollOverflowX === 0`, checkboxes `18px × 18px`, `#optionsHint` `38px` tall, zero label/stage overlaps, `#forestStage` (`1376px` inside `268px`) and `#arraysStage` (`849px` inside `268px`) scroll smoothly inside `.hp-scroll-region`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, `src/structures/graph.js`, `graph.html`, `src/pages/graph-page.js`, or `main.css` sections 1–16.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures` or a new `Graphs & Sets` category):**
+     - `SVG_ICONS.dsu`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.2"/><circle cx="4" cy="15" r="2.2"/><circle cx="10" cy="15" r="2.2"/><line x1="6.1" y1="8" x2="4.8" y2="12.9"/><line x1="7.9" y1="8" x2="9.2" y2="12.9"/><circle cx="18" cy="8" r="2.2"/><circle cx="18" cy="17" r="2.2"/><line x1="18" y1="10.2" x2="18" y2="14.8"/></svg>`
+     - Item: `{ label: "Disjoint Set Union (DSU)", href: "dsu.html", iconKey: "dsu" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `dsu.html`
+     - Title: `Disjoint Set Union (Union-Find)`
+     - Description: `Compare tall naive chains against Union by Rank and Path Compression across synchronized parent-pointer trees and aligned parent[] / rank[] arrays.`
+     - Footer: `O(α(n)) Amortised · O(n) Space` &rarr; `Launch Visualizer`
+  3. **Classes added to `main.css` section 17 (lines 2386–2830, token-only):**
+     - `.dsu-card-header` (with `.step-counter`), `.dsu-options-row`, `.dsu-toggle` (`input[type="checkbox"]`), `.dsu-mode-hint`, `.dsu-viz-stage` (with `.viz-stage-label`)
+     - `.dsu-svg` scoped selectors: `.dsu-edge-group`, `.dsu-edge`, `.dsu-edge-path`, `.dsu-edge-visit`, `.dsu-edge-compress`, `.dsu-edge-link`, `.dsu-edge-old`, `.dsu-edge-label`, `.dsu-node` (`.dsu-node-path`, `.dsu-node-visit`, `.dsu-node-root-found`, `.dsu-node-compress`, `.dsu-node-link`, `.dsu-node-rank-up`, `.dsu-node-same-set`, `.dsu-node-diff-set`), `.dsu-root-found-ring`, `.dsu-rank-label`, `.dsu-root-badge`, `.dsu-result-badge`
+     - `.dsu-arrays-table`, `.dsu-arr-rowhead`, `.dsu-arr-idx`, `.dsu-idx-active`, `.dsu-arr-cell` (`.dsu-cell-root`, `.dsu-cell-path`, `.dsu-cell-visit`, `.dsu-cell-root-found`, `.dsu-cell-compress`, `.dsu-cell-compare`, `.dsu-cell-link`, `.dsu-cell-rank-up`, `.dsu-cell-same-set`, `.dsu-cell-diff-set`)
+     - `.dsu-sw-path`, `.dsu-sw-root-found`, `.dsu-sw-compress`, `.dsu-sw-link`, `.dsu-sw-same`, `.dsu-sw-diff`
+     - `.dsu-hidden` (kept last with all SVG/label modifiers), plus `@media (max-width: 640px)` and `@media (prefers-reduced-motion: reduce)` rules.
+
+---
+
 ### G9: Trie (Prefix Tree) module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 18:21 (Philippine time)
