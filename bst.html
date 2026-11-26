@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Tree (BST) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Tree Structure &bull; Binary Search Tree</div>
+            <h1 class="page-title">Binary Search Tree Visualization</h1>
+            <p class="page-desc">
+                A linked binary tree of node objects (<code>value</code>, <code>left</code>, <code>right</code>)
+                where every left subtree holds strictly smaller keys and every right subtree holds strictly larger
+                keys. Step through search paths, all three deletion cases (including replacing a two-child node with
+                its <strong>in-order successor</strong>, the smallest key in its right subtree), and all four tree
+                traversals.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="bstName">Binary Search Tree</h2>
+            <p class="concept-body" id="bstSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Search</div><div class="prop-value" id="cxSearch"></div></div>
+                <div class="prop-item"><div class="prop-label">Insert</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Delete</div><div class="prop-value" id="cxDelete"></div></div>
+                <div class="prop-item"><div class="prop-label">Min / Max</div><div class="prop-value" id="cxMinMax"></div></div>
+                <div class="prop-item"><div class="prop-label">Traverse</div><div class="prop-value" id="cxTraverse"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">BST Controls &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Single-Key Operations (Capacity 31)</div>
+                <form id="keyForm" novalidate>
+                    <div class="controls-row">
+                        <label class="field">
+                            <span class="field-label">Value (&minus;99 to 999)</span>
+                            <input type="text" id="valueInput" class="input-sm" autocomplete="off"
+                                   placeholder="e.g. 45 or -10">
+                        </label>
+                    </div>
+                    <div class="controls-row mt-sm">
+                        <button type="submit" class="btn" id="insertBtn">Insert</button>
+                        <button type="button" class="btn btn-secondary" id="searchBtn">Search</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                        <button type="button" class="btn btn-secondary" id="minBtn">Min</button>
+                        <button type="button" class="btn btn-secondary" id="maxBtn">Max</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="control-section" id="traversalForm" novalidate>
+                <div class="control-section-title">2. Traversals</div>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Traversal Order</span>
+                        <select id="traversalSelect">
+                            <option value="inorder" selected>In-Order (Left &rarr; Root &rarr; Right)</option>
+                            <option value="preorder">Pre-Order (Root &rarr; Left &rarr; Right)</option>
+                            <option value="postorder">Post-Order (Left &rarr; Right &rarr; Root)</option>
+                            <option value="levelorder">Level-Order (Breadth-First / BFS)</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn" id="traverseBtn">Traverse</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">3. Build Tree from List (Unique Keys)</div>
+                <div class="controls-row">
+                    <label class="field field-grow">
+                        <span class="field-label">Values (1&ndash;31 unique whole numbers, &minus;99 to 999)</span>
+                        <input type="text" id="buildInput" autocomplete="off"
+                               value="50, 30, 70, 20, 40, 60, 80, 65">
+                    </label>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
+                </div>
+            </form>
+
+            <div id="bstAlert" class="alert-banner alert-error alert-live" role="alert" hidden></div>
+            <div id="bstStatus" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Tree Execution &amp; Traversal Output</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span aria-hidden="true">&#x23EE;</span> Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" title="Previous step (&larr;)"><span aria-hidden="true">&#x25C0;</span> Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" title="Next step (&rarr;)">Step <span aria-hidden="true">&#x25B6;</span></button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">BST View (Left &lt; Node &lt; Right)</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="treeStageLabel" tabindex="0"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i> Visiting / Comparing (dashed)</span>
+                    <span><i class="sw sw-select"></i> Search Path / In-Order Successor</span>
+                    <span><i class="sw sw-sorted"></i> Found / Inserted / Done</span>
+                    <span><i class="sw sw-swap"></i> Delete Relink / Rejected / Error (double)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="traversalStageLabel">In-Order Keys (Sorted)</span>
+                <ol id="traversalStage" class="queue-display hp-array-list hp-scroll-region"
+                    role="list" aria-labelledby="traversalStageLabel" tabindex="0"></ol>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Insert)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">BST State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Root</span><strong id="statRoot">&mdash;</strong></div>
+                        <div><span>Size / 31</span><strong id="statSize">0 / 31</strong></div>
+                        <div><span>Height</span><strong id="statHeight">&minus;1</strong></div>
+                        <div><span>Min</span><strong id="statMin">&mdash;</strong></div>
+                        <div><span>Max</span><strong id="statMax">&mdash;</strong></div>
+                        <div><span>Comparisons (Op)</span><strong id="statComparisons">0</strong></div>
+                        <div><span>BST Invariant</span><strong id="statValid">Valid</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Binary Search Tree Complexity &amp; Properties</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="BST complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Best</th>
+                            <th scope="col">Average</th>
+                            <th scope="col">Worst</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside a control or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>BST Ordering Invariant</h2>
+                    <p>Every key in a node&rsquo;s left subtree is strictly smaller than the node&rsquo;s key, and every key in its right subtree is strictly larger&mdash;across all ancestors, not only the immediate parent. Keys are unique.</p>
+                </div>
+                <div class="check">
+                    <h2>Three Delete Cases &amp; In-Order Successor</h2>
+                    <p>Deleting a <strong>leaf</strong> unlinks it; deleting a <strong>one-child</strong> node promotes its child; deleting a <strong>two-child</strong> node copies the <strong>in-order successor</strong> (minimum key in the right subtree) into the target and relinks the successor&rsquo;s right child.</p>
+                </div>
+                <div class="check">
+                    <h2>Four Tree Traversals</h2>
+                    <p><strong>In-Order</strong> (L &rarr; Root &rarr; R) yields sorted ascending keys; <strong>Pre-Order</strong> (Root &rarr; L &rarr; R) captures tree structure; <strong>Post-Order</strong> (L &rarr; R &rarr; Root) visits children before parents; <strong>Level-Order</strong> (BFS) walks level by level with a queue.</p>
+                </div>
+                <div class="check">
+                    <h2>Balanced O(log n) vs. Skewed O(n)</h2>
+                    <p>Search, insert, delete, and min/max take <code>O(h)</code> time, where <code>h</code> is tree height (empty <code>&minus;1</code>, single node <code>0</code>). Balanced inputs keep <code>h &asymp; log&#x2082; n</code>, whereas inserting sorted keys forms a skewed chain of height <code>n &minus; 1</code>.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/bst-page.js"></script>
+</body>
+</html>

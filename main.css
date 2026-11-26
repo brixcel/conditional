@@ -1963,3 +1963,76 @@ input:disabled, select:disabled {
 @media (prefers-reduced-motion: reduce) {
     .hp-node-circle { transition: none; }
 }
+
+/* --------------------------------------------------------------------------
+   15. Binary Search Tree & Accessible Scroll Regions (G8)
+   Reuses section 14 (.hp-*) tree/cell styles; uses section 1 tokens only.
+   -------------------------------------------------------------------------- */
+.hp-scroll-region:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+.hp-array-list {
+    list-style: none;
+    margin: 0;
+}
+
+.bst-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.bst-svg .hp-edge {
+    stroke: var(--text-light);
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.bst-svg .hp-edge.bst-path {
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.bst-svg .hp-node.bst-path .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: 4 2;
+}
+
+.bst-svg .hp-node.hp-compare .hp-node-circle {
+    stroke-dasharray: 5 3;
+}
+
+.bst-svg .hp-node.hp-swap .hp-node-circle {
+    stroke-width: 3.5;
+}
+
+.bst-cell {
+    animation: none;
+    will-change: auto;
+}
+.bst-cell.hp-root    { border-width: 2.5px; }
+.bst-cell.hp-select  { border-width: 2.5px; }
+.bst-cell.hp-compare { border-width: 2.5px; border-style: dashed; }
+.bst-cell.hp-swap    { border-width: 4px; border-style: double; }
+.bst-cell.hp-settled { border-width: 2.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .bst-svg .hp-edge,
+    .bst-svg .hp-node-circle,
+    .bst-cell,
+    .bst-cell:hover {
+        transition: none;
+        animation: none;
+        transform: none;
+    }
+}
