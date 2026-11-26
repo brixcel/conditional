@@ -1,0 +1,196 @@
+{
+  "id": "stack",
+  "title": "Stack (LIFO)",
+  "page": "stack.html",
+  "module": "src/structures/stack.js",
+  "controller": "src/pages/stack-page.js",
+  "summary": "A stack adds and removes values at one end, the top, so the last value pushed is the first one popped (LIFO). This page uses an array with a fixed capacity of 1 to 12 slots.",
+  "prerequisites": ["arrays"],
+  "objectives": [
+    "Students can explain the LIFO rule and predict which value the next Pop removes.",
+    "Students can trace push, pop and peek on a bounded stack and give the value of top after each step.",
+    "Students can identify overflow and underflow before they happen, using size and capacity.",
+    "Students can state the time complexity of push, pop, peek, isEmpty and isFull and explain why each is O(1).",
+    "Students can choose a stack for problems such as bracket matching, undo and function calls."
+  ],
+  "levels": {
+    "beginner": [
+      "A stack is a list where you add and remove items at one end only, called the top. Think of a pile of plates in a canteen: you put a clean plate on top, and the next person takes the top plate. The last plate in is the first plate out. This rule is called LIFO (Last-In, First-Out).",
+      "Push puts a value on top. Pop removes the top value and gives it back. Peek only looks at the top value and leaves the stack unchanged. You cannot reach a value in the middle without popping everything above it first.",
+      "On this page you first choose a capacity, the most values the stack can hold (1 to 12). Pushing onto a full stack is called overflow. Popping from an empty stack is called underflow. Both are refused, and the stack stays exactly as it was."
+    ],
+    "intermediate": [
+      "The page stores the stack in an array. Index 0 is the bottom. The variable top holds the index of the last value, so top = size − 1, and top = −1 means the stack is empty. With 10, 20 and 30 pushed, top is 2 and the page shows Top Element as 30 (index 2).",
+      "Push first checks for overflow (size = capacity). Only then does it store the value at index top + 1. Pop first checks for underflow (the stack is empty). Only then does it read A[top] and move top down by one. The check comes first so a refused operation changes nothing.",
+      "Each of push, pop and peek touches one slot, no matter how many values are stored. That is why all three are O(1), constant time. Is Empty? compares size with 0, Is Full? compares size with capacity, and Size reads the count, so they are O(1) as well. Storing n values takes O(n) memory.",
+      "Each operation is recorded step by step and replayed in the Step-by-Step Execution card, with the matching pseudocode line highlighted. A push records two steps (the full check, then the write), and a pop records three (the empty check, reading A[top], then moving top down)."
+    ],
+    "advanced": [
+      "A stack is an abstract data type (ADT): a set of operations plus a rule (LIFO), not a fixed memory layout. This page implements it with an array. A singly linked list that pushes and pops at its head gives the same O(1) operations with no fixed capacity, at the cost of one pointer per node.",
+      "A fixed capacity is a design choice that makes overflow a normal, testable result. A growable stack, such as a dynamic array that doubles its size when full, does not overflow until memory runs out. A push that triggers a resize costs O(n), but averaged over many pushes it is O(1). This is called amortized O(1).",
+      "In the code, peek on an empty stack returns null instead of failing, so callers must check for null. The page also adds a teaching check to Pop: you must type the top value first. An empty box, a non-number or a different value is refused, so nothing is popped by accident. That check belongs to the page, not to the stack class."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "push(x)",
+      "lines": [
+        "if top == capacity − 1: overflow, stop",
+        "top ← top + 1; A[top] ← x"
+      ],
+      "registry": "STACK_INFO.pseudocode.push"
+    },
+    {
+      "name": "pop()",
+      "lines": [
+        "if top == −1: underflow, stop",
+        "x ← A[top]",
+        "top ← top − 1; return x"
+      ],
+      "registry": "STACK_INFO.pseudocode.pop"
+    },
+    {
+      "name": "peek()",
+      "lines": [
+        "if top == −1: return null",
+        "return A[top]"
+      ],
+      "registry": "STACK_INFO.pseudocode.peek"
+    },
+    {
+      "name": "isEmpty()",
+      "lines": [
+        "return top == −1"
+      ],
+      "registry": "STACK_INFO.pseudocode.isEmpty"
+    },
+    {
+      "name": "isFull()",
+      "lines": [
+        "return top == capacity − 1"
+      ],
+      "registry": "STACK_INFO.pseudocode.isFull"
+    },
+    {
+      "name": "size()",
+      "lines": [
+        "return top + 1"
+      ],
+      "registry": "STACK_INFO.pseudocode.size"
+    }
+  ],
+  "complexity": {
+    "push": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "The capacity is fixed when the stack is created, so a push never resizes. A full stack refuses the push (overflow).",
+      "registry": "STACK_INFO.operations.push"
+    },
+    "pop": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "An empty stack refuses the pop (underflow).",
+      "registry": "STACK_INFO.operations.pop"
+    },
+    "peek": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Returns null when the stack is empty. Does not change top or size.",
+      "registry": "STACK_INFO.operations.peek"
+    },
+    "isEmpty": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "registry": "STACK_INFO.operations.isEmpty"
+    },
+    "isFull": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "registry": "STACK_INFO.operations.isFull"
+    },
+    "size": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads the stored count. Not listed in STACK_INFO.operations; the page's Size button records one step on STACK_INFO.pseudocode.size."
+    }
+  },
+  "applications": [
+    "Function calls: the program keeps a call stack, so the function called most recently is the first to return.",
+    "Undo in a text editor: each edit is pushed, and Undo pops the most recent edit.",
+    "Bracket matching in compilers and editors: push each opening bracket and pop when a closing bracket arrives. A mismatch, or a bracket left over at the end, means the expression is unbalanced.",
+    "Evaluating postfix expressions: in 3 4 + 2 ×, numbers are pushed, and each operator pops two numbers and pushes the result, leaving 14."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "Peek removes the top value.",
+      "correction": "Peek only reads the top value. Press Peek and then Size on the page: the count stays the same. Only Pop removes a value."
+    },
+    {
+      "mistake": "top is the number of values in the stack.",
+      "correction": "In this array version top is an index: top = size − 1. With 3 values top is 2, and an empty stack has top = −1."
+    },
+    {
+      "mistake": "Overflow means the computer ran out of memory.",
+      "correction": "Here overflow means the stack already holds as many values as the capacity you chose. The push is refused and nothing is lost. Pop a value first, or reset with a larger capacity."
+    },
+    {
+      "mistake": "You can pop any value you can see in the stack.",
+      "correction": "Only the top is reachable. To remove 10 from the bottom of 10, 20, 30, you must pop 30 and then 20 first. The page enforces this: typing 10 before Pop gives a LIFO Rule message."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Fill the stack and overflow it",
+      "action": "Type 3 in “Capacity (1–12)” and press “Allocate Capacity”. Then type 10, 20, 30 and 40 one at a time in “Element Value (positive integer; to pop, type the top value)”, pressing “Push (Insert)” after each.",
+      "input": "3, 10, 20, 30, 40",
+      "expect": "You see “Stack capacity successfully set to 3”. The first three pushes succeed and Elements shows 3 / 3. Pushing 40 is refused with “Stack overflow: all 3 slots are used, so 40 cannot be pushed.” and the stack does not change."
+    },
+    {
+      "label": "LIFO: only the top can leave",
+      "action": "With 10, 20, 30 on the stack, type 10 in “Element Value (positive integer; to pop, type the top value)” and press “Pop (Remove)”. Then type 30 in the same field and press “Pop (Remove)” again.",
+      "input": "10, 30",
+      "expect": "The first Pop is refused: “LIFO Rule: Top element is 30, not 10.” The second shows “Popped 30 from Top of Stack (LIFO). top is now 1.” When the steps finish, Top Element reads 20 (index 1). An empty box is refused too."
+    },
+    {
+      "label": "Replay the pop step by step",
+      "action": "Right after popping 30, press “⏮ Reset”, then press “Step ▶” twice, reading the message below the stage each time.",
+      "input": "",
+      "expect": "Step 1 / 3 says “top = 2, not −1: the stack holds 3 items.” Step 2 says “x ← A[2] = 30. Only the top can leave (last in, first out).” Step 3 says “top ← 2 − 1 = 1; return 30. 20 is the new top.”"
+    },
+    {
+      "label": "Peek does not remove",
+      "action": "With 10, 20 on the stack, press “Peek” and then “Size”.",
+      "input": "",
+      "expect": "“Peek: Top element is 20 (index 1)” appears and the top bar is highlighted on the last peek step. Size then reports “Current Stack Size: 2 / 3 elements”, so nothing was removed."
+    },
+    {
+      "label": "Empty the stack and underflow it",
+      "action": "Type 20 in “Element Value (positive integer; to pop, type the top value)” and press “Pop (Remove)”, then type 10 and press it again. Press “Pop (Remove)” once more, then press “Is Empty?”.",
+      "input": "20, 10",
+      "expect": "Popping 10 ends with “Popped 10 from Top of Stack (LIFO). The stack is now empty (top = −1).” The extra Pop shows “Stack Underflow! Cannot pop from an empty stack.” Is Empty? reports “IsEmpty: TRUE (Size is 0)”."
+    },
+    {
+      "label": "Capacity limits",
+      "action": "Press “Reset Stack” (the capacity field is locked while a stack exists). Type 13 in “Capacity (1–12)” and press “Allocate Capacity”.",
+      "input": "13",
+      "expect": "The page refuses it with “Capacity must be between 1 and 12.” No stack is created, so the push, pop and query buttons stay disabled."
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 10, Elementary Data Structures.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 1.3, Bags, Queues, and Stacks."
+  ],
+  "reviewed": null
+}

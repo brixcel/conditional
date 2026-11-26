@@ -67,7 +67,7 @@
                 <div class="control-section-title">2. Mutation Operations</div>
                 <div class="controls-row">
                     <label class="field">
-                        <span class="field-label">Element Value (positive integer)</span>
+                        <span class="field-label">Element Value (positive integer; to pop, type the top value)</span>
                         <input type="number" id="stack-numberInput" min="1" step="1" placeholder="Enter integer value" disabled />
                     </label>
                 </div>
@@ -87,16 +87,56 @@
                 </div>
             </div>
 
-            <!-- State Monitor -->
-            <div class="state-monitor">
-                <div>Top Element: <strong id="stack-top-val" class="text-accent mono">Empty (None)</strong></div>
-                <div>Elements: <strong id="stack-size-val" class="mono">0 / 0</strong></div>
+        </div>
+
+        <!-- Step Player -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
             </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Reset to first step" title="First step (Home)" disabled>&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Back one step" title="Previous step (&larr;)" disabled>&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)" disabled>&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Step forward" title="Next step (&rarr;)" disabled>Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step" disabled>
 
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Stack Memory Stage (Top &rarr; Base)</span>
                 <div class="stack-box" role="group" aria-label="Stack elements, read from base to top"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i> Checking top</span>
+                    <span><i class="sw sw-swap"></i> Read, about to leave</span>
+                    <span><i class="sw sw-sorted"></i> Just pushed</span>
+                </div>
+                <p class="text-muted">Peek flashes the top bar. The step message and the Top Element readout always name the value.</p>
+            </div>
+
+            <!-- State Monitor (shows the step on screen) -->
+            <div class="state-monitor">
+                <div>Top Element: <strong id="stack-top-val" class="text-accent mono">Empty (null)</strong></div>
+                <div>Elements: <strong id="stack-size-val" class="mono">0 / 0</strong></div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite">Allocate a capacity, then push or pop to watch each step.</p>
+
+            <div class="algo-detail">
+                <div class="control-section-title" id="codeHeading">Pseudocode</div>
+                <ol class="pseudocode" id="pseudocode"></ol>
             </div>
         </div>
 

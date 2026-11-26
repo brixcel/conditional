@@ -2384,7 +2384,531 @@ input:disabled, select:disabled {
 }
 
 /* --------------------------------------------------------------------------
-   17. Red-Black Tree (C21)
+   17. Graph Representation Visualizer (G10)
+   Reuses section 14/15 (.hp-*, .bst-*) classes; uses section 1 tokens only.
+   -------------------------------------------------------------------------- */
+.gr-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.gr-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Not a .controls-row: that class forces width:100% !important on inputs at <=640px,
+   which would stretch the checkboxes. The mode row carries its own flex layout. */
+.gr-mode-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.gr-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-min);
+    padding: 6px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.gr-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    margin: 0;
+    accent-color: var(--primary-light);
+    cursor: pointer;
+}
+
+.gr-mode-hint {
+    font-size: 0.85rem;
+    flex: 1 1 220px;
+}
+
+.gr-input-xs {
+    width: 108px;
+    max-width: 100%;
+}
+
+.gr-viz-stage {
+    padding-top: 14px;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.gr-viz-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.gr-sub-stage {
+    margin: 0;
+    min-height: 240px;
+}
+
+.gr-views-grid {
+    margin: 20px 0;
+    align-items: stretch;
+}
+
+.gr-views-grid > * {
+    min-width: 0;
+}
+
+.gr-scroll-region {
+    white-space: normal;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 8px 6px;
+}
+
+.gr-svg-region {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+}
+
+.gr-svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.gr-arrow-default path { fill: var(--text-light); }
+.gr-arrow-add path     { fill: var(--bar-sorted); }
+.gr-arrow-select path  { fill: var(--bar-select); }
+.gr-arrow-remove path  { fill: var(--bar-swap); }
+.gr-arrow-compare path { fill: var(--bar-compare); }
+
+.gr-edge {
+    fill: none;
+    stroke: var(--text-light);
+    stroke-width: 2.2;
+    stroke-linecap: butt;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.gr-edge.gr-state-add {
+    stroke: var(--bar-sorted);
+    stroke-width: 3.2;
+    stroke-dasharray: 3 3;
+}
+
+.gr-edge.gr-state-endpoint {
+    stroke: var(--bar-select);
+    stroke-width: 2.8;
+    stroke-dasharray: 6 4;
+}
+
+.gr-edge.gr-state-remove,
+.gr-edge.gr-edge-ghost {
+    stroke: var(--bar-swap);
+    stroke-width: 3;
+    stroke-dasharray: 8 3 2 3;
+}
+
+.gr-edge-weight {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+}
+
+.gr-edge-weight.gr-state-add {
+    fill: var(--success-text);
+}
+
+.gr-edge-weight.gr-state-remove {
+    fill: var(--danger-text);
+}
+
+.gr-node-circle {
+    transition: fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.gr-node.gr-state-add .gr-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3.2;
+    stroke-dasharray: 3 3;
+}
+
+.gr-node.gr-state-endpoint .gr-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+}
+
+.gr-node.gr-state-remove .gr-node-circle {
+    fill: var(--danger-subtle);
+    stroke: var(--bar-swap);
+    stroke-width: 3.2;
+    stroke-dasharray: 8 3 2 3;
+}
+
+.gr-node-value {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.gr-legend {
+    margin-top: 12px;
+}
+
+.gr-sw-add {
+    background-color: var(--success-subtle);
+    border: 2px dotted var(--bar-sorted);
+}
+
+.gr-sw-endpoint {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+
+.gr-sw-remove {
+    background-color: var(--danger-subtle);
+    border: 3px double var(--bar-swap);
+}
+
+.gr-sw-empty {
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--text-light);
+}
+
+.gr-sw-empty::after {
+    content: "\00B7";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.gr-adj-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.gr-adj-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 6px 8px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.gr-adj-row.gr-adj-row-add {
+    border-color: var(--bar-sorted);
+    border-style: dotted;
+    border-width: 2px;
+    background: var(--success-subtle);
+}
+
+.gr-adj-row.gr-adj-row-endpoint {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    border-width: 2px;
+    background: var(--primary-subtle);
+}
+
+.gr-adj-row.gr-adj-row-remove {
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 3px;
+    background: var(--danger-subtle);
+}
+
+.gr-adj-vertex {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--primary);
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex: none;
+}
+
+.gr-adj-vertex.gr-state-add {
+    border-color: var(--bar-sorted);
+    border-style: dotted;
+    background: var(--success-subtle);
+}
+
+.gr-adj-vertex.gr-state-endpoint {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background: var(--primary-subtle);
+}
+
+.gr-adj-vertex.gr-state-remove {
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 3px;
+    background: var(--danger-subtle);
+}
+
+.gr-adj-arrow {
+    color: var(--text-muted);
+    font-weight: 700;
+    flex: none;
+}
+
+.gr-adj-neighbors {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.gr-adj-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.gr-adj-chip.gr-chip-add {
+    border-color: var(--bar-sorted);
+    border-style: dotted;
+    border-width: 2px;
+    background: var(--success-subtle);
+    color: var(--text-primary);
+}
+
+.gr-chip-weight {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.gr-adj-empty-item {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.gr-matrix {
+    border-collapse: separate;
+    border-spacing: 2px;
+    margin: 0 auto;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.82rem;
+}
+
+.gr-matrix th,
+.gr-matrix td {
+    min-width: 32px;
+    height: 30px;
+    padding: 3px 5px;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.gr-matrix thead th,
+.gr-matrix tbody th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: 700;
+    border-color: var(--border-strong);
+}
+
+.gr-matrix .gr-matrix-corner {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gr-matrix td {
+    background: var(--bg-card);
+    color: var(--text-muted);
+}
+
+.gr-matrix td.gr-matrix-edge {
+    background: var(--primary-subtle);
+    color: var(--text-primary);
+    font-weight: 700;
+    border-color: var(--primary-border);
+}
+
+.gr-matrix td.gr-matrix-diag {
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+}
+
+.gr-matrix th.gr-matrix-hdr-add {
+    background: var(--success-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-sorted);
+    border-style: dotted;
+    border-width: 2px;
+}
+
+.gr-matrix th.gr-matrix-hdr-endpoint {
+    background: var(--primary-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-select);
+    border-style: dashed;
+    border-width: 2px;
+}
+
+.gr-matrix th.gr-matrix-hdr-remove {
+    background: var(--danger-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 3px;
+}
+
+.gr-matrix td.gr-matrix-cell-add {
+    background: var(--success-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-sorted);
+    border-style: dotted;
+    border-width: 2px;
+    font-weight: 700;
+}
+
+.gr-matrix td.gr-matrix-cell-remove {
+    background: var(--danger-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 3px;
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .gr-mode-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .gr-mode-hint {
+        flex: 0 0 auto;
+    }
+
+    .gr-matrix th,
+    .gr-matrix td {
+        min-width: 28px;
+        height: 28px;
+        padding: 2px 4px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gr-edge,
+    .gr-node-circle,
+    .gr-adj-row {
+        transition: none;
+    }
+}
+
+/* Kept last in the Graph section so no display rule overrides it in the cascade. */
+.gr-hidden,
+.gr-svg.gr-hidden,
+.gr-adj-list.gr-hidden,
+.gr-matrix.gr-hidden,
+.gr-adj-row.gr-hidden,
+.gr-adj-chip.gr-hidden,
+.gr-adj-empty-item.gr-hidden {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   18. Circular Queue SVG Ring (C20)
+   The ring is an SVG (positions are attributes, no inline styles), so it scales
+   to the stage width. Slot tones reuse section 14 (.hp-node.hp-*); tokens only.
+   -------------------------------------------------------------------------- */
+.cq-ring {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+}
+
+.cq-ring-svg {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+}
+
+.cq-track {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 2;
+}
+
+.cq-slot-filled .hp-node-circle {
+    fill: var(--primary-subtle);
+}
+
+/* Empty slots are dashed and carry no value text, so "empty" is not shown by colour alone. */
+.cq-slot-empty .hp-node-circle {
+    stroke: var(--border-strong);
+    stroke-dasharray: 4 3;
+}
+
+/* --------------------------------------------------------------------------
+   19. Red-Black Tree (C21)
    Reuses sections 14/15 (.hp-*, .bst-*) for the SVG tree, cells and scroll regions;
    uses section 1 tokens only. Node fill shows the colour; the label under every
    node spells it ("red" / "black") so hue is never the only cue. State (path,

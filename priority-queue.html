@@ -97,6 +97,35 @@
                 </div>
             </div>
 
+            <!-- Output Message Banner -->
+            <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
+        </div>
+
+        <!-- Step Player -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Heap Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Reset to first step" title="First step (Home)" disabled>&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Back one step" title="Previous step (&larr;)" disabled>&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)" disabled>&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Step forward" title="Next step (&rarr;)" disabled>Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step" disabled>
+
             <!-- Heap Array Stage: the real storage, replayed step by step -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Binary Heap Array (index 0 = front)</span>
@@ -107,17 +136,15 @@
                     <span><i class="sw sw-swap"></i> Swapping</span>
                     <span><i class="sw sw-sorted"></i> Settled</span>
                 </div>
-                <div class="controls-row mt-sm">
-                    <button type="button" id="heapPrevBtn" class="btn btn-secondary" aria-label="Back one heap step">&#x25C0; Back</button>
-                    <button type="button" id="heapNextBtn" class="btn btn-secondary" aria-label="Forward one heap step">Step &#x25B6;</button>
-                    <span id="heapStepCount" class="text-muted mono"></span>
-                </div>
-                <p class="step-message mt-sm" id="heapStepMessage" aria-live="polite">Enqueue or dequeue to see the sift-up and sift-down steps.</p>
                 <p class="text-muted">A binary heap is not stable, so each item gets an arrival number (#) and equal priorities are ordered by it, which keeps them first-in, first-out.</p>
             </div>
 
-            <!-- Output Message Banner -->
-            <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
+            <p class="step-message" id="stepMessage" aria-live="polite">Enqueue or dequeue to see the sift-up and sift-down steps.</p>
+
+            <div class="algo-detail">
+                <div class="control-section-title" id="codeHeading">Pseudocode</div>
+                <ol class="pseudocode" id="pseudocode"></ol>
+            </div>
         </div>
 
         <!-- Educational Reference -->

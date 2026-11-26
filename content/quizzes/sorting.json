@@ -218,7 +218,7 @@
       "difficulty": "medium",
       "prompt": "Counting sort works by comparing pairs of elements.",
       "answer": false,
-      "explanation": "Counting sort never compares two elements. It counts how often each value occurs, turns the counts into end positions with prefix sums, and writes each value straight into place, so the page shows 0 comparisons. That is how it runs in O(n + k) and escapes the O(n log n) lower bound, which applies only to comparison sorts.",
+      "explanation": "Counting sort never compares two elements. It counts how often each value occurs, turns the counts into end positions with prefix sums, and writes each value straight into place, so the page shows 0 comparisons. That is how it runs in O(n + k) and escapes the Ω(n log n) lower bound, which applies only to comparison sorts.",
       "tags": [
         "counting",
         "non-comparison"
@@ -231,7 +231,7 @@
       "difficulty": "hard",
       "prompt": "Heap sort is stable.",
       "answer": false,
-      "explanation": "Heap sort swaps the root with the last element of the heap, which can carry a value far past an equal value, so equal values can end up in reversed order. It is in place (O(1) extra space) and always O(n log n), which makes it easy to confuse with merge sort, but merge sort is the stable one.",
+      "explanation": "Heap sort swaps the root with the last element of the heap, which can carry a value far past an equal value, so equal values can end up in reversed order. It is in place (O(1) extra space) and O(n log n) in the worst case, which makes it easy to confuse with merge sort, but merge sort is the stable one.",
       "tags": [
         "heap",
         "stability"

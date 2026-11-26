@@ -10,9 +10,9 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 20:52 |
+| Last updated by Claude | 2026-11-26 21:21 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1, G2, G3 (2026-11-25); G4-G8 (2026-11-26); **G9 merged to `main` at 19:44** |
+| Merged | G1, G2, G3 (2026-11-25); G4-G9 (2026-11-26); **G10 merged to `main` at 21:21** |
 | **Gemini: do next** | **G10**: Graph representation module + page (spec below), on branch `gemini/g10-graph` from fresh `main`. If you already started G10, carry on. G9 was approved with small fixes by Claude (button spacing, prune frames recorded before removal); see the G9 review in `CLAUDE_HANDOFF.md`. After G10 is reported, take **G11** (Disjoint Set Union), then **G12** (Fenwick Tree), then **G13** (Segment Tree), each after reporting the one before. Take only the task named here |
 | Claude is working on | Merged to `main` at 19:44: G9 Trie, C12 AVL module page, C15 quadratic probing, C16 player keys ignore `.hp-scroll-region` / `.scroll-box` / `[data-player-keys="ignore"]` and the open nav drawer. Claude now merges verified work itself, so new tasks reach `main` without waiting. Next: review G10 when you report it, then BFS/DFS on the graph page |
 

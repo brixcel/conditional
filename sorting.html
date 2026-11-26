@@ -13,7 +13,7 @@
             <div class="badge">Algorithms &bull; Sorting</div>
             <h1 class="page-title">Sorting Algorithms</h1>
             <p class="page-desc">
-                Watch a real sort run one comparison at a time. Every frame below is a snapshot the algorithm
+                Watch a real sort run one step at a time. Every frame below is a snapshot the algorithm
                 actually produced, so you can step backward and forward through its exact execution.
             </p>
         </header>
@@ -131,9 +131,9 @@
             <p class="concept-body table-note">
                 Try an already-sorted input like <code>1 2 3 4 5 6 7 8</code>: Bubble and Insertion Sort finish in one pass (O(n)),
                 Selection Sort still makes every comparison, and Quick Sort with a last-element pivot hits its O(n²) worst case.
-                Merge and Heap Sort stay O(n log n) on every input.
-                Counting and Radix Sort show <strong>0 comparisons</strong>: they place values by counting instead of comparing,
-                which is how they beat the O(n log n) limit that applies to comparison sorts.
+                Merge Sort stays O(n log n) on every input, and so does Heap Sort when the values are distinct.
+                Counting and Radix Sort show <strong>0 comparisons</strong>: they place values by counting instead of comparing.
+                The Ω(n log n) lower bound applies only to comparison sorts; counting and radix sort avoid it, and are faster when the value range k or digit count d is small.
             </p>
         </div>
     </div>

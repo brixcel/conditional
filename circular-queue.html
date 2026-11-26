@@ -81,11 +81,51 @@
                     <button type="button" id="cqIsFullBtn" class="btn btn-secondary" data-tooltip="Check if ring is full">IsFull?</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Visualization Stage -->
+        <!-- Step Player -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Reset to first step" title="First step (Home)" disabled>&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Back one step" title="Previous step (&larr;)" disabled>&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)" disabled>&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Step forward" title="Next step (&rarr;)" disabled>Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step" disabled>
+
+            <!-- Visualization Stage (draws the step on screen) -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Circular Memory Stage</span>
-                <div id="queueContainer" class="cqv-queue-container" role="img" aria-label="Circular queue ring"></div>
+                <div id="queueContainer" class="cq-ring" role="img" aria-label="Circular queue ring (not allocated)"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i> Checking / reading</span>
+                    <span><i class="sw sw-select"></i> Pointer moved here</span>
+                    <span><i class="sw sw-swap"></i> Value removed</span>
+                    <span><i class="sw sw-sorted"></i> Value stored</span>
+                </div>
+                <p class="text-muted">Filled slots show their value; empty slots are dashed and blank. Front and Rear labels sit outside the ring.</p>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite">Allocate a ring, then enqueue or dequeue to watch each step.</p>
+
+            <div class="algo-detail">
+                <div class="control-section-title" id="codeHeading">Pseudocode</div>
+                <ol class="pseudocode" id="pseudocode"></ol>
             </div>
 
             <!-- Output Monitor -->

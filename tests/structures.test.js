@@ -54,8 +54,9 @@ test("stack: stores 0 and negatives; peek on empty is null, not a sentinel", () 
 test("stack: every result carries a step with a snapshot", () => {
     const s = new Stack(1);
     const r = s.push(5);
-    assert.equal(r.steps.length, 1);
-    assert.deepEqual(r.steps[0].snapshot, { items: [5], top: 0, capacity: 1 });
+    // C20: push records the full check, then the write; the last step holds the new state.
+    assert.deepEqual(r.steps.map(s => s.type), ["check", "push"]);
+    assert.deepEqual(r.steps.at(-1).snapshot, { items: [5], top: 0, capacity: 1 });
     assert.equal(s.push(6).steps[0].type, "overflow");
 });
 
@@ -188,7 +189,8 @@ test("circular queue: reuses freed slots where a linear queue cannot", () => {
     const r = c.enqueue(4);
     assert.equal(r.ok, true);
     assert.equal(c.rear, 0);
-    assert.match(r.steps[0].message, /wrapped around/);
+    // C20: steps[0] is now the full check; the rear pointer move explains the wrap.
+    assert.match(r.steps.find(s => s.type === "move-rear").message, /wrapped around/);
     assert.deepEqual(c.toArray(), [2, 3, 4]);
     assert.equal(c.isFull(), true);
 });

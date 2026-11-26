@@ -9,10 +9,14 @@
  * a new item was placed and why.
  * C13: the queue is a binary max-heap. The pipeline still shows service order; the
  * heap array view replays the recorded sift-up / sift-down steps of the last operation.
+ * C20: the Back/Step stepper is now the full shared player (Reset, Back, Play/Pause, Step,
+ * speed, progress slider, step counter, pseudocode line; keys via bindPlayerKeys).
+ * Each operation autoplays unless reduced motion is on (then it shows the final step).
  */
-import { PriorityQueue } from "../structures/queue.js";
+import { PriorityQueue, QUEUE_INFO } from "../structures/queue.js";
 import { parseInteger } from "../core/validate.js";
 import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -21,9 +25,14 @@ const els = {
     deqValue: $("dequeueValue"), dequeue: $("pqDequeueBtn"),
     peek: $("pqPeekBtn"), rear: $("pqRearBtn"), isEmpty: $("pqIsEmptyBtn"), isFull: $("pqIsFullBtn"),
     size: $("pqSizeBtn"), display: $("pqDisplayBtn"), output: $("output"), stage: $("queueDisplay"),
-    heapStage: $("heapDisplay"), heapPrev: $("heapPrevBtn"), heapNext: $("heapNextBtn"),
-    heapCount: $("heapStepCount"), heapMessage: $("heapStepMessage"),
+    heapStage: $("heapDisplay"),
+    resetBtn: $("resetBtn"), prevBtn: $("prevBtn"), playBtn: $("playBtn"), nextBtn: $("nextBtn"),
+    speed: $("speedSelect"), progress: $("progress"), counter: $("stepCounter"),
+    stepMessage: $("stepMessage"), codeHeading: $("codeHeading"), code: $("pseudocode"),
 };
+const PSEUDOCODE = QUEUE_INFO.priority.pseudocode;
+const CODE_TITLES = { enqueue: "enqueue(x, priority) with sift-up", dequeue: "dequeue() with sift-down" };
+const reduceMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 const OPS = [els.value, els.high, els.enqueue, els.deqValue, els.dequeue, els.peek, els.rear, els.isEmpty, els.isFull, els.size, els.display];
 const VALUE_LIMITS = { min: 1, max: 9999 };
 const HEAP_HINT = "Enqueue or dequeue to see the sift-up and sift-down steps.";
@@ -34,7 +43,21 @@ let queue = null;
 /** False until an operation records steps, and again after allocate/reset (player keeps no stale steps visible). */
 let stepsLoaded = false;
 
-const player = new StepPlayer({ onStep: renderHeapStep });
+const player = new StepPlayer({ onStep: renderHeapStep, baseDelay: 750 });
+player.setSpeed(Number(els.speed.value) || 1);
+let quiet = false;     // true while loading steps: the result is announced through setOutput()
+let liveReady = false; // page setup stays silent
+let codeKey = "";
+
+// Keys and buttons go through these wrappers so nothing replays stale steps after allocate/reset.
+const whenLoaded = (fn) => () => { if (stepsLoaded) fn(); };
+const playerControls = {
+    toggle: whenLoaded(() => { if (player.length > 1) player.toggle(); }),
+    pause: whenLoaded(() => player.pause()),
+    next: whenLoaded(() => player.next()),
+    prev: whenLoaded(() => player.prev()),
+    reset: whenLoaded(() => player.reset()),
+};
 
 function setOutput(message) {
     els.output.textContent = message;
@@ -45,8 +68,27 @@ function updateControls() {
     els.maxSize.disabled = queue !== null;
     els.allocate.disabled = queue !== null;
     OPS.forEach(el => { el.disabled = queue === null; });
-    els.heapPrev.disabled = !stepsLoaded || player.atStart;
-    els.heapNext.disabled = !stepsLoaded || player.atEnd;
+    const focused = document.activeElement;
+    els.playBtn.disabled = !stepsLoaded || player.length <= 1;
+    els.prevBtn.disabled = !stepsLoaded || player.atStart;
+    els.resetBtn.disabled = !stepsLoaded || player.atStart;
+    els.nextBtn.disabled = !stepsLoaded || player.atEnd;
+    els.progress.disabled = !stepsLoaded || player.length <= 1;
+    // A focused Back/Reset/Step button that just became disabled would drop focus to <body>.
+    window.DSA_UI?.rescueFocus?.(focused, els.playBtn, els.value, els.maxSize);
+}
+
+function setCode(key, line = 0) {
+    if (key !== codeKey) {
+        codeKey = key;
+        els.codeHeading.textContent = key ? `Pseudocode: ${CODE_TITLES[key]}` : "Pseudocode";
+        els.code.replaceChildren(...(PSEUDOCODE[key] ?? []).map(text => {
+            const li = document.createElement("li");
+            li.textContent = text;
+            return li;
+        }));
+    }
+    [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === line));
 }
 
 function emptyNote(text) {
@@ -116,26 +158,46 @@ function drawHeap(heap, indices = [], type = "") {
     }));
 }
 
-function renderHeapStep(step, index) {
+function renderHeapStep(step, index, p) {
     drawHeap(step.snapshot.heap, step.indices, step.type);
-    els.heapMessage.textContent = step.message;
-    els.heapCount.textContent = `Step ${index + 1} of ${player.length}`;
+    setCode(step.operation, step.line);
+    // aria-live is set before the text: autoplay and loads stay quiet; user steps and the last autoplay frame speak.
+    els.stepMessage.setAttribute("aria-live", p.isPlaying || quiet || !liveReady ? "off" : "polite");
+    els.stepMessage.textContent = step.message;
+    els.counter.textContent = `Step ${index + 1} / ${p.length}`;
+    els.progress.max = Math.max(0, p.length - 1);
+    els.progress.value = index;
+    els.progress.setAttribute("aria-valuetext", `Step ${index + 1} of ${p.length}`);
+    els.playBtn.textContent = p.isPlaying ? "⏸ Pause" : (p.atEnd && p.length > 1 ? "↻ Replay" : "▶ Play");
+    els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : (p.atEnd && p.length > 1 ? "Replay" : "Play"));
     updateControls();
 }
 
-/** Loads an operation's steps and shows the last one (the current state); Back replays the sift. */
+/** Loads an operation's steps and autoplays them; with reduced motion it shows the last one (the current state) and Back replays. */
 function showSteps(steps) {
     stepsLoaded = true;
+    quiet = true;
     player.load(steps);
-    player.goTo(steps.length - 1);
+    const animate = steps.length > 1 && !reduceMotion();
+    if (!animate) player.goTo(steps.length - 1);
+    quiet = false;
+    if (animate) player.play();
 }
 
 function clearSteps() {
     player.pause();
     stepsLoaded = false;
     drawHeap(queue ? queue.heapArray() : []);
-    els.heapMessage.textContent = HEAP_HINT;
-    els.heapCount.textContent = "";
+    els.stepMessage.setAttribute("aria-live", "off");
+    els.stepMessage.textContent = HEAP_HINT;
+    els.counter.textContent = "Step 0 / 0";
+    els.progress.max = 0;
+    els.progress.value = 0;
+    els.progress.setAttribute("aria-valuetext", "No steps");
+    els.playBtn.textContent = "\u25B6 Play";
+    els.playBtn.setAttribute("aria-label", "Play");
+    setCode("");
+    if (liveReady) els.stepMessage.setAttribute("aria-live", "polite");
 }
 
 function allocate() {
@@ -165,7 +227,7 @@ function enqueue() {
     if (!r.ok) { setOutput(`Error: ${r.error}`); els.value.focus(); return; }
     const high = els.high.checked;
     const res = queue.enqueue(r.value, high ? 1 : 0);
-    if (!res.ok) { setOutput(`Error: ${res.error}`); return; }
+    if (!res.ok) { showSteps(res.steps); setOutput(`Error: ${res.error}`); return; }
     const pos = queue.toArray().findIndex(it => it.id === res.value.id); // position in service order
     els.value.value = "";
     els.high.checked = false;
@@ -181,8 +243,9 @@ function enqueue() {
 }
 
 function dequeue() {
-    if (queue.isEmpty()) { setOutput("Error: Queue is empty. Cannot dequeue."); return; }
+    if (queue.isEmpty()) { showSteps(queue.dequeue().steps); setOutput("Error: Queue is empty. Cannot dequeue."); return; }
     const front = queue.peek();
+    // The field is type="text", so letters reach parseInteger and are refused like empty input.
     const r = parseInteger(els.deqValue.value, { ...VALUE_LIMITS, label: "Value to dequeue" });
     if (!r.ok || r.value !== front.value) {
         setOutput(`Error: You can only dequeue the front element. Type ${front.value} to dequeue it.`);
@@ -200,8 +263,6 @@ els.allocate.addEventListener("click", allocate);
 els.reset.addEventListener("click", reset);
 els.enqueue.addEventListener("click", enqueue);
 els.dequeue.addEventListener("click", dequeue);
-els.heapPrev.addEventListener("click", () => player.prev());
-els.heapNext.addEventListener("click", () => player.next());
 els.peek.addEventListener("click", () => setOutput(queue.isEmpty() ? "Queue is empty." : `Front of queue: ${fmt(queue.peek())}`));
 els.rear.addEventListener("click", () => setOutput(queue.isEmpty() ? "Queue is empty." : `Rear of queue: ${fmt(queue.peekRear())}`));
 els.isEmpty.addEventListener("click", () => setOutput(queue.isEmpty() ? "Queue is empty (TRUE)." : "Queue is not empty (FALSE)."));
@@ -213,5 +274,20 @@ els.maxSize.addEventListener("keydown", (e) => { if (e.key === "Enter") allocate
 els.value.addEventListener("keydown", (e) => { if (e.key === "Enter" && queue) enqueue(); });
 els.deqValue.addEventListener("keydown", (e) => { if (e.key === "Enter" && queue) dequeue(); });
 
+els.playBtn.addEventListener("click", playerControls.toggle);
+els.nextBtn.addEventListener("click", () => { playerControls.pause(); playerControls.next(); });
+els.prevBtn.addEventListener("click", playerControls.prev);
+els.resetBtn.addEventListener("click", playerControls.reset);
+els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value) || 1));
+els.progress.addEventListener("input", () => {
+    const target = Number(els.progress.value);
+    if (!stepsLoaded) return;
+    player.pause();
+    player.goTo(target);
+});
+bindPlayerKeys(document, playerControls);
+
 clearSteps();
 render();
+liveReady = true;
+els.stepMessage.setAttribute("aria-live", "polite");
