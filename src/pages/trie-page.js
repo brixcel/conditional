@@ -1013,16 +1013,6 @@ els.deleteBtn.addEventListener("click", handleDelete);
 els.clearBtn.addEventListener("click", handleClear);
 els.randomBtn.addEventListener("click", handleRandomWords);
 
-// Keep keyboard arrow/space/home scrolling working inside focusable scroll regions
-// before keydown bubbles up to bindPlayerKeys(document, playerControls).
-for (const region of document.querySelectorAll(".hp-scroll-region")) {
-    region.addEventListener("keydown", (e) => {
-        if (e.key === " " || e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home") {
-            e.stopPropagation();
-        }
-    });
-}
-
 els.playBtn.addEventListener("click", () => playerControls.toggle());
 els.stepFwdBtn.addEventListener("click", () => {
     player.pause();
