@@ -102,7 +102,7 @@ function render(step, index, p) {
         // Fade bars outside the active [low..high] search window (matches sorting-page.js pattern).
         const outOfRange = step.range !== null && (i < lo || i > hi);
         const searchExhausted = step.type === "not-found" || (step.type === "done" && step.foundIndex === null);
-        bar.style.opacity = outOfRange || searchExhausted ? "0.3" : "";
+        bar.classList.toggle("is-outside", outOfRange || searchExhausted);
     });
 
     // role="img" hides the bars, so the chart's name carries the values and the window.

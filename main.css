@@ -1695,6 +1695,55 @@ input:disabled, select:disabled {
 .bar.is-narrow   { --bar-color: var(--bar-select); }
 .bar.is-outside  { opacity: 0.3; }
 
+/* Non-colour cues for bar states (WCAG 1.4.1). Each state also carries a pattern
+   or glyph so it reads without hue. The cue colour is the card surface: white on
+   the darker light-theme bars, near-black on the brighter dark-theme bars, which
+   keeps every cue at 3:1 or more against its bar in both themes.
+     compare            -> diagonal stripes
+     swap/shift/not-found -> horizontal bands
+     select/insert/narrow -> dot grid
+     sorted/found       -> check mark at the top of the bar
+   The legend swatches (.sw-*) reuse the same custom properties, so a state and
+   its legend entry can never drift apart. Patterns are static: no motion. */
+.bars,
+.bar-legend {
+    --bar-cue: var(--bg-card);
+    --cue-stripes: repeating-linear-gradient(135deg, var(--bar-cue) 0 2px, transparent 2px 6px);
+    --cue-bands: repeating-linear-gradient(180deg, transparent 0 2px, var(--bar-cue) 2px 4px, transparent 4px 6px);
+    --cue-dots: radial-gradient(circle, var(--bar-cue) 0 1.5px, transparent 2px);
+}
+.bar.is-compare .bar-fill,
+.sw-compare { background-image: var(--cue-stripes); }
+.bar.is-swap .bar-fill,
+.bar.is-shift .bar-fill,
+.bar.is-not-found .bar-fill,
+.sw-swap { background-image: var(--cue-bands); }
+.bar.is-select .bar-fill,
+.bar.is-insert .bar-fill,
+.bar.is-narrow .bar-fill,
+.sw-select { background-image: var(--cue-dots); background-size: 6px 6px; background-position: center top; }
+
+.bar.is-sorted .bar-fill::after,
+.bar.is-found .bar-fill::after,
+.sw-sorted::after {
+    content: "\2713";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--bar-cue);
+    font-weight: 700;
+    line-height: 1;
+    /* Solid backing keeps the glyph readable when a stripe/band/dot cue sits behind it. */
+    background-color: var(--bar-color, var(--bar-sorted));
+    padding: 1px 2px;
+    border-radius: var(--radius-sm);
+}
+.bar.is-sorted .bar-fill::after,
+.bar.is-found .bar-fill::after {
+    top: 3px;
+    font-size: clamp(0.62rem, 1.6vw, 0.8rem);
+}
+
 .bar-legend {
     display: flex;
     flex-wrap: wrap;
@@ -1705,11 +1754,20 @@ input:disabled, select:disabled {
     color: var(--text-secondary);
 }
 .bar-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.sw-compare { background: var(--bar-compare); }
-.sw-swap    { background: var(--bar-swap); }
-.sw-select  { background: var(--bar-select); }
-.sw-sorted  { background: var(--bar-sorted); }
+.sw {
+    position: relative;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: inline-block;
+}
+.sw-compare { background-color: var(--bar-compare); }
+.sw-swap    { background-color: var(--bar-swap); }
+.sw-select  { background-color: var(--bar-select); }
+.sw-sorted  { background-color: var(--bar-sorted); }
+.sw-sorted::after { top: 2px; font-size: 0.72rem; }
+.sw-outside { background-color: var(--bar-default); opacity: 0.3; }
 
 .step-message {
     min-height: 3em;
