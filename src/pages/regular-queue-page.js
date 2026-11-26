@@ -22,12 +22,6 @@ const els = {
 let queue = null;
 let busy = false; // true while the dequeue exit animation runs
 
-// Empty-slot look applied at runtime. Move to a main.css class once task G3 (main.css owner) merges.
-const EMPTY_SLOT_STYLE = {
-    background: "transparent", color: "var(--text-light)", border: "2px dashed var(--border-strong)",
-    boxShadow: "none", animation: "none",
-};
-
 function show(message, type = "info") {
     els.message.textContent = message;
     els.message.className = `alert-banner alert-live alert-${type}`;
@@ -36,8 +30,8 @@ function show(message, type = "info") {
 
 function label(text, strong) {
     const span = document.createElement("span");
+    span.className = strong ? "slot-label slot-label-active" : "slot-label";
     span.textContent = text;
-    Object.assign(span.style, { fontSize: "0.72rem", fontWeight: "700", color: strong ? "var(--primary-light)" : "var(--text-muted)" });
     return span;
 }
 
@@ -52,7 +46,7 @@ function render() {
     const { slots, front, rear, count } = queue.snapshot();
     slots.forEach((value, i) => {
         const wrap = document.createElement("div");
-        Object.assign(wrap.style, { display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "4px" });
+        wrap.className = "slot-wrap";
 
         const isFront = count > 0 && i === front;
         const isRear = count > 0 && i === rear;
@@ -61,10 +55,10 @@ function render() {
 
         const car = document.createElement("div");
         car.className = "car";
+        car.classList.toggle("car-empty", value === null);
         const num = document.createElement("div");
         num.className = "number";
         if (value === null) {
-            Object.assign(car.style, EMPTY_SLOT_STYLE);
             num.textContent = count > 0 && i < front ? "freed" : "empty";
             car.setAttribute("aria-label", `index ${i}: ${num.textContent}`);
         } else {
