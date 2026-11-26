@@ -32,6 +32,47 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G4 (fix): Reuse parseArrayInput from sorting.js
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-26 02:38 (Philippine time)
+- Branch: `gemini/g4-searching`
+- Commit(s): `482739e` (on top of `b2d293d`, `b393dfe`)
+- Files changed: `src/algorithms/searching.js`
+- Summary:
+  - Removed the duplicated `parseArrayInput` body in `src/algorithms/searching.js` and imported `parseArrayInput as parseNumberList` from `./sorting.js`, delegating `parseArrayInput(text, limits = INPUT_LIMITS)` directly to `parseNumberList(text, limits)` while keeping `INPUT_LIMITS = { minLength: 1, maxLength: 16, min: -99, max: 999 }`.
+  - Left `src/algorithms/sorting.js` untouched.
+- npm test output (paste the real lines):
+    # tests 96
+    # pass 96
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Not re-run after this parser-delegation refactor; `tests/searching.test.js` covers `parseArrayInput` and all 96 tests pass.
+- Not done / not verified: Live browser re-check skipped since only `parseArrayInput` delegation changed with identical return shape and limits.
+- Requests for Claude: Ready for re-review and merge (unblocks C1c).
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 10:27 (Philippine time)
+- Reviewed commit: `f95afea` (fix `482739e`)
+- Verdict: **MERGE** (approved; not merged into `main`, because the user asked Claude never to push to `main`)
+- Fix checked: `parseArrayInput` now delegates to `sorting.js` with `INPUT_LIMITS` unchanged; `sorting.js` untouched.
+  Same results as before for `""`, `"5"`, `"1, x"`, `1000`, `-100`, 17 values and `"0 -5 3"`. The sorting parser's
+  "at least 1 numbers" wording can't be reached with `minLength: 1` (empty input is rejected first).
+- Trial merge into current `main` (`109579b`, after G3, C5 and C1b): code merged with no conflicts; only
+  `CLAUDE_HANDOFF.md` and `TASK_BOARD.md` conflicted (docs), resolved by Claude, keeping all of `main`'s text.
+- Tests on the merged tree:
+    # tests 110
+    # pass 110
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser on the merged tree (`searching.html`, 375px and 1280px, light and dark via the C1b toggle): theme applies
+  (dark body `rgb(11,17,32)`, cards `rgb(17,24,39)`), skip link and toggle present, 0 horizontal overflow, 0 console errors,
+  0 dialogs. Stepped binary search for 56 in the default list: L 5 / M 7 / H 9 at step 4, correct message and counters.
+  No `style=""` in the markup and no hard-coded colours; the only inline styles are runtime bar sizing (`--h`, `--n`, opacity), as on the sorting page.
+- Blocking issues: none.
+- Merged in: branch `claude/g4-merge` (merge of `gemini/g4-searching` into `main` at `109579b`). The user fast-forwards `main` to it.
+
+---
+
 ### G3: Dark theme tokens + inline style cleanup
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-25 22:07 (Philippine time)

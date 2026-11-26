@@ -48,6 +48,8 @@ src/core/validate.js             parseInteger() shared input parsing
 src/core/step-player.js          playback engine (play/pause/step/back/speed)
 src/algorithms/sorting.js        bubble/selection/insertion/merge/quick/heap with traced steps
 src/pages/sorting-page.js        DOM controller for sorting.html
+src/algorithms/searching.js      linear/binary/interpolation search with traced steps (G4)
+src/pages/searching-page.js      DOM controller for searching.html
 tests/*.test.js                  real-code tests (node:test)
 tests/legacy-regression.cjs      old suite. Suites 1-8 test COPIES, not real code
 .claude/agents/*.md              nine specialist agent definitions

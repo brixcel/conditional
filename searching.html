@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Searching Algorithms - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Algorithms &bull; Array Searching</div>
+            <h1 class="page-title">Searching Algorithms</h1>
+            <p class="page-desc">
+                Step through Linear Search, Binary Search, and Interpolation Search one comparison at a time.
+                Every frame is a real snapshot of the algorithm's pointers (<code>L</code>, <code>M</code>, <code>H</code>) and active window.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="algoName">Linear Search</h2>
+            <p class="concept-body" id="algoSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Best</div><div class="prop-value" id="cxBest"></div></div>
+                <div class="prop-item"><div class="prop-label">Average</div><div class="prop-value" id="cxAvg"></div></div>
+                <div class="prop-item"><div class="prop-label">Worst</div><div class="prop-value" id="cxWorst"></div></div>
+                <div class="prop-item"><div class="prop-label">Extra Space</div><div class="prop-value" id="cxSpace"></div></div>
+                <div class="prop-item"><div class="prop-label">Sorted Input</div><div class="prop-value" id="cxSorted"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Input, Target &amp; Algorithm</h2>
+            </div>
+            <form class="control-section" id="inputForm" novalidate>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Algorithm</span>
+                        <select id="algoSelect">
+                            <option value="linear">Linear Search</option>
+                            <option value="binary" selected>Binary Search (Iterative)</option>
+                            <option value="interpolation">Interpolation Search</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Values (1–16 whole numbers, −99 to 999)</span>
+                        <input type="text" id="arrayInput" size="32" inputmode="numeric" autocomplete="off"
+                               aria-describedby="inputError" value="4, 11, 18, 25, 34, 42, 56, 63, 78, 91">
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Target (−99 to 999)</span>
+                        <input type="text" id="targetInput" inputmode="numeric" autocomplete="off"
+                               aria-describedby="inputError" value="56">
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="submit" class="btn">Run Search</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random Case</button>
+                </div>
+                <div id="inputError" class="alert-banner alert-error alert-live" role="alert" hidden></div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Back to first step" title="First step (Home)">&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Previous step" title="Previous step (←)">&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)">&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Next step" title="Next step (→)">Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5×</option>
+                        <option value="1" selected>1×</option>
+                        <option value="2">2×</option>
+                        <option value="4">4×</option>
+                    </select>
+                </label>
+            </div>
+            <input type="range" id="progress" class="player-progress" min="0" max="0" value="0" aria-label="Jump to step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label">Array (index &amp; L / M / H markers below each bar)</span>
+                <div class="bars" id="bars" role="img" aria-label="Search array bar chart"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i>Comparing probe (M)</span>
+                    <span><i class="sw sw-select"></i>Narrowed bounds (L / H)</span>
+                    <span><i class="sw sw-sorted"></i>Target found</span>
+                    <span>Faded bars: eliminated from search window</span>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title">Pseudocode</div>
+                    <ol class="pseudocode" id="pseudocode"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Search State</div>
+                    <div class="state-monitor stat-grid">
+                        <div>Target <strong id="statTarget">—</strong></div>
+                        <div>Comparisons <strong id="statCompare">0</strong></div>
+                        <div>Low (L) <strong id="statLow">—</strong></div>
+                        <div>Mid / Probe (M) <strong id="statMid">—</strong></div>
+                        <div>High (H) <strong id="statHigh">—</strong></div>
+                        <div>Active range <strong id="statRange">whole array</strong></div>
+                        <div>Result <strong id="statResult">Searching…</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Compare the Algorithms</h2>
+            <div class="table-wrap">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Algorithm</th>
+                            <th scope="col">Best</th>
+                            <th scope="col">Average</th>
+                            <th scope="col">Worst</th>
+                            <th scope="col">Space</th>
+                            <th scope="col">Requires Sorted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Try searching for <code>78</code> in an evenly spaced list like <code>10, 20, 30, 40, 50, 60, 70, 80, 90, 100</code>:
+                Interpolation Search jumps straight to the neighbourhood in 1–2 probes, whereas a skewed list like
+                <code>1, 2, 3, 4, 5, 6, 7, 8, 9, 900</code> causes Interpolation Search to degrade toward O(n) while Binary Search stays O(log n).
+            </p>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/searching-page.js"></script>
+</body>
+</html>
