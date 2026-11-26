@@ -647,13 +647,8 @@ els.progress.addEventListener("input", byUser(() => {
     player.goTo(target);
 }));
 
-// Arrow keys inside the scrollable tree / list / pseudocode regions scroll them instead of stepping.
-bindPlayerKeys({
-    addEventListener: (type, fn) => document.addEventListener(type, (e) => {
-        if (e.target && typeof e.target.closest === "function" && e.target.closest(".hp-scroll-region")) return;
-        fn(e);
-    }),
-}, userControls);
+// Keys inside the .hp-scroll-region boxes scroll them; the shared guard in player-keys.js skips them.
+bindPlayerKeys(document, userControls);
 
 /* ---------- static content ---------- */
 

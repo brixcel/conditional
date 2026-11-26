@@ -5,6 +5,7 @@
  * Reuses main.css section 14/15 classes — zero inline style writes, zero HTML string injection.
  */
 import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
 import { parseInteger } from "../core/validate.js";
 import { layoutBinaryTree } from "../core/tree-layout.js";
 import { parseArrayInput } from "../algorithms/sorting.js";
@@ -107,7 +108,6 @@ let treePool = null;       // { topoKey, svg, titleEl, descEl, edgeEls, nodeEls 
 let traversalPool = null;  // { count, items: [{ li, lbl, box, sr }] }
 let notifyRafId = 0;
 let revealRafId = 0;
-let autoPlaying = false;   // Tracks playback across StepPlayer's timer tick where p.isPlaying dips false.
 
 const player = new StepPlayer({ onStep: render, baseDelay: 750 });
 player.setSpeed(Number(els.speed.value) || 1);
@@ -605,8 +605,9 @@ function renderTraversalOutput(step, stats) {
 }
 
 function render(step, index, p) {
-    if (p.atEnd && !p.isPlaying) autoPlaying = false;
-    const isActivelyPlaying = p.isPlaying || (autoPlaying && !p.atEnd);
+    // StepPlayer re-arms its timer before emitting, so isPlaying is true on every autoplay
+    // frame except the last one (which is announced).
+    const isActivelyPlaying = p.isPlaying;
 
     const stepChanged = step !== lastRenderedStep;
     lastRenderedStep = step;
@@ -670,24 +671,30 @@ function render(step, index, p) {
 
 function startPlayback() {
     if (player.length <= 1) return;
-    autoPlaying = true;
     player.play();
 }
 
 function pausePlayback() {
-    autoPlaying = false;
     player.pause();
 }
 
 function togglePlayback() {
     if (player.length <= 1) return;
-    if (player.isPlaying || autoPlaying) pausePlayback();
+    if (player.isPlaying) pausePlayback();
     else startPlayback();
 }
 
+// Shared by the buttons and bindPlayerKeys so both paths behave the same.
+const playerControls = {
+    toggle: togglePlayback,
+    pause: pausePlayback,
+    next: () => player.next(),
+    prev: () => player.prev(),
+    reset: () => player.reset(),
+};
+
 function loadSteps(steps, { autoPlay = true } = {}) {
     if (!steps || steps.length === 0) return;
-    autoPlaying = false;
     lastRenderedStep = null;
     player.load(steps);
     if (autoPlay && steps.length > 1 && !prefersReducedMotion()) {
@@ -883,19 +890,13 @@ els.traversalForm.addEventListener("submit", handleTraverse);
 els.buildForm.addEventListener("submit", handleBuild);
 els.randomBtn.addEventListener("click", handleRandomBuild);
 
-els.playBtn.addEventListener("click", togglePlayback);
+els.playBtn.addEventListener("click", playerControls.toggle);
 els.nextBtn.addEventListener("click", () => {
-    pausePlayback();
-    player.next();
+    playerControls.pause();
+    playerControls.next();
 });
-els.prevBtn.addEventListener("click", () => {
-    autoPlaying = false;
-    player.prev();
-});
-els.resetBtn.addEventListener("click", () => {
-    autoPlaying = false;
-    player.reset();
-});
+els.prevBtn.addEventListener("click", playerControls.prev);
+els.resetBtn.addEventListener("click", playerControls.reset);
 els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value)));
 els.progress.addEventListener("input", () => {
     const target = Number(els.progress.value);
@@ -903,48 +904,8 @@ els.progress.addEventListener("input", () => {
     player.goTo(target);
 });
 
-document.addEventListener("keydown", (e) => {
-    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    const sidebar = $("sideNavbar");
-    if (sidebar && sidebar.classList.contains("active")) return;
-
-    const target = e.target;
-    if (!target || target.isContentEditable) return;
-    const tag = target.tagName;
-    if (
-        tag === "INPUT" ||
-        tag === "SELECT" ||
-        tag === "TEXTAREA" ||
-        tag === "BUTTON" ||
-        tag === "A"
-    ) {
-        return;
-    }
-    if (target.closest && target.closest(".hp-scroll-region, button, a, input, select, textarea")) {
-        return;
-    }
-
-    if (e.key === " ") {
-        if (player.length <= 1) return;
-        e.preventDefault();
-        togglePlayback();
-    } else if (e.key === "ArrowRight") {
-        if (player.atEnd) return;
-        e.preventDefault();
-        pausePlayback();
-        player.next();
-    } else if (e.key === "ArrowLeft") {
-        if (player.atStart) return;
-        e.preventDefault();
-        autoPlaying = false;
-        player.prev();
-    } else if (e.key === "Home") {
-        if (player.atStart) return;
-        e.preventDefault();
-        autoPlaying = false;
-        player.reset();
-    }
-});
+// Space/arrows/Home; keys inside .hp-scroll-region boxes, controls and the open nav are skipped.
+bindPlayerKeys(document, playerControls);
 
 // Populate concept card and complexity table from BST_INFO using DOM nodes.
 $("bstName").textContent = BST_INFO.name;
