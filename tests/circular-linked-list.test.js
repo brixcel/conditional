@@ -217,3 +217,19 @@ test("circular linked list: integrityError catches an early-closing or broken ri
     list.head.prev = list.head.next;        // head.prev should be the tail
     assert.match(list.integrityError(), /prev does not point back/);
 });
+
+test("circular linked list: tail.next === head after append, prepend and deleteHead (ported from legacy suite 7)", () => {
+    const list = new CircularLinkedList(8);
+    assert.equal(list.append(10).ok, true);
+    assert.equal(list.append(20).ok, true);
+    assert.equal(list.prepend(5).ok, true);
+    assert.equal(list.integrityError(), null);
+    assert.equal(list.tail.next, list.head);
+    assert.equal(list.tail.next.value, 5);
+    assert.equal(list.deleteHead().value, 5);
+    assert.equal(list.integrityError(), null);
+    assert.equal(list.head.value, 10);
+    assert.equal(list.tail.next, list.head);
+    assert.equal(list.tail.next.value, 10);
+    assert.equal(list.head.prev, list.tail);
+});

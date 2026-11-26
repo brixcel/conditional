@@ -199,3 +199,25 @@ test("pre-rotation snapshots are real plain-BST states with the same node ids", 
     }
     assert.ok(rotations > 50, `expected many rotations to be exercised, got ${rotations}`);
 });
+
+test("insert rotations: each case names the right rotation and gives 10 / 20 / 30 (ported from legacy suite 8)", () => {
+    const cases = [
+        [[30, 20, 10], /^\[LL Rotation\]/],
+        [[10, 20, 30], /^\[RR Rotation\]/],
+        [[30, 10, 20], /^\[LR Double Rotation\]/],
+        [[10, 30, 20], /^\[RL Double Rotation\]/],
+    ];
+    for (const [seq, pattern] of cases) {
+        const t = new AVLTree();
+        for (const v of seq) {
+            t.lastRotationMessage = null;
+            t.root = t.insert(t.root, v, null);
+            t.recalculateParents(t.root);
+        }
+        assert.match(t.lastRotationMessage ?? "", pattern, `sequence ${seq}`);
+        assert.equal(t.root.value, 20);
+        assert.equal(t.root.left.value, 10);
+        assert.equal(t.root.right.value, 30);
+        checkInvariants(t.root);
+    }
+});

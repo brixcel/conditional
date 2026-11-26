@@ -268,3 +268,24 @@ test("singly linked list: snapshots are copies", () => {
     list.append(2);
     assert.equal(r.steps.at(-1).snapshot.nodes.length, 1);
 });
+
+test("singly linked list: named head/tail helpers keep head and tail right (ported from legacy suite 5)", () => {
+    const list = new SinglyLinkedList(8);
+    assert.equal(list.append(20).ok, true);
+    assert.equal(list.prepend(10).ok, true);
+    assert.equal(list.append(40).ok, true);
+    assert.equal(list.insertAt(2, 30).ok, true);
+    assert.deepEqual(list.toArray(), [10, 20, 30, 40]);
+    assert.equal(list.head.value, 10);
+    assert.equal(list.tail.value, 40);
+    assert.equal(list.size, 4);
+    list.append(50);
+    assert.equal(list.deleteHead().value, 10);
+    assert.equal(list.deleteTail().value, 50);
+    assert.equal(list.deleteAt(1).value, 30);
+    assert.deepEqual(list.toArray(), [20, 40]);
+    assert.equal(list.head.value, 20);
+    assert.equal(list.tail.value, 40);
+    assert.equal(list.tail.next, null);
+    assert.equal(list.integrityError(), null);
+});
