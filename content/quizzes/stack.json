@@ -15,7 +15,7 @@
       "answer": "9",
       "explanation": "A stack is Last-In, First-Out: pop always removes the most recently pushed value still on the stack, which is 9. 4 is the tempting wrong answer if you think of a queue (First-In, First-Out); in a stack 4 sits at the bottom and comes out last.",
       "tags": ["lifo", "pop"],
-      "page": "On stack.html: allocate capacity 6, push 4, 7 and 9, then press Pop with the value box empty."
+      "page": "On stack.html: allocate capacity 6, push 4, 7 and 9, then type 9 in the value box and press Pop."
     },
     {
       "id": "stack-002",
@@ -104,7 +104,7 @@
       "answer": true,
       "explanation": "top equals size − 1. With one element top is 0, and with no elements it is −1, which is why the page says \"The stack is now empty (top = −1)\" after the last pop. Saying top is 0 when empty would make an empty stack look the same as a stack with one element.",
       "tags": ["top", "underflow"],
-      "page": "On stack.html: push one value, then Pop, and read the message."
+      "page": "On stack.html: push one value, type that value in the value box, press Pop, and read the message."
     },
     {
       "id": "stack-010",
@@ -189,7 +189,7 @@
         "5 is pushed instead"
       ],
       "answer": "Nothing is removed: the page explains that the top element is 8, not 5",
-      "explanation": "A stack can only remove its top. When you type a value before pressing Pop, the page checks that it matches the top, and because 8 ≠ 5 it shows \"LIFO Rule: Top element is 8, not 5.\" and leaves the stack alone. Removing 5 from the middle would break LIFO; leave the box empty to pop whatever is on top.",
+      "explanation": "A stack can only remove its top. Pop asks you to type the top value first and checks that it matches the top. Because 8 ≠ 5, the page shows \"LIFO Rule: Top element is 8, not 5.\" and leaves the stack alone. Removing 5 from the middle would break LIFO; type 8 to pop the top.",
       "tags": ["lifo", "pop", "page"],
       "page": "On stack.html: push 5, push 8, type 5 and press Pop."
     }
