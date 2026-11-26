@@ -32,6 +32,34 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G5: Remove remaining inline styles
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-26 10:38 (Philippine time)
+- Branch: `gemini/g5-inline-styles`
+- Commit(s): `3d94ec1`
+- Files changed: `circular-linked-list.html`, `doubly-linked-list.html`, `circular-queue.html`, `priority-queue.html`, `regular-queue.html`, `stack.html`, `index.html`, `main.css`, `src/pages/regular-queue-page.js`
+- Summary:
+  - Replaced all 24 remaining inline `style="..."` attributes across the 7 owned HTML files (`grep -c 'style="'` is now `0` for every owned HTML file; `singly-linked-list.html`, `singly-linked-list.js`, and `shared.js` untouched).
+  - Reused existing G3 utilities (`.input-sm`, `.input-md`, `.input-lg`, `.text-muted`, `.text-italic`, `.mono`, `.scroll-box-clean`, `.slot-wrap`, `.slot-label`, `.slot-label-active`, `.car-empty`) and added only minimal missing utilities in `main.css` section 13: `.inline-label`, `.checkbox-label`, `.text-accent` (using `--primary-text` for high dark-mode contrast on Stack's Top Element value), `.log-title`, `.section-heading`, `.section-subtitle`, `.m-auto`, `.mt-sm`, `.pq-pipeline`, `.pq-endpoint-label`.
+  - Refactored `src/pages/regular-queue-page.js`: deleted `EMPTY_SLOT_STYLE` and all three `Object.assign(*.style, ...)` calls; now uses `.slot-wrap`, `.slot-label`/`.slot-label-active`, and `car.classList.toggle("car-empty", value === null)`. Both `EMPTY_SLOT_STYLE` and `.style` counts are now `0`.
+  - Added `.field-grow { flex: 0 0 auto; }` inside `@media (max-width: 640px)` in `main.css` so `.field-grow` inputs no longer stretch to `260px` tall on mobile (`sorting.html` `.field-grow` computed height is now `67px` at `375px` width).
+- npm test output (paste the real lines):
+    # tests 129
+    # pass 129
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified all 9 pages (`index.html`, `stack.html`, `regular-queue.html`, `circular-queue.html`, `priority-queue.html`, `circular-linked-list.html`, `doubly-linked-list.html`, `sorting.html`, `searching.html`) on `http://localhost:5504` at both `375px` and `1280px` widths in **both** light and dark themes using `#themeToggle`. Console clean: yes (0 errors across all 9 pages, 0 horizontal overflow at `375px` and `1280px`). Verified `regular-queue.html` allocate (`3`), enqueue (`10`, `20`), dequeue (`10`) renders `freed` and `empty` slots with `.car-empty` dashed borders and transparent backgrounds in both light and dark themes, and `sorting.html` `.field-grow` stays `67px` tall (`flex: 0 0 auto`) at `375px`.
+- Not done / not verified: Full keyboard-only Tab traversal across all 9 pages was not manually re-audited.
+- Requests for Claude: Ready for review and merge. (Note: an earlier unattended Hash Table branch `gemini/g5-hash-table` was also pushed earlier today with a standalone report in `docs/reports/G5.md`, before this `gemini/g5-inline-styles` task was assigned — it only creates new files and does not conflict with `gemini/g5-inline-styles`.)
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict: _pending_
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G4 (fix): Reuse parseArrayInput from sorting.js
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-26 02:38 (Philippine time)

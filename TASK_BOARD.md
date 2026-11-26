@@ -14,7 +14,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G5 | Remove remaining inline styles + Regular Queue `.car-empty` + `.field-grow` mobile fix | Gemini | 6 legacy pages, `index.html` (style attrs only), `main.css`, `src/pages/regular-queue-page.js` | GEMINI_HANDOFF.md#g5 |
+| none | | | | |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
@@ -28,7 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| G5 | Remove remaining inline styles + Regular Queue `.car-empty` + `.field-grow` mobile fix | Gemini | `gemini/g5-inline-styles` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
