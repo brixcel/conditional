@@ -14,7 +14,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G7 | Heap page + pure tree layout helper | Gemini | `heap.html`, `src/pages/heap-page.js`, `src/core/tree-layout.js`, `tests/tree-layout.test.js`, new `main.css` section 14 | GEMINI_HANDOFF.md#g7 |
 | G8 | Binary Search Tree module + page (after G7) | Gemini | `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js` | GEMINI_HANDOFF.md#g8 (not ready) |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
@@ -29,7 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| G7 | Heap page + pure tree layout helper | Gemini | `gemini/g7-heap-page` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
