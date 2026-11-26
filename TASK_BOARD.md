@@ -29,6 +29,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G10 | Graph representation module + `layoutCircle` + 3-view page | Gemini | `gemini/g10-graph` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
