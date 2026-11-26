@@ -29,11 +29,12 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page; 630-line inline script removed. Finished 2026-11-26 11:01 | Claude | `claude/c7-doubly-linked-list` | the user (merge to `main`) |
+| none | | | | |
 
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page | Claude | 2026-11-26 11:04 (merged to `main`) |
 | G6 | Hash table (chaining + linear probing) module, page, tests; Claude added CSS classes, auto-scroll, nav + card | Gemini (reviewed by Claude) | 2026-11-26 10:53 (merged to `main` 2026-11-26 10:56) |
 | FIX | StepPlayer Play threw "Illegal invocation" in browsers (broke Play on Sorting/Searching) | Claude | 2026-11-26 10:53 (merged to `main` 2026-11-26 10:56) |
 | G5 | 0 inline styles site-wide, Regular Queue `.car-empty`, `.field-grow` mobile fix | Gemini (reviewed by Claude) | 2026-11-26 10:47 (merged to `main` 2026-11-26 10:56) |
