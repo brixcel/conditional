@@ -641,8 +641,10 @@ els.prevBtn.addEventListener("click", userControls.prev);
 els.resetBtn.addEventListener("click", userControls.reset);
 els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value)));
 els.progress.addEventListener("input", byUser(() => {
+    // Read the slider before pausing: pause() re-renders and resets els.progress.value.
+    const target = Number(els.progress.value);
     player.pause();
-    player.goTo(Number(els.progress.value));
+    player.goTo(target);
 }));
 
 // Arrow keys inside the scrollable tree / list / pseudocode regions scroll them instead of stepping.
