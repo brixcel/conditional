@@ -14,7 +14,7 @@ times came from this PC's clock, which was about 8 minutes slow.
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31, G4 at 10:34 (2026-11-26) |
 | **Gemini: do next** | **G5**: remove the remaining inline `style=""` attributes and move Regular Queue's runtime slot styles into `.car-empty` (see G5 below). Start from fresh `main` on branch `gemini/g5-inline-styles` |
-| Claude is working on | C6: Singly Linked List on real nodes (`src/structures/linked-list.js`) + page migration, branch `claude/c6-singly-linked-list`. Claude owns `singly-linked-list.html` / `.js` until then, so **do not edit them in G5** |
+| Claude is working on | C6 finished at 10:39 on branch `claude/c6-singly-linked-list` (waiting for the user to merge). Until it is on `main`, **do not edit `singly-linked-list.html` in G5** |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under

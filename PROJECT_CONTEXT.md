@@ -23,7 +23,7 @@ Rizal System – Antipolo Campus students.
   1. *Legacy pages* (Stack, Regular/Circular/Priority Queue, Singly/Doubly/
      Circular Linked List, AVL Tree) use classic `<script>` files or inline
      scripts with global state, and logic mixed with DOM updates.
-  2. *Module pages* (currently `sorting.html`, `searching.html`, `regular-queue.html`, `stack.html`,
+  2. *Module pages* (currently `sorting.html`, `searching.html`, `singly-linked-list.html`, `regular-queue.html`, `stack.html`,
      `circular-queue.html`, `priority-queue.html`) use ES modules:
      `src/algorithms|structures/*.js` (pure logic, no DOM), `src/core/` (shared
      engine), and `src/pages/*-page.js` (DOM controller). New work uses this pattern.
@@ -41,9 +41,9 @@ index.html, stack.html, ...      pages (legacy + module pages)
 sorting.html                     first module page (reference implementation)
 main.css                         all styles (tokens → components → pages → breakpoints)
 shared.js                        nav + toast (classic script, loaded by every page)
-singly-linked-list.js, circLL.js,
+circLL.js,
 avl-tree.js                      legacy page scripts (global state, DOM-coupled)
-src/structures/                  pure data structures: stack.js, queue.js (linear/circular/priority), heap.js (min/max), result.js
+src/structures/                  pure data structures: stack.js, queue.js (linear/circular/priority), heap.js (min/max), linked-list.js (singly, real nodes), result.js
 src/core/validate.js             parseInteger() shared input parsing
 src/core/step-player.js          playback engine (play/pause/step/back/speed)
 src/algorithms/sorting.js        bubble/selection/insertion/merge/quick/heap with traced steps
@@ -97,7 +97,7 @@ Verified by reading the code, running tests, and loading the live site at deskto
 |---|---|---|---|
 | 1 | 91 native `alert`/`prompt`/`confirm` calls in core flows (bad on mobile, inaccessible, inconsistent) | doubly-linked-list.html (38), circLL.js (29), avl-tree.js (14), singly-linked-list.js (8), stack.js (2) | High |
 | 2 | Legacy tests checked copies of classes, so passes proved little | tests/legacy-regression.cjs suites 1-8 | High (now flagged, real tests added for AVL) |
-| 3 | Singly Linked List is a JS array with cosmetic "next" pointers, not real nodes | singly-linked-list.js | Medium (educational accuracy) |
+| 3 | ~~Singly Linked List is a JS array with cosmetic "next" pointers~~ Fixed in C6: real nodes in `src/structures/linked-list.js` | singly-linked-list.html | Fixed |
 | 4 | Logic and DOM are mixed in the remaining legacy pages, so they can't be unit-tested or reused (Regular Queue migrated, and pure Stack/Circular/Priority modules exist but aren't wired yet) | legacy scripts | Medium |
 | 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
 | 6 | Many inline `style=""` attributes remain in page markup | most pages | Low |

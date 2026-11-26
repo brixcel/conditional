@@ -9,7 +9,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| C6 | Singly Linked List on real nodes + page migration. Claimed 2026-11-26 10:34 | Claude | `claude/c6-singly-linked-list` | `src/structures/linked-list.js` (new), `tests/linked-list.test.js` (new), `singly-linked-list.html`, `singly-linked-list.js` |
+| none | | | | |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -28,7 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| C6 | Singly Linked List on real nodes (`src/structures/linked-list.js`) + module page; old `singly-linked-list.js` removed. Finished 2026-11-26 10:39 | Claude | `claude/c6-singly-linked-list` | the user (merge to `main`) |
 
 ## Done
 | ID | Task | Owner | Date |

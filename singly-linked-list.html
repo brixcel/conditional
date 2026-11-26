@@ -57,8 +57,8 @@
                     </label>
                 </div>
                 <div class="controls-row">
-                    <button type="button" onclick="setMaxSize()" id="setMaxSizeBtn" class="btn">Set Max Size</button>
-                    <button type="button" onclick="resetWebsite()" id="resetBtn" class="btn btn-danger">Reset List</button>
+                    <button type="button" id="setMaxSizeBtn" class="btn">Set Max Size</button>
+                    <button type="button" id="resetBtn" class="btn btn-danger">Reset List</button>
                 </div>
             </div>
 
@@ -93,38 +93,38 @@
             <div class="control-section">
                 <div class="control-section-title">3. Insertions &amp; Deletions</div>
                 <div class="controls-row">
-                    <button type="button" onclick="append()" id="appendBtn" class="btn" data-tooltip="Insert at tail (last)">Append</button>
-                    <button type="button" onclick="prepend()" id="prependBtn" class="btn" data-tooltip="Insert at head (first)">Prepend</button>
-                    <button type="button" onclick="insertAt()" id="insertAtBtn" class="btn" data-tooltip="Insert at specific index">Insert at Index</button>
-                    <button type="button" onclick="deleteHead()" id="deleteHeadBtn" class="btn btn-danger" data-tooltip="Remove first node">Delete Head</button>
-                    <button type="button" onclick="deleteTail()" id="deleteTailBtn" class="btn btn-danger" data-tooltip="Remove last node">Delete Tail</button>
-                    <button type="button" onclick="deleteIndex()" id="deleteIndexBtn" class="btn btn-danger" data-tooltip="Remove node at index">Delete by Index</button>
-                    <button type="button" onclick="clearList()" id="clearListBtn" class="btn btn-danger" data-tooltip="Clear entire linked list">Clear List</button>
+                    <button type="button" id="appendBtn" class="btn" data-tooltip="Insert at tail (last)">Append</button>
+                    <button type="button" id="prependBtn" class="btn" data-tooltip="Insert at head (first)">Prepend</button>
+                    <button type="button" id="insertAtBtn" class="btn" data-tooltip="Insert at specific index">Insert at Index</button>
+                    <button type="button" id="deleteHeadBtn" class="btn btn-danger" data-tooltip="Remove first node">Delete Head</button>
+                    <button type="button" id="deleteTailBtn" class="btn btn-danger" data-tooltip="Remove last node">Delete Tail</button>
+                    <button type="button" id="deleteIndexBtn" class="btn btn-danger" data-tooltip="Remove node at index">Delete by Index</button>
+                    <button type="button" id="clearListBtn" class="btn btn-danger" data-tooltip="Clear entire linked list">Clear List</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">4. Search, Reorder &amp; Inspection</div>
                 <div class="controls-row">
-                    <button type="button" onclick="getSize()" id="getSizeBtn" class="btn btn-secondary" data-tooltip="Display node count">Size</button>
-                    <button type="button" onclick="showHead()" id="showHeadBtn" class="btn btn-secondary" data-tooltip="Return head node">Head</button>
-                    <button type="button" onclick="showTail()" id="showTailBtn" class="btn btn-secondary" data-tooltip="Return tail node">Tail</button>
-                    <button type="button" onclick="reverseList()" id="reverseBtn" class="btn btn-secondary" data-tooltip="Reverse pointer directions">Reverse</button>
-                    <button type="button" onclick="sortList()" id="sortBtn" class="btn btn-secondary" data-tooltip="Sort nodes ascending">Sort</button>
-                    <button type="button" onclick="findElement()" id="findBtn" class="btn btn-secondary" data-tooltip="Find node by address">Find Address</button>
-                    <button type="button" onclick="isEmpty()" id="isEmptyBtn" class="btn btn-secondary" data-tooltip="Check if size == 0">Is Empty?</button>
-                    <button type="button" onclick="isFull()" id="isFullBtn" class="btn btn-secondary" data-tooltip="Check if size == max">Is Full?</button>
-                    <button type="button" onclick="updateAddress()" id="updateAddressBtn" class="btn btn-secondary" data-tooltip="Update value by address">Update Address</button>
-                    <button type="button" onclick="replaceAddress()" id="replaceAddressBtn" class="btn btn-secondary" data-tooltip="Replace value & address">Replace Address</button>
+                    <button type="button" id="getSizeBtn" class="btn btn-secondary" data-tooltip="Display node count">Size</button>
+                    <button type="button" id="showHeadBtn" class="btn btn-secondary" data-tooltip="Return head node">Head</button>
+                    <button type="button" id="showTailBtn" class="btn btn-secondary" data-tooltip="Return tail node">Tail</button>
+                    <button type="button" id="reverseBtn" class="btn btn-secondary" data-tooltip="Reverse pointer directions">Reverse</button>
+                    <button type="button" id="sortBtn" class="btn btn-secondary" data-tooltip="Sort nodes ascending">Sort</button>
+                    <button type="button" id="findBtn" class="btn btn-secondary" data-tooltip="Find node by address">Find Address</button>
+                    <button type="button" id="isEmptyBtn" class="btn btn-secondary" data-tooltip="Check if size == 0">Is Empty?</button>
+                    <button type="button" id="isFullBtn" class="btn btn-secondary" data-tooltip="Check if size == max">Is Full?</button>
+                    <button type="button" id="updateAddressBtn" class="btn btn-secondary" data-tooltip="Update value by address">Update Address</button>
+                    <button type="button" id="replaceAddressBtn" class="btn btn-secondary" data-tooltip="Replace value & address">Replace Address</button>
                 </div>
             </div>
 
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Singly Linked Pointer Chain</span>
-                <div class="scroll-box" style="margin: 0; background: transparent; border: none;">
-                    <div id="linkedListDisplay" class="node-container">
-                        <span style="color: var(--text-muted); font-style: italic; margin: auto;">List is empty</span>
+                <div class="scroll-box scroll-box-clean">
+                    <div id="linkedListDisplay" class="node-container" aria-label="Linked list nodes from head to NULL">
+                        <span class="text-muted text-italic">List is empty</span>
                     </div>
                 </div>
             </div>
@@ -155,6 +155,6 @@
     </div>
 
     <script src="shared.js"></script>
-    <script src="singly-linked-list.js"></script>
+    <script type="module" src="src/pages/singly-linked-list-page.js"></script>
 </body>
 </html>
