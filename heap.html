@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Heap (Min / Max) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Tree Structure &bull; Binary Heap</div>
+            <h1 class="page-title">Binary Heap Visualization</h1>
+            <p class="page-desc">
+                A complete binary tree stored compactly in an array with
+                <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code>,
+                <code>left(i) = 2i + 1</code>, and <code>right(i) = 2i + 2</code>.
+                Watch <strong>Min-Heap</strong> and <strong>Max-Heap</strong> operations in both the
+                tree view and the underlying array simultaneously.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="heapName">Binary Heap (Min-Heap)</h2>
+            <p class="concept-body" id="heapSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Peek Root</div><div class="prop-value" id="cxPeek"></div></div>
+                <div class="prop-item"><div class="prop-label">Insert</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Extract Root</div><div class="prop-value" id="cxExtract"></div></div>
+                <div class="prop-item"><div class="prop-label">Build Heap</div><div class="prop-value" id="cxBuild"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Heap Controls &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Heap Type &amp; Single-Item Operations (Capacity 31)</div>
+                <form id="insertForm" novalidate>
+                    <div class="controls-row">
+                        <label class="field">
+                            <span class="field-label">Heap Kind</span>
+                            <select id="kindSelect">
+                                <option value="min" selected>Min-Heap (parent &le; children)</option>
+                                <option value="max">Max-Heap (parent &ge; children)</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Value (&minus;99 to 999)</span>
+                            <input type="text" id="valueInput" class="input-sm" inputmode="numeric" autocomplete="off"
+                                   placeholder="e.g. 12 or -5" aria-describedby="heapMessage">
+                        </label>
+                    </div>
+                    <div class="controls-row mt-sm">
+                        <button type="submit" class="btn" id="insertBtn">Insert</button>
+                        <button type="button" class="btn btn-danger" id="extractBtn">Extract Root</button>
+                        <button type="button" class="btn btn-secondary" id="peekBtn">Peek</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">2. Build Heap (O(n) Bottom-Up Heapify)</div>
+                <div class="controls-row">
+                    <label class="field field-grow">
+                        <span class="field-label">Values (1&ndash;31 whole numbers, &minus;99 to 999)</span>
+                        <input type="text" id="buildInput" inputmode="numeric" autocomplete="off"
+                               value="42, 18, 27, 9, 35, 14, 51, 3" aria-describedby="heapMessage">
+                    </label>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build Heap</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random Values</button>
+                </div>
+            </form>
+
+            <div id="heapMessage" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Tree &amp; Array Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Back to first step" title="First step (Home)">&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Previous step" title="Previous step (&larr;)">&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)">&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Next step" title="Next step (&rarr;)">Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">Complete Binary Tree View</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean" aria-label="Binary Heap Tree View"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-select"></i> Insert / Move / Heapify</span>
+                    <span><i class="sw sw-compare"></i> Comparing</span>
+                    <span><i class="sw sw-swap"></i> Swapping / Extract</span>
+                    <span><i class="sw sw-sorted"></i> Settled / Done</span>
+                </div>
+            </div>
+
+            <div class="viz-stage">
+                <span class="viz-stage-label">Array View (A[0..n&minus;1])</span>
+                <div id="arrayStage" class="queue-display" aria-label="Binary Heap Array View"></div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Build)</div>
+                    <ol class="pseudocode" id="pseudocode"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Heap State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Heap Kind</span><strong id="statKind">Min-Heap</strong></div>
+                        <div><span id="statRootLabel">Root (Min)</span><strong id="statRoot">&mdash;</strong></div>
+                        <div><span>Size / Capacity</span><strong id="statSize">0 / 31</strong></div>
+                        <div><span>Comparisons</span><strong id="statComparisons">0</strong></div>
+                        <div><span>Swaps</span><strong id="statSwaps">0</strong></div>
+                        <div><span>Heap Property</span><strong id="statValid">Valid</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Binary Heap Complexity &amp; Properties</h2>
+            <div class="table-wrap">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th>Operation</th>
+                            <th>Complexity</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Complete Binary Tree &amp; Index Math</h2>
+                    <p>Every level except possibly the last is completely filled from left to right. In 0-indexed array <code>A</code>, <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code>, <code>left(i) = 2i + 1</code>, and <code>right(i) = 2i + 2</code>.</p>
+                </div>
+                <div class="check">
+                    <h2>Min-Heap vs. Max-Heap</h2>
+                    <p>In a <strong>Min-Heap</strong> every parent is <code>&le;</code> its children (root is the minimum). In a <strong>Max-Heap</strong> every parent is <code>&ge;</code> its children (root is the maximum).</p>
+                </div>
+                <div class="check">
+                    <h2>Sift Up &amp; Sift Down</h2>
+                    <p><strong>Insert</strong> places the new value at index <code>n</code> and sifts it up toward the root. <strong>Extract</strong> moves the last leaf to index <code>0</code> and sifts it down toward the better child.</p>
+                </div>
+                <div class="check">
+                    <h2>Why Build Heap Is O(n)</h2>
+                    <p>Bottom-up heapify skips all leaves and sifts down only internal nodes from <code>&lfloor;(n &minus; 2) / 2&rfloor;</code> down to <code>0</code>, doing mostly short sifts near the bottom for linear total work.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/heap-page.js"></script>
+</body>
+</html>

@@ -1882,3 +1882,79 @@ input:disabled, select:disabled {
     .bar-fill { transition: none; }
     .skip-link, .theme-toggle-btn { transition: none; }
 }
+
+/* --------------------------------------------------------------------------
+   14. Binary Heap & SVG Tree Visualizer (G7)
+   Uses only section 1 design tokens so light & dark themes stay consistent.
+   -------------------------------------------------------------------------- */
+.hp-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.hp-edge {
+    stroke: var(--border-strong);
+    stroke-width: 2;
+}
+.hp-edge.hp-select  { stroke: var(--bar-select);  stroke-width: 3; }
+.hp-edge.hp-compare { stroke: var(--bar-compare); stroke-width: 3; }
+.hp-edge.hp-swap    { stroke: var(--bar-swap);    stroke-width: 3; }
+.hp-edge.hp-settled { stroke: var(--bar-sorted);  stroke-width: 3; }
+
+.hp-node-circle {
+    fill: var(--bg-card);
+    stroke: var(--primary-light);
+    stroke-width: 2;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.hp-node-value {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.hp-node-index {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+
+.hp-node.hp-root .hp-node-circle {
+    stroke: var(--primary-text);
+    stroke-width: 2.5;
+}
+.hp-node.hp-root .hp-node-index {
+    fill: var(--primary-text);
+    font-weight: 700;
+}
+
+.hp-node.hp-select .hp-node-circle  { fill: var(--primary-subtle); stroke: var(--bar-select);  stroke-width: 3; }
+.hp-node.hp-compare .hp-node-circle { fill: var(--warning-subtle); stroke: var(--bar-compare); stroke-width: 3; }
+.hp-node.hp-swap .hp-node-circle    { fill: var(--danger-subtle);  stroke: var(--bar-swap);    stroke-width: 3; }
+.hp-node.hp-settled .hp-node-circle { fill: var(--success-subtle); stroke: var(--bar-sorted);  stroke-width: 3; }
+
+.hp-cell {
+    min-width: 54px;
+    padding: 6px 8px;
+}
+.hp-cell.hp-root    { border-color: var(--primary-text); }
+.hp-cell.hp-select  { border-color: var(--bar-select);  background-color: var(--primary-subtle); color: var(--text-primary); }
+.hp-cell.hp-compare { border-color: var(--bar-compare); background-color: var(--warning-subtle); color: var(--text-primary); }
+.hp-cell.hp-swap    { border-color: var(--bar-swap);    background-color: var(--danger-subtle);  color: var(--text-primary); }
+.hp-cell.hp-settled { border-color: var(--bar-sorted);  background-color: var(--success-subtle); color: var(--text-primary); }
+
+.hp-empty {
+    margin: auto;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hp-node-circle { transition: none; }
+}
