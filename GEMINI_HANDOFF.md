@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 11:16 |
+| Last updated by Claude | 2026-11-26 17:19 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1, G2, G3 (2026-11-25); G4, G5, G6 (2026-11-26, G5/G6 at 10:56) |
-| **Gemini: do next** | **G8**: Binary Search Tree module + page (spec below). Start from fresh `main` on branch `gemini/g8-bst` (G7 is merged, so start now). Take only the task named here |
-| Claude is working on | G7 and C8 merged to `main` at 11:17. Claude reviews G8 with the qa-engineer agent when you report it |
+| **Gemini: do next** | **G9**: Trie module + page (spec below). Start from fresh `main` on branch `gemini/g9-trie` **once `main` contains `bst.html`** (G8 merged). After G9 is reported, take **G10** (Graph) on `gemini/g10-graph`. Take only the task named here |
+| Claude is working on | G8 approved at 17:19 (qa-engineer + visualization-engineer fixes + Claude browser check) on branch `claude/g8-bst-merge`, waiting for the user to merge. Then C12 AVL module, C13 heap-backed Priority Queue |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -246,5 +246,94 @@ errors and no horizontal page scroll; Play advances; every delete case and every
 homepage card you want (Claude adds them) and any CSS you added.
 
 ---
+## G9: Trie (prefix tree) module + page <a id="g9"></a>
+**Status: ready once G8 is on `main`** (check that `bst.html` exists on `main`).
+**Why:** tries are the standard way to teach prefix search and autocomplete, and the first tree in the course where a node
+can have more than two children.
+**Files you own:** new `src/structures/trie.js`, `tests/trie.test.js`, `trie.html`, `src/pages/trie-page.js`; in
+`src/core/tree-layout.js` you may **add** one export (do not change `layoutCompleteTree` or `layoutBinaryTree`) and add tests
+for it to `tests/tree-layout.test.js`; **add** a new section 16 at the end of `main.css` only if the `.hp-*` and section 15
+classes cannot be reused (list anything new).
+**Do not edit:** `shared.js`, `index.html`, `src/core/step-player.js`, `src/core/player-keys.js` (if present), any existing
+`src/pages/*`, `main.css` sections 1-15.
+**Reference:** `src/structures/bst.js` (real nodes, `{ ok, value?, error?, steps }`, `integrityError()`, `BST_INFO`),
+`bst.html` + `src/pages/bst-page.js` (SVG tree, player, live regions that are present at load and empty when unused).
+**Do:**
+1. `src/structures/trie.js` (pure, DOM-free), class `Trie` with real nodes `{ id, char, children: Map, isEnd }`.
+   - Words: trim and lowercase, then a-z only, 1-12 letters; anything else is rejected with a readable error.
+   - Limits 1-20 words and 120 nodes (constructor + `assertCapacity`).
+   - Operations, each returning `{ ok, value?, error?, steps }`: `insert(word)` (duplicate → `{ ok:false }`),
+     `search(word)`, `startsWith(prefix)`, `wordsWithPrefix(prefix)` (alphabetical), `delete(word)`, `clear()`, `size`,
+     `nodeCount`, `toArray()` (alphabetical).
+   - `delete` prunes now-unused nodes bottom-up and says which nodes were removed and why it stopped (another word passes
+     through that node, or another word ends there).
+   - Steps: `{ type, nodeIds, pathIds, line, message, prefix, snapshot }`, snapshot
+     `{ nodes: [{ id, char, isEnd, children: [ids sorted by char] }], rootId }`. Types such as `visit`, `create-node`,
+     `mark-end`, `unmark-end`, `prune`, `found`, `not-found`, `collect`, `done`. No `-1` sentinels. `line` is the 1-based
+     line in a `TRIE_INFO` registry (`name`, `summary`, `complexity` O(L) per operation / O(total characters) space,
+     `pseudocode`).
+   - `integrityError()`: node count matches, every non-root leaf is a word end, word-end count equals `size`, no node
+     reachable twice. Returns null when sound.
+2. `tests/trie.test.js`: 300 seeded mulberry32 sequences against a `Set<string>` model, words from `a`-`d`, 1-5 letters
+   (so shared prefixes and prefix-words like "ab"/"abc" happen). After **every** operation check `toArray()`, `size`,
+   `search`, `startsWith`, `wordsWithPrefix` and `integrityError() === null`. Edge cases: delete a word that is a prefix of
+   another, delete a longer word sharing a prefix with a shorter one, delete in an empty trie, empty string,
+   uppercase/whitespace/digits, both limits full. **Mutation check yourself:** make `delete` prune past a node another word
+   uses or ends at, confirm a test fails, and mention it in your report.
+3. `src/core/tree-layout.js`: add `layoutGeneralTree(snapshot, { levelGap, minGap })`: keeps the snapshot's child order,
+   leaves `minGap` apart, each parent centred over its first and last child, same return shape as `layoutBinaryTree`. Tests:
+   empty tree, single node, no overlap on any level, every parent between its outer children, y = depth * levelGap.
+4. `trie.html` + `src/pages/trie-page.js`: Word input + **Insert**, **Search**, **Starts with**, **Autocomplete**,
+   **Delete**; word-list input + **Build**; **Random words**; **Clear**. SVG tree with the letter on each edge; word-end
+   nodes get a ring **plus** a non-colour cue (e.g. "•" and a `<title>` "word end"). Highlight the current path and show the
+   prefix building letter by letter; autocomplete results appear as they are collected. Same player, pseudocode panel,
+   counters, theme and a11y rules as the BST page; errors inline with `role="alert"`. **Keyboard:** if
+   `src/core/player-keys.js` exists on `main` when you start, use `bindPlayerKeys(document, player)` from it and
+   `DSA_UI.announce(...)`; otherwise copy the key handling from `src/pages/searching-page.js`. Say which you did.
+**Done when:** `npm test` passes with your new tests (if `main` has Claude's C10 page checks, the only allowed failure is
+"trie.html is missing from navCategories"; Claude adds the nav entry); the page works at 375px and desktop in both themes
+with no console errors and no horizontal page scroll; Play advances; all three delete outcomes (full prune, partial prune,
+unmark only) shown on a real trie; `grep -c 'style="' trie.html` is 0 and the page script has no `.style` / `innerHTML`
+with values. Report the nav entry and card you want, every CSS class you added, and the mutation result.
+
+---
+## G10: Graph representation module + page <a id="g10"></a>
+**Status: ready after you report G9** (it does not depend on G9's code; start from fresh `main`). If G9 is not merged yet,
+put your CSS in a new section titled "Graph" at the end of `main.css`; Claude resolves the append conflict.
+**Why:** BFS, DFS, Dijkstra and topological sort (Claude's C15) all need one tested graph structure, and students should see
+that an adjacency list and an adjacency matrix describe the same graph.
+**Files you own:** new `src/structures/graph.js`, `tests/graph.test.js`, `src/core/graph-layout.js`,
+`tests/graph-layout.test.js`, `graph.html`, `src/pages/graph-page.js`; a new section at the end of `main.css`.
+**Do not edit:** the G9 list, plus `src/core/tree-layout.js`.
+**Do:**
+1. `src/structures/graph.js` (pure, DOM-free), `class Graph({ directed = false, weighted = false })`. Vertex ids are whole
+   numbers 0-11, at most 12 vertices; weights 1-99 and only when `weighted`; self-loops and parallel edges are rejected with
+   readable errors. Operations: `addVertex(id)`, `removeVertex(id)` (removes every edge touching it), `addEdge(u, v, w?)`,
+   `removeEdge(u, v)`, `hasEdge`, `weight`, `neighbors(id)` (**always ascending**; C15 relies on it), `degree` /
+   `inDegree` / `outDegree`, `vertices()`, `edges()`, `toAdjacencyList()`, `toAdjacencyMatrix()` (`{ ids, matrix }`,
+   `null` = no edge, never 0 or -1), `clear()`, `static from({ directed, weighted, vertices, edges })`. Changes return
+   `{ ok, error?, steps }`; a step is `{ type, vertexIds, edge, message, snapshot }` with
+   `snapshot = { directed, weighted, vertices: [ids], edges: [{ from, to, weight }] }`. `integrityError()`: list and matrix
+   agree, an undirected matrix is symmetric, no edge points at a missing vertex. `GRAPH_INFO` gives each operation's
+   complexity for list vs matrix.
+2. `tests/graph.test.js`: 300 seeded sequences in all four modes (directed or not × weighted or not) against a model
+   `Map<"u,v", weight>`. After every operation check `edges()`, `neighbors`, every degree, the matrix and
+   `integrityError() === null`. Edge cases: remove a vertex that has edges, duplicate edge, self-loop, bad weight, missing
+   vertex, the 12-vertex limit. **Mutation check yourself:** make undirected `removeEdge` forget the reverse edge; confirm a
+   test fails.
+3. `src/core/graph-layout.js`: `layoutCircle(ids, { radius, padding })` → `{ nodes: [{ id, x, y }], width, height }`, first
+   vertex at the top, the rest clockwise. Tests: 0, 1, 2 and 12 vertices, every node at the radius, no two nodes closer than
+   a minimum gap.
+4. `graph.html` + `src/pages/graph-page.js`: **Directed** and **Weighted** toggles (changing them rebuilds the graph and
+   keeps the edges that are still valid); Vertex input + **Add vertex** / **Remove vertex**; From / To / Weight inputs +
+   **Add edge** / **Remove edge**; **Sample graph**, **Random**, **Clear**. Three synchronized views of one snapshot: SVG
+   graph (arrowheads when directed, weight labels with a halo like `.hp-node-index`), adjacency list, adjacency matrix. The
+   changed vertex or edge is highlighted in all three (with a non-colour cue too). The matrix scrolls inside
+   `.scroll-box.scroll-box-clean` at 375px; every matrix cell has an accessible name such as "2 to 5: weight 7". Player,
+   keyboard and a11y rules as in G9.
+**Done when:** the G9 checks, plus: the on-screen matrix stays symmetric in undirected mode, and removing a vertex visibly
+removes its edges from all three views. Report the nav entry and card you want and every CSS class you added.
+
+---
 ## Queue after these (not ready yet)
-Graph representations (adjacency list / matrix), BFS / DFS. They will be specified here when ready.
+BFS / DFS (Claude, C15, after G10), Dijkstra, Red-Black tree.

@@ -28,11 +28,11 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| G8 | Binary Search Tree module + page + `layoutBinaryTree` | Gemini | `gemini/g8-bst` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| G8 | Binary Search Tree module + page + `layoutBinaryTree`; Claude's agents fixed live regions, final-frame announcement, per-step validity, duplicate-before-overflow; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 17:19 (on `claude/g8-bst-merge`, waiting for merge) |
 | C8 | Circular Linked List on real nodes (`src/structures/circular-linked-list.js`) + module page; `circLL.js` removed | Claude | 2026-11-26 11:15 (merged to `main` 2026-11-26 11:17) |
 | G7 | Heap page (tree + array views) + pure `tree-layout.js`; Claude added label halo, clear fix, nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 11:14 (merged to `main` 2026-11-26 11:17) |
 | C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page | Claude | 2026-11-26 11:04 (merged to `main`) |
