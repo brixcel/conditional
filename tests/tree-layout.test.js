@@ -40,19 +40,23 @@ test("layoutCompleteTree: invariants hold for n = 0, 1, 2, 3, 7, 31, 63", () => 
             for (let k = 1; k < row.length; k++) {
                 const dx = row[k].x - row[k - 1].x;
                 assert.ok(dx >= minGap, `n=${n} depth=${depth}: gap ${dx} < minGap ${minGap}`);
-            }
-            if (depth === maxDepth && row.length >= 2) {
-                assert.equal(row[1].x - row[0].x, minGap, `n=${n}: deepest leaves should be exactly minGap apart`);
+                if (depth === maxDepth) {
+                    assert.equal(dx, minGap, `n=${n}: deepest leaves ${k - 1}..${k} should be exactly minGap apart`);
+                }
             }
         }
 
-        // Every edge is strictly parent -> child (to === 2*from + 1 or 2*from + 2).
+        // Every edge is strictly parent -> child (to === 2*from + 1 or 2*from + 2) and targets 1..n-1 uniquely.
+        const seenTargets = new Set();
         for (const edge of layout.edges) {
             assert.ok(
                 edge.to === 2 * edge.from + 1 || edge.to === 2 * edge.from + 2,
                 `n=${n}: bad edge ${edge.from} -> ${edge.to}`,
             );
+            assert.equal(seenTargets.has(edge.to), false, `n=${n}: duplicate edge target ${edge.to}`);
+            seenTargets.add(edge.to);
         }
+        assert.equal(seenTargets.size, Math.max(0, n - 1), `n=${n}: edges must cover 1..n-1`);
 
         // Each parent's x is centred between its children (and right of a sole left child).
         for (let i = 0; i < n; i++) {

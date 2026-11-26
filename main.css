@@ -1894,19 +1894,20 @@ input:disabled, select:disabled {
 }
 
 .hp-edge {
-    stroke: var(--border-strong);
+    stroke: var(--text-light);
     stroke-width: 2;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
 }
 .hp-edge.hp-select  { stroke: var(--bar-select);  stroke-width: 3; }
-.hp-edge.hp-compare { stroke: var(--bar-compare); stroke-width: 3; }
-.hp-edge.hp-swap    { stroke: var(--bar-swap);    stroke-width: 3; }
+.hp-edge.hp-compare { stroke: var(--bar-compare); stroke-width: 3; stroke-dasharray: 5 3; }
+.hp-edge.hp-swap    { stroke: var(--bar-swap);    stroke-width: 3.5; }
 .hp-edge.hp-settled { stroke: var(--bar-sorted);  stroke-width: 3; }
 
 .hp-node-circle {
     fill: var(--bg-card);
     stroke: var(--primary-light);
     stroke-width: 2;
-    transition: fill 0.2s ease, stroke 0.2s ease;
+    transition: fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease;
 }
 
 .hp-node-value {
@@ -1921,9 +1922,13 @@ input:disabled, select:disabled {
 .hp-node-index {
     fill: var(--text-muted);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 3px;
+    stroke-linejoin: round;
 }
 
 .hp-node.hp-root .hp-node-circle {
@@ -1936,19 +1941,31 @@ input:disabled, select:disabled {
 }
 
 .hp-node.hp-select .hp-node-circle  { fill: var(--primary-subtle); stroke: var(--bar-select);  stroke-width: 3; }
-.hp-node.hp-compare .hp-node-circle { fill: var(--warning-subtle); stroke: var(--bar-compare); stroke-width: 3; }
-.hp-node.hp-swap .hp-node-circle    { fill: var(--danger-subtle);  stroke: var(--bar-swap);    stroke-width: 3; }
+.hp-node.hp-compare .hp-node-circle { fill: var(--warning-subtle); stroke: var(--bar-compare); stroke-width: 3; stroke-dasharray: 5 3; }
+.hp-node.hp-swap .hp-node-circle    { fill: var(--danger-subtle);  stroke: var(--bar-swap);    stroke-width: 3.5; }
 .hp-node.hp-settled .hp-node-circle { fill: var(--success-subtle); stroke: var(--bar-sorted);  stroke-width: 3; }
+
+.hp-array-list {
+    list-style: none;
+    margin: 0;
+}
 
 .hp-cell {
     min-width: 54px;
     padding: 6px 8px;
+    animation: none;
+    will-change: auto;
 }
-.hp-cell.hp-root    { border-color: var(--primary-text); }
-.hp-cell.hp-select  { border-color: var(--bar-select);  background-color: var(--primary-subtle); color: var(--text-primary); }
-.hp-cell.hp-compare { border-color: var(--bar-compare); background-color: var(--warning-subtle); color: var(--text-primary); }
-.hp-cell.hp-swap    { border-color: var(--bar-swap);    background-color: var(--danger-subtle);  color: var(--text-primary); }
-.hp-cell.hp-settled { border-color: var(--bar-sorted);  background-color: var(--success-subtle); color: var(--text-primary); }
+.hp-cell.hp-root    { border-color: var(--primary-text); border-width: 2.5px; }
+.hp-cell.hp-select  { border-color: var(--bar-select);  border-width: 2.5px; background-color: var(--primary-subtle); color: var(--text-primary); }
+.hp-cell.hp-compare { border-color: var(--bar-compare); border-width: 2.5px; border-style: dashed; background-color: var(--warning-subtle); color: var(--text-primary); }
+.hp-cell.hp-swap    { border-color: var(--bar-swap);    border-width: 4px;   border-style: double; background-color: var(--danger-subtle);  color: var(--text-primary); }
+.hp-cell.hp-settled { border-color: var(--bar-sorted);  border-width: 2.5px; background-color: var(--success-subtle); color: var(--text-primary); }
+
+.hp-scroll-region:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
 
 .hp-empty {
     margin: auto;
@@ -1956,5 +1973,12 @@ input:disabled, select:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .hp-node-circle { transition: none; }
+    .hp-node-circle,
+    .hp-edge,
+    .hp-cell,
+    .hp-cell:hover {
+        transition: none;
+        animation: none;
+        transform: none;
+    }
 }

@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <div class="page-container">
+    <main class="page-container" id="main-content">
         <header class="page-header">
             <div class="badge">Tree Structure &bull; Binary Heap</div>
             <h1 class="page-title">Binary Heap Visualization</h1>
             <p class="page-desc">
                 A complete binary tree stored compactly in an array with
-                <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code>,
+                <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code> (for <code>i &gt; 0</code>),
                 <code>left(i) = 2i + 1</code>, and <code>right(i) = 2i + 2</code>.
                 Watch <strong>Min-Heap</strong> and <strong>Max-Heap</strong> operations in both the
                 tree view and the underlying array simultaneously.
@@ -51,8 +51,8 @@
                         </label>
                         <label class="field">
                             <span class="field-label">Value (&minus;99 to 999)</span>
-                            <input type="text" id="valueInput" class="input-sm" inputmode="numeric" autocomplete="off"
-                                   placeholder="e.g. 12 or -5" aria-describedby="heapMessage">
+                            <input type="text" id="valueInput" class="input-sm" autocomplete="off"
+                                   placeholder="e.g. 12 or -5">
                         </label>
                     </div>
                     <div class="controls-row mt-sm">
@@ -69,8 +69,8 @@
                 <div class="controls-row">
                     <label class="field field-grow">
                         <span class="field-label">Values (1&ndash;31 whole numbers, &minus;99 to 999)</span>
-                        <input type="text" id="buildInput" inputmode="numeric" autocomplete="off"
-                               value="42, 18, 27, 9, 35, 14, 51, 3" aria-describedby="heapMessage">
+                        <input type="text" id="buildInput" autocomplete="off"
+                               value="42, 18, 27, 9, 35, 14, 51, 3">
                     </label>
                 </div>
                 <div class="controls-row mt-sm">
@@ -89,10 +89,10 @@
             </div>
 
             <div class="player-controls" role="group" aria-label="Playback controls">
-                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Back to first step" title="First step (Home)">&#x23EE; Reset</button>
-                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Previous step" title="Previous step (&larr;)">&#x25C0; Back</button>
-                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)">&#x25B6; Play</button>
-                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Next step" title="Next step (&rarr;)">Step &#x25B6;</button>
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Reset to first step" title="Reset to first step (Home)"><span aria-hidden="true">&#x23EE;</span> Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Back to previous step" title="Back one step (&larr;)"><span aria-hidden="true">&#x25C0;</span> Back</button>
+                <button type="button" class="btn" id="playBtn" aria-label="Play" title="Play / pause (Space)"><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playText">Play</span></button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Step forward" title="Step forward (&rarr;)">Step <span aria-hidden="true">&#x25B6;</span></button>
                 <label class="field field-inline">
                     <span class="field-label">Speed</span>
                     <select id="speedSelect">
@@ -108,18 +108,18 @@
 
             <div class="viz-stage">
                 <span class="viz-stage-label" id="treeStageLabel">Complete Binary Tree View</span>
-                <div id="treeStage" class="scroll-box scroll-box-clean" aria-label="Binary Heap Tree View"></div>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region" role="region" aria-labelledby="treeStageLabel" tabindex="0"></div>
                 <div class="bar-legend" aria-hidden="true">
                     <span><i class="sw sw-select"></i> Insert / Move / Heapify</span>
-                    <span><i class="sw sw-compare"></i> Comparing</span>
-                    <span><i class="sw sw-swap"></i> Swapping / Extract</span>
+                    <span><i class="sw sw-compare"></i> Comparing (dashed)</span>
+                    <span><i class="sw sw-swap"></i> Swapping / Extract (double)</span>
                     <span><i class="sw sw-sorted"></i> Settled / Done</span>
                 </div>
             </div>
 
             <div class="viz-stage">
-                <span class="viz-stage-label">Array View (A[0..n&minus;1])</span>
-                <div id="arrayStage" class="queue-display" aria-label="Binary Heap Array View"></div>
+                <span class="viz-stage-label" id="arrayStageLabel">Array View (A[0..n&minus;1])</span>
+                <ol id="arrayStage" class="queue-display hp-array-list hp-scroll-region" aria-labelledby="arrayStageLabel" tabindex="0"></ol>
             </div>
 
             <p class="step-message" id="stepMessage" aria-live="polite"></p>
@@ -149,38 +149,39 @@
                 <table class="cx-table">
                     <thead>
                         <tr>
-                            <th>Operation</th>
-                            <th>Complexity</th>
-                            <th>Notes</th>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Best</th>
+                            <th scope="col">Worst</th>
+                            <th scope="col">Notes</th>
                         </tr>
                     </thead>
                     <tbody id="cxTable"></tbody>
                 </table>
             </div>
             <p class="concept-body table-note">
-                Keyboard shortcuts when focus is outside an input: <kbd>Space</kbd> play/pause,
+                Keyboard shortcuts when focus is outside an input or button: <kbd>Space</kbd> play/pause,
                 <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
             </p>
             <div class="grid-2">
                 <div class="check">
                     <h2>Complete Binary Tree &amp; Index Math</h2>
-                    <p>Every level except possibly the last is completely filled from left to right. In 0-indexed array <code>A</code>, <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code>, <code>left(i) = 2i + 1</code>, and <code>right(i) = 2i + 2</code>.</p>
+                    <p>Every level before the last is completely filled, and the last level is filled from left to right with no gaps. In 0-indexed array <code>A</code>, <code>parent(i) = &lfloor;(i &minus; 1) / 2&rfloor;</code> (for <code>i &gt; 0</code>), <code>left(i) = 2i + 1</code>, and <code>right(i) = 2i + 2</code>.</p>
                 </div>
                 <div class="check">
                     <h2>Min-Heap vs. Max-Heap</h2>
-                    <p>In a <strong>Min-Heap</strong> every parent is <code>&le;</code> its children (root is the minimum). In a <strong>Max-Heap</strong> every parent is <code>&ge;</code> its children (root is the maximum).</p>
+                    <p>In a <strong>Min-Heap</strong> every parent is <code>&le;</code> its children (root is the minimum). In a <strong>Max-Heap</strong> every parent is <code>&ge;</code> its children (root is the maximum). In the pseudocode, &ldquo;beats&rdquo; means strictly <code>&lt;</code> (Min-Heap) or strictly <code>&gt;</code> (Max-Heap), so equal values never swap.</p>
                 </div>
                 <div class="check">
                     <h2>Sift Up &amp; Sift Down</h2>
-                    <p><strong>Insert</strong> places the new value at index <code>n</code> and sifts it up toward the root. <strong>Extract</strong> moves the last leaf to index <code>0</code> and sifts it down toward the better child.</p>
+                    <p><strong>Insert</strong> places the new value at the next free slot <code>A[n]</code> and sifts it up toward the root. <strong>Extract</strong> removes <code>A[0]</code>, moves the last element <code>A[n &minus; 1]</code> to index <code>0</code>, and sifts it down toward the smaller child (Min-Heap) or larger child (Max-Heap), with the left child winning ties.</p>
                 </div>
                 <div class="check">
                     <h2>Why Build Heap Is O(n)</h2>
-                    <p>Bottom-up heapify skips all leaves and sifts down only internal nodes from <code>&lfloor;(n &minus; 2) / 2&rfloor;</code> down to <code>0</code>, doing mostly short sifts near the bottom for linear total work.</p>
+                    <p>Bottom-up heapify skips all leaves (at least half the nodes, which need 0 swaps) and sifts down only internal nodes from <code>parent(n &minus; 1) = &lfloor;(n &minus; 2) / 2&rfloor;</code> down to <code>0</code>. Most internal nodes sit near the bottom and move only 1&ndash;2 levels, keeping total work linear (&le; 2n comparisons and &lt; n swaps).</p>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="shared.js"></script>
     <script type="module" src="src/pages/heap-page.js"></script>
