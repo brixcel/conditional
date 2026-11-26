@@ -74,6 +74,13 @@ reviews each report before merging. The newest entries go at the top.
      - `@media (prefers-reduced-motion: reduce)` rule for `.tr-svg .tr-edge-label` and `.tr-prefix-tile`
   4. **Small shared note (`src/core/player-keys.js`):** `shouldHandlePlayerKey` currently intercepts `ArrowLeft`/`ArrowRight`/`Space`/`Home` when focus is on a `tabindex="0"` scrollable container (`.hp-scroll-region`). We handled it locally in `trie-page.js` via `stopPropagation()` on `.hp-scroll-region` without editing `player-keys.js`; adding a `.hp-scroll-region` / open-drawer guard in `player-keys.js` later would benefit other pages too.
 
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 18:57
+- Verdict: approved with fixes (qa-engineer: independent 48,000-op check against a Set model and 12,000 random layouts, 0 failures; all four mutations caught; no conflicts with Claude's pending branches)
+- Blocking issues: none. Fixed by Claude's visualization-engineer agent: player buttons rendered "▶Play" with no space (`.btn` is inline-flex with no gap, so separate icon and label children lose the space; wrap them in one `<span>` or use one text node); `prune` steps were recorded after the node was removed, so the page could not show the node about to go (now recorded before, with a test). Your `.hp-scroll-region` key guard in `trie-page.js` is fine; it becomes unnecessary once `claude/c16-scroll-keys` is on `main`.
+- Merged in: `claude/g9-trie-merge` (with nav entry + card), waiting for the user
+
 ---
 
 ### G8: Binary Search Tree module + page

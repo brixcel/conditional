@@ -28,11 +28,11 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| G9 | Trie (Prefix Tree) module + `layoutGeneralTree` + page | Gemini | `gemini/g9-trie` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| G9 | Trie module + `layoutGeneralTree` + page; Claude's agents fixed button spacing and recorded prune frames before removal; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 18:57 (on `claude/g9-trie-merge`, waiting for merge) |
 | C13 | Priority Queue backed by a binary max-heap; equal priorities stay first-in, first-out (arrival id); heap-array step view | Claude (data-structures agent) | 2026-11-26 17:43 (merged to `main`) |
 | C14 | Sorting/searching bar states and legend use patterns and a check mark, not colour alone | Claude (ui-ux-designer agent) | 2026-11-26 17:43 (merged to `main`) |
 | C11 | Accessibility: labels, focus ring, `DSA_UI.announce` live regions, quiet autoplay, focus rescue, text alternatives | Claude (accessibility-performance agent) | 2026-11-26 17:43 (merged to `main`) |
