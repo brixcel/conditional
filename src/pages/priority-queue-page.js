@@ -26,7 +26,10 @@ const fmt = (item) => `${item.value}${item.priority > 0 ? " (P)" : ""}`;
 /** @type {PriorityQueue | null} */
 let queue = null;
 
-function setOutput(message) { els.output.textContent = message; }
+function setOutput(message) {
+    els.output.textContent = message;
+    window.DSA_UI?.announce?.(message, message.startsWith("Error") ? "assertive" : "polite");
+}
 
 function updateControls() {
     els.maxSize.disabled = queue !== null;

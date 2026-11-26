@@ -33,10 +33,9 @@ let list = null;
 function notify(message, type = "info") {
     const isError = type === "error";
     els.message.className = `alert-banner alert-live alert-${type}`;
-    els.message.setAttribute("role", isError ? "alert" : "status");
-    els.message.setAttribute("aria-live", isError ? "assertive" : "polite");
     els.message.textContent = message;
     els.message.hidden = !message;
+    window.DSA_UI?.announce?.(message, isError ? "assertive" : "polite");
 }
 
 const error = (message, focusEl) => { notify(message, "error"); focusEl?.focus(); };
@@ -133,6 +132,7 @@ function setEnabled(el, enabled) {
 }
 
 function updateState() {
+    const focused = document.activeElement;
     const ready = list !== null;
     setEnabled(els.limit, !ready);
     setEnabled(els.setLimit, !ready);
@@ -141,6 +141,8 @@ function updateState() {
     ALWAYS_WITH_LIST.forEach((id) => setEnabled($(id), ready));
     NEEDS_ROOM.forEach((id) => setEnabled($(id), ready && !list.isFull()));
     NEEDS_NODES.forEach((id) => setEnabled($(id), ready && !list.isEmpty()));
+    // Focused control may have just been disabled (e.g. Clear empties the list): keep focus on the page.
+    window.DSA_UI?.rescueFocus?.(focused, els.value, els.limit, els.reset);
 }
 
 function refresh(highlightAddress = null) {

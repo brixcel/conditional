@@ -38,10 +38,9 @@ let list = null;
 function notify(message, type = "info") {
     const isError = type === "error";
     els.message.className = `alert-banner alert-live alert-${type}`;
-    els.message.setAttribute("role", isError ? "alert" : "status");
-    els.message.setAttribute("aria-live", isError ? "assertive" : "polite");
     els.message.textContent = message;
     els.message.hidden = !message;
+    window.DSA_UI?.announce?.(message, isError ? "assertive" : "polite");
 }
 
 const error = (message, focusEl) => { notify(message, "error"); focusEl?.focus(); };
@@ -131,12 +130,15 @@ function render(highlightAddress = null) {
 }
 
 function updateState() {
+    const focused = document.activeElement;
     const ready = list !== null;
     els.maxSize.disabled = ready;
     els.setMax.disabled = ready;
     els.reminder.hidden = ready;
     [els.value, els.index, els.address, els.newAddress].forEach((el) => { el.disabled = !ready; });
     OP_BUTTONS.forEach((id) => { $(id).disabled = !ready; });
+    // Set Max Size disables itself; keep focus on the page.
+    window.DSA_UI?.rescueFocus?.(focused, els.value, els.maxSize);
 }
 
 function refresh(highlightAddress = null) {

@@ -26,6 +26,7 @@ function show(message, type = "info") {
     els.message.textContent = message;
     els.message.className = `alert-banner alert-live alert-${type}`;
     els.message.hidden = false;
+    window.DSA_UI?.announce?.(message, type === "error" ? "assertive" : "polite");
 }
 
 function label(text, strong) {
@@ -79,6 +80,7 @@ function render() {
 }
 
 function updateButtons() {
+    const focused = document.activeElement;
     const ready = queue !== null && !busy;
     const empty = !queue || queue.isEmpty();
     els.setSize.disabled = queue !== null;
@@ -92,6 +94,9 @@ function updateButtons() {
     els.isEmpty.disabled = !ready;
     els.isFull.disabled = !ready;
     els.clear.disabled = !ready || empty;
+    // Focused control may have just been disabled (e.g. Clear empties the list): keep focus on the page.
+    // (Not during the dequeue animation: finish() puts focus back on the input itself.)
+    if (!busy) window.DSA_UI?.rescueFocus?.(focused, els.input, els.size, els.reset);
 }
 
 function setSize() {

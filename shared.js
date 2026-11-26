@@ -6,23 +6,23 @@
 (function () {
     // Clean SVG icon system (replacing casual emojis with professional vector geometry)
     const SVG_ICONS = {
-        overview: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`,
-        stack: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>`,
-        regularQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="5" height="10" rx="1"/><rect x="9.5" y="7" width="5" height="10" rx="1"/><rect x="17" y="7" width="5" height="10" rx="1"/><path d="M2 12h20"/><polyline points="18 8 22 12 18 16"/></svg>`,
-        circularQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
-        priorityQueue: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-        singlyList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><line x1="8" y1="12" x2="16" y2="12"/><polyline points="13 9 16 12 13 15"/></svg>`,
-        doublyList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><line x1="6.5" y1="10" x2="17.5" y2="10"/><polyline points="15 7 17.5 10 15 13"/><line x1="17.5" y1="14" x2="6.5" y2="14"/><polyline points="9 11 6.5 14 9 17"/></svg>`,
-        circularList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="16" r="2.5"/><circle cx="5" cy="16" r="2.5"/><path d="M14.5 6.5l3 6.5"/><path d="M16.5 17.5l-9 0"/><path d="M6.5 13.5l3.5-6.5"/></svg>`,
-        avlTree: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
-        sorting: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
-        heap: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="10.5" y1="7.5" x2="7.5" y2="15.5"/><line x1="13.5" y1="7.5" x2="16.5" y2="15.5"/></svg>`,
-        hashTable: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
-        searching: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-        menu: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
+        overview: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`,
+        stack: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>`,
+        regularQueue: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="5" height="10" rx="1"/><rect x="9.5" y="7" width="5" height="10" rx="1"/><rect x="17" y="7" width="5" height="10" rx="1"/><path d="M2 12h20"/><polyline points="18 8 22 12 18 16"/></svg>`,
+        circularQueue: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
+        priorityQueue: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+        singlyList: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><line x1="8" y1="12" x2="16" y2="12"/><polyline points="13 9 16 12 13 15"/></svg>`,
+        doublyList: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><line x1="6.5" y1="10" x2="17.5" y2="10"/><polyline points="15 7 17.5 10 15 13"/><line x1="17.5" y1="14" x2="6.5" y2="14"/><polyline points="9 11 6.5 14 9 17"/></svg>`,
+        circularList: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="16" r="2.5"/><circle cx="5" cy="16" r="2.5"/><path d="M14.5 6.5l3 6.5"/><path d="M16.5 17.5l-9 0"/><path d="M6.5 13.5l3.5-6.5"/></svg>`,
+        avlTree: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
+        sorting: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
+        heap: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="10.5" y1="7.5" x2="7.5" y2="15.5"/><line x1="13.5" y1="7.5" x2="16.5" y2="15.5"/></svg>`,
+        hashTable: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
+        searching: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+        menu: `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
         sun: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
         moon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
-        close: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+        close: `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
     };
 
     // ---- Theme -------------------------------------------------------------
@@ -176,7 +176,7 @@
         let navHtml = `
             <div class="side-navbar-header">
                 <div class="side-navbar-brand-wrap">
-                    <svg class="brand-icon" viewBox="0 0 32 32" width="24" height="24">
+                    <svg class="brand-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32" width="24" height="24">
                         <circle cx="16" cy="7" r="4.5" fill="#2563EB"/>
                         <circle cx="8" cy="23" r="3.5" fill="#38BDF8"/>
                         <circle cx="24" cy="23" r="3.5" fill="#38BDF8"/>
@@ -188,7 +188,7 @@
                         <div class="side-navbar-sub">Academic Workbench</div>
                     </div>
                 </div>
-                <button class="side-navbar-close" id="closeBtn" aria-label="Close menu">${SVG_ICONS.close}</button>
+                <button type="button" class="side-navbar-close" id="closeBtn" aria-label="Close menu">${SVG_ICONS.close}</button>
             </div>
             <div class="side-navbar-scroll">
         `;
@@ -219,10 +219,12 @@
         let openBtn = document.getElementById("openBtn") || document.getElementById("menuBtn");
         if (!openBtn) {
             openBtn = document.createElement("button");
+            openBtn.type = "button";
             openBtn.id = "openBtn";
             openBtn.className = "nav-open-btn";
             openBtn.innerHTML = `${SVG_ICONS.menu} <span>Modules</span>`;
-            openBtn.setAttribute("aria-label", "Open navigation menu");
+            // No aria-label: the visible text "Modules" is the name (WCAG 2.5.3), and
+            // aria-expanded below tells screen readers whether the menu is open.
             document.body.prepend(openBtn);
         } else {
             openBtn.classList.add("nav-open-btn");
@@ -304,7 +306,70 @@
         });
     }
 
+    // ---- Screen-reader announcer ---------------------------------------------
+    // One polite and one assertive live region, created as soon as this script runs
+    // (it is loaded at the end of <body>, before the page modules). A live region
+    // must already be in the accessibility tree when its text changes; the visible
+    // banners are [hidden] until their first message, so they were often not read.
+    // Pages call DSA_UI.announce(); the banners stay purely visual.
+    const liveRegions = {};
+    let announceTimer = null;
+
+    function liveRegion(politeness) {
+        const existing = liveRegions[politeness];
+        if (existing && existing.isConnected) return existing;
+        const el = document.createElement("div");
+        el.className = "visually-hidden";
+        el.setAttribute("role", politeness === "assertive" ? "alert" : "status");
+        el.setAttribute("aria-live", politeness);
+        el.setAttribute("aria-atomic", "true");
+        el.setAttribute("data-announcer", politeness);
+        document.body.appendChild(el);
+        liveRegions[politeness] = el;
+        return el;
+    }
+
+    function initAnnouncer() {
+        liveRegion("polite");
+        liveRegion("assertive");
+    }
+
+    /**
+     * Read `message` to screen readers. `politeness` is "polite" (default: results,
+     * info) or "assertive" (errors). An empty message cancels a pending one.
+     */
+    function announce(message, politeness) {
+        if (!document.body) return;
+        const kind = politeness === "assertive" ? "assertive" : "polite";
+        const target = liveRegion(kind);
+        const other = liveRegion(kind === "assertive" ? "polite" : "assertive");
+        clearTimeout(announceTimer);
+        target.textContent = "";
+        other.textContent = "";
+        if (!message) return;
+        // Write on a later tick so the same message twice in a row is still read.
+        announceTimer = setTimeout(function () { target.textContent = String(message); }, 60);
+    }
+
+    if (document.body) initAnnouncer();
+    else document.addEventListener("DOMContentLoaded", initAnnouncer);
+
     window.DSA_UI = {
+        announce: announce,
+
+        /**
+         * Call at the end of a re-render with the element that was focused before it.
+         * If that element is now disabled or was removed, focus the first usable
+         * fallback so keyboard and screen-reader users do not drop to <body>.
+         */
+        rescueFocus: function (previous) {
+            if (!previous || previous === document.body || previous === document.documentElement) return;
+            if (previous.isConnected && !previous.disabled) return;
+            const fallbacks = Array.prototype.slice.call(arguments, 1);
+            const target = fallbacks.find(function (el) { return el && el.isConnected && !el.disabled; });
+            if (target) target.focus();
+        },
+
         showToast: function (message, type = "info", duration = 3500) {
             let toastContainer = document.getElementById("toastContainer");
             if (!toastContainer) {

@@ -4,6 +4,7 @@
  * src/structures/hash-table.js; this file renders snapshots via StepPlayer.
  */
 import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
 import {
     HashTable,
     HASH_STRATEGIES,
@@ -66,16 +67,39 @@ const OP_LABELS = {
 
 let table = new HashTable(HashTable.DEFAULT_CAPACITY, { strategy: "chaining" });
 let currentCodeKey = "";
+let announceReady = false; // no banner announcements during page setup
 
 const player = new StepPlayer({ onStep: render, baseDelay: 800 });
+
+// Screen readers: #stepMessage is a polite live region, but it only speaks for steps the
+// user asked for (player buttons, keys, slider) and for the last step of an autoplay run
+// (insert/search/… announce their result through the banner, then autoplay). During autoplay it is aria-live="off", so a reader is not flooded with a
+// new sentence every step (several per second at 4x). Page load stays silent.
+let userStep = false;
+let liveReady = false;
+const byUser = (fn) => (...args) => {
+    userStep = true;
+    try { return fn(...args); } finally { userStep = false; }
+};
+function setStepMessage(text, p) {
+    els.stepMessage.setAttribute("aria-live", liveReady && (userStep || p.atEnd) ? "polite" : "off");
+    if (els.stepMessage.textContent !== text) els.stepMessage.textContent = text;
+}
+// Keyboard shortcuts go through the same wrappers so they count as user steps.
+const userControls = {
+    toggle: byUser(() => player.toggle()),
+    pause: byUser(() => player.pause()),
+    next: byUser(() => player.next()),
+    prev: byUser(() => player.prev()),
+    reset: byUser(() => player.reset()),
+};
 
 function notify(msg, type = "info", invalidField = null) {
     const isError = type === "error";
     els.message.className = `alert-banner alert-live alert-${type}`;
-    els.message.setAttribute("role", isError ? "alert" : "status");
-    els.message.setAttribute("aria-live", isError ? "assertive" : "polite");
     els.message.textContent = msg || "";
     els.message.hidden = !msg;
+    if (announceReady) window.DSA_UI?.announce?.(msg, isError ? "assertive" : "polite");
 
     els.keyInput.setAttribute("aria-invalid", invalidField === "key" ? "true" : "false");
     els.valueInput.setAttribute("aria-invalid", invalidField === "value" ? "true" : "false");
@@ -308,7 +332,7 @@ function render(step, index, p) {
 
     [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === step.line));
 
-    els.stepMessage.textContent = step.message;
+    setStepMessage(step.message, p);
     els.statFormula.textContent = `h(k) = ((k mod ${snap.capacity}) + ${snap.capacity}) mod ${snap.capacity}`;
     els.statSize.textContent = String(snap.size);
     els.statCap.textContent = String(snap.capacity);
@@ -322,10 +346,14 @@ function render(step, index, p) {
     els.progress.value = index;
 
     els.playBtn.innerHTML = p.isPlaying ? "&#x23F8; Pause" : (p.atEnd ? "&#x21BB; Replay" : "&#x25B6; Play");
-    els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : "Play");
+    els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : (p.atEnd ? "Replay" : "Play"));
+    els.progress.setAttribute("aria-valuetext", `Step ${index + 1} of ${p.length}`);
+    const focused = document.activeElement;
     els.prevBtn.disabled = p.atStart;
     els.resetBtn.disabled = p.atStart;
     els.nextBtn.disabled = p.atEnd;
+    // A focused Back/Reset/Step button that just became disabled would drop focus to <body>.
+    if (focused && focused.disabled) els.playBtn.focus();
 }
 
 function playSteps(steps, { autoPlay = true } = {}) {
@@ -479,21 +507,19 @@ els.capacity.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); handleRehash(); }
 });
 
-els.playBtn.addEventListener("click", () => player.toggle());
-els.nextBtn.addEventListener("click", () => { player.pause(); player.next(); });
-els.prevBtn.addEventListener("click", () => player.prev());
-els.resetBtn.addEventListener("click", () => player.reset());
+els.playBtn.addEventListener("click", userControls.toggle);
+els.nextBtn.addEventListener("click", () => { userControls.pause(); userControls.next(); });
+els.prevBtn.addEventListener("click", userControls.prev);
+els.resetBtn.addEventListener("click", userControls.reset);
 els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value)));
-els.progress.addEventListener("input", () => { player.pause(); player.goTo(Number(els.progress.value)); });
+els.progress.addEventListener("input", byUser(() => {
+    // Read the slider before pausing: pause() re-renders and can reset els.progress.value.
+    const target = Number(els.progress.value);
+    player.pause();
+    player.goTo(target);
+}));
 
-document.addEventListener("keydown", (e) => {
-    const tag = e.target.tagName;
-    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
-    if (e.key === " ") { e.preventDefault(); player.toggle(); }
-    else if (e.key === "ArrowRight") { player.pause(); player.next(); }
-    else if (e.key === "ArrowLeft") player.prev();
-    else if (e.key === "Home") player.reset();
-});
+bindPlayerKeys(document, userControls);
 
 // Populate comparison table from the static HASH_STRATEGIES registry (no user text).
 $("cxTable").innerHTML = Object.values(HASH_STRATEGIES).map(s =>
@@ -502,3 +528,5 @@ $("cxTable").innerHTML = Object.values(HASH_STRATEGIES).map(s =>
 ).join("");
 
 loadDemoData();
+announceReady = true;
+liveReady = true;

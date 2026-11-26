@@ -90,7 +90,7 @@
                 <span class="viz-stage-label">Priority Order Pipeline</span>
                 <div class="pq-pipeline">
                     <span class="pq-endpoint-label">FRONT (Highest)</span>
-                    <div id="queueDisplay" class="queue-container">
+                    <div id="queueDisplay" class="queue-container" role="group" aria-label="Priority queue, front first">
                         <p class="text-muted text-italic">Queue is empty</p>
                     </div>
                     <span class="pq-endpoint-label">BACK (Lowest)</span>
@@ -98,7 +98,7 @@
             </div>
 
             <!-- Output Message Banner -->
-            <div class="output-box" id="output" role="status" aria-live="polite">Set max size and perform operations to inspect priority queue state</div>
+            <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
         </div>
 
         <!-- Educational Reference -->

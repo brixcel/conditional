@@ -25,8 +25,8 @@ let queue = null;
 function show(text, type = "info") {
     els.status.textContent = text;
     els.status.className = `alert-banner alert-live alert-${type}`;
-    els.status.setAttribute("role", type === "error" ? "alert" : "status");
     els.status.hidden = !text;
+    window.DSA_UI?.announce?.(text, type === "error" ? "assertive" : "polite");
     els.output.textContent = text;
 }
 
@@ -92,9 +92,11 @@ function render() {
             els.ring.append(ind);
         }
     });
+    // role="img" hides the slot elements, so the name lists every slot.
+    const slotText = slots.map((v, i) => `[${i}] ${v === null ? "empty" : v}`).join(", ");
     els.ring.setAttribute("aria-label",
         empty ? `Empty ring of ${queue.capacity} slots. front = rear = −1.`
-              : `Ring of ${queue.capacity} slots holding ${queue.size}: front index ${front}, rear index ${rear}.`);
+              : `Ring of ${queue.capacity} slots holding ${queue.size}: front index ${front}, rear index ${rear}. Slots: ${slotText}.`);
     updateControls();
 }
 

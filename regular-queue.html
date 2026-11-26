@@ -51,39 +51,41 @@
             <div class="control-section">
                 <div class="control-section-title">1. Queue Sizing &amp; Reset</div>
                 <div class="controls-row">
+                    <label for="queueSize" class="inline-label">Max size (1-100):</label>
                     <input id="queueSize" class="input-md" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
-                    <button id="setQueueSizeBtn" class="btn" aria-label="Set Queue Size">Set Queue Size</button>
-                    <button id="resetQueueSizeBtn" class="btn btn-danger" aria-label="Reset Queue Size">Reset Queue</button>
+                    <button type="button" id="setQueueSizeBtn" class="btn">Set Queue Size</button>
+                    <button type="button" id="resetQueueSizeBtn" class="btn btn-danger">Reset Queue</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">2. Enqueue / Dequeue Mutations</div>
                 <div class="controls-row">
-                    <input id="queueInput" class="input-md" type="text" placeholder="Enter integer element">
-                    <button id="enqueueBtn" class="btn" aria-label="Enqueue Element" disabled>Enqueue (Rear)</button>
-                    <button id="dequeueBtn" class="btn btn-danger" aria-label="Dequeue Element" disabled>Dequeue (Front)</button>
+                    <label for="queueInput" class="inline-label">Value (1-9999):</label>
+                    <input id="queueInput" class="input-md" type="text" inputmode="numeric" placeholder="Enter integer element">
+                    <button type="button" id="enqueueBtn" class="btn" disabled>Enqueue (Rear)</button>
+                    <button type="button" id="dequeueBtn" class="btn btn-danger" disabled>Dequeue (Front)</button>
                 </div>
             </div>
 
             <div class="control-section">
                 <div class="control-section-title">3. Queue Inspection</div>
                 <div class="controls-row">
-                    <button id="peekBtn" class="btn btn-secondary" aria-label="Peek Front Element" disabled>Peek (Front)</button>
-                    <button id="rearBtn" class="btn btn-secondary" aria-label="View Rear Element" disabled>Rear (Tail)</button>
-                    <button id="isEmptyBtn" class="btn btn-secondary" aria-label="Check If Queue is Empty" disabled>isEmpty?</button>
-                    <button id="isFullBtn" class="btn btn-secondary" aria-label="Check If Queue is Full" disabled>isFull?</button>
-                    <button id="clearQueueBtn" class="btn btn-danger" aria-label="Clear Queue" disabled>Clear All</button>
+                    <button type="button" id="peekBtn" class="btn btn-secondary" disabled>Peek (Front)</button>
+                    <button type="button" id="rearBtn" class="btn btn-secondary" disabled>Rear (Tail)</button>
+                    <button type="button" id="isEmptyBtn" class="btn btn-secondary" disabled>isEmpty?</button>
+                    <button type="button" id="isFullBtn" class="btn btn-secondary" disabled>isFull?</button>
+                    <button type="button" id="clearQueueBtn" class="btn btn-danger" disabled>Clear All</button>
                 </div>
             </div>
 
             <!-- Result of the last operation (kept next to the stage so it stays in view) -->
-            <div id="queueMessage" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
+            <div id="queueMessage" class="alert-banner alert-live" hidden></div>
 
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">FIFO Buffer Stage (Front &rarr; Rear)</span>
-                <div id="queue" class="queue-display"></div>
+                <div id="queue" class="queue-display" role="group" aria-label="Queue array, index 0 first"></div>
             </div>
             <div class="state-monitor" id="queueState" aria-live="polite"></div>
         </div>
