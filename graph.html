@@ -105,25 +105,36 @@
 
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Traversal (BFS &amp; DFS)</h2>
+                <h2 class="card-title">Graph Algorithms</h2>
             </div>
             <p class="concept-body" id="travSummary">
-                Run a breadth-first or depth-first search on the graph above and replay every step below.
-                Ties always go to the smallest vertex ID; directed graphs follow out-edges only.
+                Run a traversal (BFS, DFS), a shortest-path algorithm (Dijkstra, Bellman-Ford) or a topological
+                sort on the graph above and replay every step below. Ties always go to the smallest vertex ID;
+                directed graphs follow out-edges only.
             </p>
             <form class="control-section" id="travForm" novalidate>
-                <div class="control-section-title">5. Traverse the Graph</div>
+                <div class="control-section-title">5. Run a Graph Algorithm</div>
                 <div class="controls-row">
                     <div class="field">
                         <label class="field-label" for="travAlgo">Algorithm</label>
-                        <select id="travAlgo">
-                            <option value="bfs" selected>BFS (queue)</option>
-                            <option value="dfsIterative">DFS (iterative, stack)</option>
-                            <option value="dfsRecursive">DFS (recursive, call stack)</option>
+                        <select id="travAlgo" aria-describedby="travAlgoHint">
+                            <optgroup label="Traversal">
+                                <option value="bfs" selected>BFS (queue)</option>
+                                <option value="dfsIterative">DFS (iterative, stack)</option>
+                                <option value="dfsRecursive">DFS (recursive, call stack)</option>
+                            </optgroup>
+                            <optgroup label="Shortest paths">
+                                <option value="dijkstra">Dijkstra (binary heap)</option>
+                                <option value="bellmanFord">Bellman-Ford</option>
+                            </optgroup>
+                            <optgroup label="Topological sort (directed graphs only)">
+                                <option value="topoKahn">Topological sort (Kahn)</option>
+                                <option value="topoDfs">Topological sort (DFS)</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="field">
-                        <label class="field-label" for="travStart">Start vertex (0&ndash;11)</label>
+                        <label class="field-label" for="travStart">Start / source vertex (0&ndash;11)</label>
                         <input type="text" id="travStart" class="input-sm gr-input-xs" inputmode="numeric"
                                autocomplete="off" placeholder="e.g. 0" value="0">
                     </div>
@@ -131,13 +142,14 @@
                         <input type="checkbox" id="travAll">
                         <span>All components</span>
                     </label>
-                    <button type="submit" class="btn" id="travBtn">Traverse</button>
+                    <button type="submit" class="btn" id="travBtn">Run</button>
                 </div>
                 <p class="text-muted gr-mode-hint" id="travHint">
                     &ldquo;All components&rdquo; restarts from the smallest unvisited vertex until every vertex is visited (the start vertex is ignored).
                 </p>
+                <p class="text-muted gr-mode-hint" id="travAlgoHint"></p>
             </form>
-            <div class="table-wrap hp-scroll-region" role="region" aria-label="Traversal complexity" tabindex="0">
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Graph algorithm complexity" tabindex="0">
                 <table class="cx-table">
                     <thead>
                         <tr>
@@ -234,6 +246,21 @@
                     <span><i class="sw gr-sw-trav-tree"></i> Tree edge (thick solid line)</span>
                     <span><i class="sw gr-sw-trav-check"></i> Edge being checked (dashed line)</span>
                 </div>
+                <div class="bar-legend gr-legend gr-hidden" id="spLegend" aria-hidden="true">
+                    <span><i class="sw gr-sw-trav-current"></i> Current vertex (extra outer ring / double border)</span>
+                    <span><i class="sw gr-sw-trav-frontier"></i> Waiting in the priority queue (dashed ring)</span>
+                    <span><i class="sw gr-sw-trav-visited"></i> Settled (Dijkstra) / reached (Bellman-Ford) (thick solid ring); badge d = distance</span>
+                    <span><i class="sw gr-sw-trav-tree"></i> Shortest-path tree edge (thick solid; extra thick when just relaxed)</span>
+                    <span><i class="sw gr-sw-trav-check"></i> Edge checked, no improvement (dashed line)</span>
+                </div>
+                <div class="bar-legend gr-legend gr-hidden" id="topoLegend" aria-hidden="true">
+                    <span><i class="sw gr-sw-trav-current"></i> Current vertex (extra outer ring / double border)</span>
+                    <span><i class="sw gr-sw-trav-frontier"></i> Ready (Kahn) / active on the call stack (DFS) (dashed ring)</span>
+                    <span><i class="sw gr-sw-trav-visited"></i> Output (Kahn) / finished (DFS) (thick solid ring, #k)</span>
+                    <span><i class="sw gr-sw-trav-tree"></i> DFS tree edge (thick solid line)</span>
+                    <span><i class="sw gr-sw-sp-removed"></i> Edge already removed by Kahn (thin dotted, faded)</span>
+                    <span><i class="sw gr-sw-sp-cycle"></i> Cycle edge (thick dotted line, &ldquo;cycle&rdquo; badge)</span>
+                </div>
             </div>
 
             <div class="grid-2 gr-views-grid">
@@ -267,8 +294,8 @@
             </div>
 
             <div class="gr-trav-panel gr-hidden" id="travPanel" role="group" aria-labelledby="travPanelTitle">
-                <div class="control-section-title" id="travPanelTitle">Traversal State</div>
-                <div class="gr-trav-row">
+                <div class="control-section-title" id="travPanelTitle">Algorithm State</div>
+                <div class="gr-trav-row" id="travFrontierRow">
                     <span class="gr-trav-row-label" id="travFrontierLabel">Queue (front &rarr; back)</span>
                     <ol class="gr-adj-neighbors gr-trav-chips" id="travFrontier" role="list" aria-labelledby="travFrontierLabel"></ol>
                 </div>
@@ -276,16 +303,24 @@
                     <span class="gr-trav-row-label" id="travCallLabel">Call stack (top &rarr; bottom)</span>
                     <ol class="gr-adj-neighbors gr-trav-chips" id="travCallStack" role="list" aria-labelledby="travCallLabel"></ol>
                 </div>
-                <div class="gr-trav-row">
+                <div class="gr-trav-row" id="travOrderRow">
                     <span class="gr-trav-row-label" id="travOrderLabel">Visit order</span>
                     <ol class="gr-adj-neighbors gr-trav-chips" id="travOrder" role="list" aria-labelledby="travOrderLabel"></ol>
+                </div>
+                <div class="table-wrap hp-scroll-region gr-sp-table-wrap gr-hidden" id="spTableWrap"
+                     role="region" aria-labelledby="spTableCaption" tabindex="0">
+                    <table class="cx-table gr-sp-table">
+                        <caption id="spTableCaption" class="gr-sp-caption">Per-vertex state</caption>
+                        <thead><tr id="spTableHead"></tr></thead>
+                        <tbody id="spTableBody"></tbody>
+                    </table>
                 </div>
                 <div class="state-monitor stat-grid">
                     <div><span>Algorithm</span><strong id="travStatAlgo">&mdash;</strong></div>
                     <div><span>Current</span><strong id="travStatCurrent">&mdash;</strong></div>
-                    <div><span>Visited</span><strong id="travStatVisited">0</strong></div>
+                    <div><span id="travStatVisitedLabel">Visited</span><strong id="travStatVisited">0</strong></div>
                     <div><span>Edges checked</span><strong id="travStatEdges">0</strong></div>
-                    <div><span>Component</span><strong id="travStatComponent">&mdash;</strong></div>
+                    <div><span id="travStatComponentLabel">Component</span><strong id="travStatComponent">&mdash;</strong></div>
                 </div>
             </div>
 
@@ -345,7 +380,7 @@
                 </div>
                 <div class="check">
                     <h2>Ascending Neighbor Order for Traversals</h2>
-                    <p>Keeping every vertex&rsquo;s neighbor list strictly ascending by vertex ID guarantees deterministic visitation order in <strong>BFS</strong> and <strong>DFS</strong>, and deterministic neighbor relaxation order in <strong>Dijkstra&rsquo;s algorithm</strong>, so every student traces the same sequence across runs.</p>
+                    <p>Keeping every vertex&rsquo;s neighbor list strictly ascending by vertex ID guarantees deterministic visitation order in <strong>BFS</strong> and <strong>DFS</strong>, and deterministic neighbor relaxation order in <strong>Dijkstra&rsquo;s algorithm</strong> and <strong>Bellman-Ford</strong> (edges tried in ascending (from, to) order), and a single answer for <strong>topological sort</strong> (Kahn always takes the smallest ready vertex), so every student traces the same sequence across runs.</p>
                 </div>
             </div>
         </div>

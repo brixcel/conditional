@@ -6,13 +6,33 @@
  * Reuses main.css section 14–16 classes — zero inline styling writes, zero HTML string injection.
  * C23: the Traversal card replays traced BFS / DFS steps from src/algorithms/graph-traversal.js
  * through the same StepPlayer and views (section 17 classes + section 21 "Graph Traversal").
+ * C26: the card became "Graph Algorithms" and also replays Dijkstra, Bellman-Ford and
+ * topological sort (Kahn / DFS) from src/algorithms/shortest-paths.js (section 22 classes).
  */
 import { StepPlayer } from "../core/step-player.js";
 import { bindPlayerKeys } from "../core/player-keys.js";
 import { parseInteger } from "../core/validate.js";
 import { layoutCircle } from "../core/graph-layout.js";
 import { Graph, GRAPH_INFO, GRAPH_LIMITS } from "../structures/graph.js";
-import { GRAPH_TRAVERSAL_INFO, TRAVERSAL_KINDS, traceTraversal, parseStartVertex } from "../algorithms/graph-traversal.js";
+import { GRAPH_TRAVERSAL_INFO, traceTraversal, parseStartVertex } from "../algorithms/graph-traversal.js";
+import {
+    SHORTEST_PATHS_INFO,
+    TOPO_INFO,
+    traceShortestPath,
+    topologicalSort,
+} from "../algorithms/shortest-paths.js";
+
+/** Every option of #travAlgo: which module runs it and which registry entry describes it. */
+const ALGOS = Object.freeze({
+    bfs: { family: "trav", info: GRAPH_TRAVERSAL_INFO.bfs },
+    dfsIterative: { family: "trav", info: GRAPH_TRAVERSAL_INFO.dfsIterative },
+    dfsRecursive: { family: "trav", info: GRAPH_TRAVERSAL_INFO.dfsRecursive },
+    dijkstra: { family: "sp", info: SHORTEST_PATHS_INFO.dijkstra },
+    bellmanFord: { family: "sp", info: SHORTEST_PATHS_INFO.bellmanFord },
+    topoKahn: { family: "topo", method: "kahn", info: TOPO_INFO.kahn },
+    topoDfs: { family: "topo", method: "dfs", info: TOPO_INFO.dfs },
+});
+const fmtDist = (d) => (d === Infinity ? "∞" : String(d));
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const NODE_RADIUS = 19;
@@ -102,7 +122,23 @@ const els = {
     travAll: $("travAll"),
     travBtn: $("travBtn"),
     travLegend: $("travLegend"),
+    spLegend: $("spLegend"),
+    topoLegend: $("topoLegend"),
+    travHint: $("travHint"),
+    travAlgoHint: $("travAlgoHint"),
+    travSummary: $("travSummary"),
     travPanel: $("travPanel"),
+    travPanelTitle: $("travPanelTitle"),
+    travFrontierRow: $("travFrontierRow"),
+    travOrderRow: $("travOrderRow"),
+    travOrderLabel: $("travOrderLabel"),
+    travCallLabel: $("travCallLabel"),
+    spTableWrap: $("spTableWrap"),
+    spTableCaption: $("spTableCaption"),
+    spTableHead: $("spTableHead"),
+    spTableBody: $("spTableBody"),
+    travStatVisitedLabel: $("travStatVisitedLabel"),
+    travStatComponentLabel: $("travStatComponentLabel"),
     travFrontierLabel: $("travFrontierLabel"),
     travFrontier: $("travFrontier"),
     travCallRow: $("travCallRow"),
@@ -263,6 +299,7 @@ function syncModeInputs() {
         ? "Weights (1–99) are required."
         : "Weights are disabled in unweighted mode.";
     els.modeHint.textContent = `${dirNote} ${wtNote}`;
+    syncTraversalInputs();
 }
 
 /* ---------- Pure snapshot derivations (single source of truth per frame) ---------- */
@@ -369,60 +406,162 @@ function snapshotIntegrityError(snap, adjList, matrixData) {
     return null;
 }
 
-/* ---------- Traversal frame state (derived from one recorded traversal step) ---------- */
+/* ---------- Algorithm frame state (derived from one recorded algorithm step) ---------- */
 
-// Step types whose `edge` is the edge currently being checked from `edge.from`.
+// Traversal step types whose `edge` is the edge currently being checked from `edge.from`.
 const EDGE_CHECK_TYPES = new Set(["discover", "enqueue", "push", "skip-visited", "tree-edge"]);
 
-/** Returns null for graph-editing steps; otherwise the per-frame highlight sets. */
+function addEdgeKey(set, from, to, directed) {
+    set.add(`${from}->${to}`);
+    if (!directed) set.add(`${to}->${from}`);
+}
+
+/**
+ * Returns null for graph-editing steps; otherwise the per-frame highlight sets shared by the
+ * three views. `badge` is the short text drawn under each vertex; `notes` is spoken text.
+ */
 function traversalState(step) {
     if (!step.traversal) return null;
-    const checking = EDGE_CHECK_TYPES.has(step.type) && step.edge !== null;
-    const current = checking ? step.edge.from : step.vertex;
-    const treeKeys = new Set();
-    for (const e of step.treeEdges) {
-        treeKeys.add(`${e.from}->${e.to}`);
-        if (!step.snapshot.directed) treeKeys.add(`${e.to}->${e.from}`);
-    }
-    return {
+    const directed = step.snapshot.directed;
+    const family = step.family ?? "trav";
+    const frame = {
         kind: step.kind,
-        current,
+        family,
+        current: step.vertex,
         edge: step.edge,
-        frontier: new Set(step.frontier),
-        visited: new Set(step.visited),
-        orderIndex: new Map(step.order.map((v, i) => [v, i + 1])),
-        treeKeys,
+        relaxed: false,
+        frontier: new Set(),
+        visited: new Set(),
+        orderIndex: new Map(),
+        treeKeys: new Set(),
+        removedKeys: new Set(),
+        cycleKeys: new Set(),
+        cycleVertices: new Set(),
+        badge: new Map(),
+        notes: new Map(),
     };
+    const note = (id, text) => {
+        if (!frame.notes.has(id)) frame.notes.set(id, []);
+        frame.notes.get(id).push(text);
+    };
+    for (const e of step.treeEdges ?? []) addEdgeKey(frame.treeKeys, e.from, e.to, directed);
+    if (step.cycle) {
+        step.cycle.forEach((v, i) => {
+            frame.cycleVertices.add(v);
+            addEdgeKey(frame.cycleKeys, v, step.cycle[(i + 1) % step.cycle.length], directed);
+        });
+    }
+
+    if (family === "trav") {
+        const checking = EDGE_CHECK_TYPES.has(step.type) && step.edge !== null;
+        frame.current = checking ? step.edge.from : step.vertex;
+        frame.frontier = new Set(step.frontier);
+        frame.visited = new Set(step.visited);
+        frame.orderIndex = new Map(step.order.map((v, i) => [v, i + 1]));
+        const word = travFrontierWord(step.kind);
+        for (const id of step.snapshot.vertices) {
+            if (frame.orderIndex.has(id)) {
+                frame.badge.set(id, `#${frame.orderIndex.get(id)}`);
+                note(id, `visited #${frame.orderIndex.get(id)}`);
+            } else if (frame.visited.has(id)) {
+                note(id, "marked visited");
+            }
+            if (frame.frontier.has(id)) {
+                if (!frame.badge.has(id)) frame.badge.set(id, word);
+                note(id, word);
+            }
+        }
+    } else if (family === "sp") {
+        frame.current = step.edge ? step.edge.from : step.vertex;
+        frame.relaxed = step.type === "relax";
+        const isDijkstra = step.kind === "dijkstra";
+        frame.frontier = new Set(step.pq.filter((e) => !e.stale).map((e) => e.vertex));
+        frame.visited = isDijkstra
+            ? new Set(step.settled)
+            : new Set(step.snapshot.vertices.filter((v) => step.dist[v] !== Infinity));
+        for (const id of step.snapshot.vertices) {
+            frame.badge.set(id, `d=${fmtDist(step.dist[id])}`);
+            note(id, `distance ${step.dist[id] === Infinity ? "infinity" : step.dist[id]}`);
+            if (frame.visited.has(id)) note(id, isDijkstra ? "settled" : "reached");
+            if (frame.frontier.has(id)) note(id, "in priority queue");
+        }
+    } else {
+        frame.current = step.edge ? step.edge.from : step.vertex;
+        frame.orderIndex = new Map(step.order.map((v, i) => [v, i + 1]));
+        if (step.kind === "topoKahn") {
+            frame.frontier = new Set(step.ready);
+            for (const e of step.removedEdges) addEdgeKey(frame.removedKeys, e.from, e.to, directed);
+            for (const id of step.snapshot.vertices) {
+                if (step.status[id] === "output") {
+                    frame.visited.add(id);
+                    frame.badge.set(id, `#${frame.orderIndex.get(id)}`);
+                    note(id, `output #${frame.orderIndex.get(id)}`);
+                } else if (step.inDegree) {
+                    frame.badge.set(id, `in=${step.inDegree[id]}`);
+                    note(id, `in-degree ${step.inDegree[id]}`);
+                }
+                if (frame.frontier.has(id)) note(id, "ready");
+            }
+        } else {
+            frame.frontier = new Set(step.callStack);
+            const postIndex = new Map(step.postOrder.map((v, i) => [v, i + 1]));
+            for (const id of step.snapshot.vertices) {
+                if (step.status[id] === "finished") {
+                    frame.visited.add(id);
+                    frame.badge.set(id, `fin #${postIndex.get(id)}`);
+                    note(id, `finished #${postIndex.get(id)}`);
+                } else if (step.status[id] === "active") {
+                    frame.badge.set(id, "active");
+                    note(id, "active, on the call stack");
+                }
+            }
+        }
+    }
+    for (const id of frame.cycleVertices) {
+        frame.badge.set(id, "cycle");
+        note(id, "on the cycle");
+    }
+    if (frame.current !== null) note(frame.current, "current");
+    return frame;
 }
 
 function travFrontierWord(kind) {
     return kind === "bfs" ? "queued" : kind === "dfsIterative" ? "on stack" : "on call stack";
 }
 
-/** Classes + screen-reader suffix for a vertex during a traversal frame. */
+/** Classes + screen-reader suffix for a vertex during an algorithm frame. */
 function travVertexState(trav, id) {
     const classes = [];
-    const notes = [];
-    if (trav.visited.has(id)) {
-        classes.push("gr-trav-visited");
-        notes.push(trav.orderIndex.has(id) ? `visited #${trav.orderIndex.get(id)}` : "marked visited");
-    }
-    if (trav.frontier.has(id)) {
-        classes.push("gr-trav-frontier");
-        notes.push(travFrontierWord(trav.kind));
-    }
-    if (id === trav.current) {
-        classes.push("gr-trav-current");
-        notes.push("current");
-    }
+    if (trav.visited.has(id)) classes.push("gr-trav-visited");
+    if (trav.frontier.has(id)) classes.push("gr-trav-frontier");
+    if (id === trav.current) classes.push("gr-trav-current");
+    if (trav.cycleVertices.has(id)) classes.push("gr-sp-cycle-vertex");
+    const notes = trav.notes.get(id) ?? [];
     return { classes, note: notes.length ? ` (${notes.join(", ")})` : "" };
 }
 
 function travEdgeState(trav, u, v, directed) {
-    const isTree = trav.treeKeys.has(`${u}->${v}`);
+    const key = `${u}->${v}`;
+    const isTree = trav.treeKeys.has(key);
     const e = trav.edge;
     const isCheck = e !== null && ((e.from === u && e.to === v) || (!directed && e.from === v && e.to === u));
-    return { isTree, isCheck };
+    return {
+        isTree,
+        isCheck,
+        isRelax: isCheck && trav.relaxed,
+        isRemoved: trav.removedKeys.has(key),
+        isCycle: trav.cycleKeys.has(key),
+    };
+}
+
+/** Spoken suffix for an edge in the list / matrix views. */
+function travEdgeNote(trav, st) {
+    let s = "";
+    if (st.isTree) s += trav.family === "sp" ? ", shortest-path tree edge" : ", tree edge";
+    if (st.isRemoved) s += ", removed";
+    if (st.isCycle) s += ", on the cycle";
+    if (st.isCheck) s += st.isRelax ? ", just relaxed" : ", being checked";
+    return s;
 }
 
 /* ---------- View 1: Inline SVG Graph (pooled nodes & edges) ---------- */
@@ -585,11 +724,16 @@ function renderSvgGraph(step) {
         let edgeClass = isAdded ? "hp-edge gr-edge gr-state-add" : "hp-edge gr-edge";
         let marker = isAdded ? "url(#gr-arrow-add)" : "url(#gr-arrow-default)";
         if (trav) {
-            const { isTree, isCheck } = travEdgeState(trav, edge.from, edge.to, snap.directed);
+            const { isTree, isCheck, isRemoved, isCycle } = travEdgeState(trav, edge.from, edge.to, snap.directed);
             edgeClass = "hp-edge gr-edge";
             if (isTree) {
                 edgeClass += " gr-trav-tree";
                 marker = "url(#gr-arrow-add)";
+            }
+            if (isRemoved && !isCheck) edgeClass += " gr-sp-removed";
+            if (isCycle) {
+                edgeClass += " gr-sp-cycle";
+                marker = "url(#gr-arrow-remove)";
             }
             if (isCheck) {
                 edgeClass += isTree ? " gr-trav-active" : " gr-trav-check";
@@ -683,8 +827,7 @@ function renderSvgGraph(step) {
         let badge = "";
         if (trav) {
             nodeClasses.push(...travVertexState(trav, id).classes);
-            if (trav.orderIndex.has(id)) badge = `#${trav.orderIndex.get(id)}`;
-            else if (trav.frontier.has(id)) badge = travFrontierWord(trav.kind);
+            badge = trav.badge.get(id) ?? "";
         }
         entry.haloEl.setAttribute("class", trav && id === trav.current ? "gr-trav-halo" : "gr-trav-halo gr-hidden");
         entry.haloEl.setAttribute("cx", pos.x.toFixed(1));
@@ -852,16 +995,13 @@ function renderAdjacencyList(step, adjList) {
                 let chipClass = isAddedChip ? "gr-adj-chip mono gr-chip-add" : "gr-adj-chip mono";
                 let travNote = "";
                 if (trav) {
-                    const { isTree, isCheck } = travEdgeState(trav, id, to, snap.directed);
+                    const es = travEdgeState(trav, id, to, snap.directed);
                     chipClass = "gr-adj-chip mono";
-                    if (isTree) {
-                        chipClass += " gr-trav-chip-tree";
-                        travNote += ", tree edge";
-                    }
-                    if (isCheck) {
-                        chipClass += " gr-trav-chip-check";
-                        travNote += ", being checked";
-                    }
+                    if (es.isTree) chipClass += " gr-trav-chip-tree";
+                    if (es.isRemoved && !es.isCheck) chipClass += " gr-sp-chip-removed";
+                    if (es.isCycle) chipClass += " gr-sp-chip-cycle";
+                    if (es.isCheck) chipClass += " gr-trav-chip-check";
+                    travNote = travEdgeNote(trav, es);
                 }
                 slot.chip.className = chipClass;
                 slot.toSpan.textContent = String(to);
@@ -1022,14 +1162,12 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
             let cls = "";
             let travNote = "";
             if (trav && val !== null) {
-                const { isTree, isCheck } = travEdgeState(trav, u, v, snap.directed);
-                if (isCheck) {
-                    cls = "gr-trav-cell-check";
-                    travNote += ", being checked";
-                } else if (isTree) {
-                    cls = "gr-trav-cell-tree";
-                }
-                if (isTree) travNote += ", tree edge";
+                const es = travEdgeState(trav, u, v, snap.directed);
+                if (es.isCheck) cls = "gr-trav-cell-check";
+                else if (es.isCycle) cls = "gr-sp-cell-cycle";
+                else if (es.isTree) cls = "gr-trav-cell-tree";
+                else if (es.isRemoved) cls = "gr-sp-cell-removed";
+                travNote = travEdgeNote(trav, es);
             }
             if (cls) {
                 // traversal class already chosen
@@ -1060,7 +1198,7 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
 
 function updatePseudocode(step) {
     if (step.traversal) {
-        const info = GRAPH_TRAVERSAL_INFO[step.kind];
+        const { info } = ALGOS[step.kind];
         const key = `trav:${step.kind}:${step.mode}`;
         if (key !== currentCodeKey) {
             currentCodeKey = key;
@@ -1103,7 +1241,7 @@ function updateBuildPseudocode(step) {
 
 /* ---------- Traversal state panel (queue / stack, call stack, visit order) ---------- */
 
-function chipList(listEl, values, emptyText, srLabel) {
+function chipList(listEl, values, emptyText, srLabel, extraClass = () => "") {
     if (values.length === 0) {
         const li = document.createElement("li");
         li.className = "gr-adj-empty-item";
@@ -1114,7 +1252,8 @@ function chipList(listEl, values, emptyText, srLabel) {
     listEl.replaceChildren(
         ...values.map((text, i) => {
             const li = document.createElement("li");
-            li.className = i === 0 ? "gr-adj-chip mono gr-trav-chip-first" : "gr-adj-chip mono";
+            const extra = extraClass(i);
+            li.className = (i === 0 ? "gr-adj-chip mono gr-trav-chip-first" : "gr-adj-chip mono") + (extra ? ` ${extra}` : "");
             const vis = document.createElement("span");
             vis.setAttribute("aria-hidden", "true");
             vis.textContent = text;
@@ -1127,38 +1266,234 @@ function chipList(listEl, values, emptyText, srLabel) {
     );
 }
 
+/** Per-vertex table (shortest paths: dist / parent; Kahn: in-degree; DFS: finish order). */
+function renderVertexTable(step, trav) {
+    const ids = step.snapshot.vertices;
+    const target = step.edge ? step.edge.to : null;
+    let headers;
+    let rowFor;
+    if (step.family === "sp") {
+        const isDijkstra = step.kind === "dijkstra";
+        const settledIndex = new Map(step.settled.map((v, i) => [v, i + 1]));
+        els.spTableCaption.textContent = `Distance table from source ${step.source} (∞ = not reached yet)`;
+        headers = ["Vertex", "dist", "parent", "Status"];
+        rowFor = (v) => {
+            const isTarget = v === target;
+            const improved = isTarget && step.type === "relax";
+            const distText = improved ? `${fmtDist(step.oldDist)} → ${fmtDist(step.newDist)}` : fmtDist(step.dist[v]);
+            const status = [];
+            if (isDijkstra && settledIndex.has(v)) status.push(`settled #${settledIndex.get(v)}`);
+            else if (trav.frontier.has(v)) status.push("in queue");
+            else if (step.dist[v] === Infinity) status.push("not reached");
+            else status.push(isDijkstra ? "found, not settled" : "reached");
+            if (improved) status.push("← just improved");
+            else if (isTarget && step.type === "no-improvement") status.push("← checked, no change");
+            else if (isTarget && step.type === "negative-cycle") status.push("← still improves: negative cycle");
+            if (v === trav.current) status.push("← current");
+            return {
+                cells: [distText, step.parent[v] === null ? "—" : String(step.parent[v]), status.join(" ")],
+                changed: improved,
+                current: v === trav.current,
+            };
+        };
+    } else if (step.kind === "topoKahn") {
+        els.spTableCaption.textContent = "In-degree table (edges still pointing into each vertex)";
+        headers = ["Vertex", "in-degree", "Status"];
+        rowFor = (v) => {
+            const st = step.status[v];
+            const isTarget = v === target;
+            const status = [st === "output" ? `output #${trav.orderIndex.get(v)}` : st];
+            if (isTarget) status.push(step.type === "ready" ? "← just reached 0" : "← one fewer");
+            if (v === trav.current) status.push("← current");
+            if (trav.cycleVertices.has(v)) status.push("(on the cycle)");
+            return {
+                cells: [step.inDegree ? String(step.inDegree[v]) : "—", status.join(" ")],
+                changed: isTarget,
+                current: v === trav.current,
+            };
+        };
+    } else {
+        els.spTableCaption.textContent = "DFS state (finish number = post-order position)";
+        headers = ["Vertex", "Status", "Finish #"];
+        const postIndex = new Map(step.postOrder.map((v, i) => [v, i + 1]));
+        rowFor = (v) => {
+            const status = [step.status[v]];
+            if (v === trav.current) status.push("← current");
+            if (trav.cycleVertices.has(v)) status.push("(on the cycle)");
+            return {
+                cells: [status.join(" "), postIndex.has(v) ? String(postIndex.get(v)) : "—"],
+                changed: step.type === "finish" && v === step.vertex,
+                current: v === trav.current,
+            };
+        };
+    }
+    els.spTableHead.replaceChildren(
+        ...headers.map((h) => {
+            const th = document.createElement("th");
+            th.scope = "col";
+            th.textContent = h;
+            return th;
+        }),
+    );
+    els.spTableBody.replaceChildren(
+        ...ids.map((v) => {
+            const { cells, changed, current } = rowFor(v);
+            const tr = document.createElement("tr");
+            const cls = [];
+            if (current) cls.push("gr-sp-row-current");
+            if (changed) cls.push("gr-sp-row-changed");
+            tr.className = cls.join(" ");
+            const th = document.createElement("th");
+            th.scope = "row";
+            th.textContent = String(v);
+            tr.append(th);
+            for (const text of cells) {
+                const td = document.createElement("td");
+                td.className = "mono";
+                td.textContent = text;
+                tr.append(td);
+            }
+            return tr;
+        }),
+    );
+}
+
+/** Parent chain source → v using this frame's parent pointers (null if v is not reached). */
+function pathTo(step, v) {
+    if (v === null || step.dist[v] === Infinity) return null;
+    const path = [v];
+    let x = v;
+    for (let i = 0; i < step.snapshot.vertices.length && step.parent[x] !== null; i++) {
+        x = step.parent[x];
+        path.push(x);
+    }
+    return path.reverse();
+}
+
+function showLegend(which) {
+    els.travLegend.classList.toggle("gr-hidden", which !== "trav");
+    els.spLegend.classList.toggle("gr-hidden", which !== "sp");
+    els.topoLegend.classList.toggle("gr-hidden", which !== "topo");
+    els.buildLegend.classList.toggle("gr-hidden", which !== "build");
+}
+
+function bellmanPassText(step, n) {
+    if (step.pass !== null) return `${step.pass} / ${Math.max(0, n - 1)}`;
+    return step.type === "start" || step.type === "init" ? "—" : "check";
+}
+
 function renderTraversalPanel(step) {
     const isTrav = Boolean(step.traversal);
     els.travPanel.classList.toggle("gr-hidden", !isTrav);
-    els.travLegend.classList.toggle("gr-hidden", !isTrav);
-    els.buildLegend.classList.toggle("gr-hidden", isTrav);
-    if (!isTrav) return;
-
-    const info = GRAPH_TRAVERSAL_INFO[step.kind];
+    if (!isTrav) {
+        showLegend("build");
+        return;
+    }
+    const family = step.family ?? "trav";
+    showLegend(family);
+    const { info } = ALGOS[step.kind];
     const trav = traversalState(step);
-    const frontier = step.frontier.map(String);
-    if (step.kind === "bfs") {
-        els.travFrontierLabel.textContent = "Queue (front → back)";
-        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "front: " : ""}vertex ${v}`);
-    } else if (step.kind === "dfsIterative") {
-        els.travFrontierLabel.textContent = "Stack (top → bottom)";
-        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "top: " : ""}vertex ${v}`);
-    } else {
-        els.travFrontierLabel.textContent = "Active vertices (deepest first)";
-        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "deepest: " : ""}vertex ${v}`);
-    }
-    els.travCallRow.classList.toggle("gr-hidden", step.kind !== "dfsRecursive");
-    if (step.kind === "dfsRecursive") {
-        chipList(els.travCallStack, step.callStack.map((v) => `Visit(${v})`), "empty",
-            (f, i) => `${i === 0 ? "top frame: " : ""}${f}`);
-    }
-    chipList(els.travOrder, step.order.map(String), "nothing visited yet", (v, i) => `${i + 1}: vertex ${v}`);
-
+    const n = step.snapshot.vertices.length;
+    els.travPanelTitle.textContent = `Algorithm State: ${info.name}`;
+    els.spTableWrap.classList.toggle("gr-hidden", family === "trav");
     els.travStatAlgo.textContent = info.short;
     els.travStatCurrent.textContent = trav.current === null ? "—" : String(trav.current);
-    els.travStatVisited.textContent = `${step.visited.length} / ${step.snapshot.vertices.length}`;
-    els.travStatEdges.textContent = String(step.edgesExamined);
-    els.travStatComponent.textContent = step.component === null ? "—" : String(step.component);
+
+    if (family === "trav") {
+        els.travFrontierRow.classList.remove("gr-hidden");
+        els.travOrderRow.classList.remove("gr-hidden");
+        els.travOrderLabel.textContent = "Visit order";
+        const frontier = step.frontier.map(String);
+        if (step.kind === "bfs") {
+            els.travFrontierLabel.textContent = "Queue (front → back)";
+            chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "front: " : ""}vertex ${v}`);
+        } else if (step.kind === "dfsIterative") {
+            els.travFrontierLabel.textContent = "Stack (top → bottom)";
+            chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "top: " : ""}vertex ${v}`);
+        } else {
+            els.travFrontierLabel.textContent = "Active vertices (deepest first)";
+            chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "deepest: " : ""}vertex ${v}`);
+        }
+        els.travCallRow.classList.toggle("gr-hidden", step.kind !== "dfsRecursive");
+        if (step.kind === "dfsRecursive") {
+            els.travCallLabel.textContent = "Call stack (top → bottom)";
+            chipList(els.travCallStack, step.callStack.map((v) => `Visit(${v})`), "empty",
+                (f, i) => `${i === 0 ? "top frame: " : ""}${f}`);
+        }
+        chipList(els.travOrder, step.order.map(String), "nothing visited yet", (v, i) => `${i + 1}: vertex ${v}`);
+        els.travStatVisitedLabel.textContent = "Visited";
+        els.travStatVisited.textContent = `${step.visited.length} / ${n}`;
+        els.travStatEdges.textContent = String(step.edgesExamined);
+        els.travStatComponentLabel.textContent = "Component";
+        els.travStatComponent.textContent = step.component === null ? "—" : String(step.component);
+        return;
+    }
+
+    renderVertexTable(step, trav);
+    els.travStatEdges.textContent = String(step.edgesChecked);
+
+    if (family === "sp") {
+        const isDijkstra = step.kind === "dijkstra";
+        els.travFrontierRow.classList.toggle("gr-hidden", !isDijkstra);
+        if (isDijkstra) {
+            els.travFrontierLabel.textContent = "Priority queue (min first)";
+            chipList(
+                els.travFrontier,
+                step.pq.map((e) => `(${e.dist}, ${e.vertex})${e.stale ? " stale" : ""}`),
+                "empty",
+                (t, i) => {
+                    const e = step.pq[i];
+                    return `${i === 0 ? "minimum: " : ""}vertex ${e.vertex} at distance ${e.dist}` +
+                        (e.stale ? ", stale entry that will be skipped" : "");
+                },
+                (i) => (step.pq[i].stale ? "gr-sp-chip-stale" : ""),
+            );
+        }
+        const target = step.edge ? step.edge.to : step.vertex;
+        els.travCallRow.classList.toggle("gr-hidden", target === null);
+        if (target !== null) {
+            const path = pathTo(step, target);
+            els.travCallLabel.textContent = `Current path ${step.source} → ${target}`;
+            chipList(els.travCallStack, path ? path.map(String) : [], `${target} not reached yet (∞)`,
+                (v, i) => `${i === 0 ? "source " : "then "}vertex ${v}`);
+        }
+        els.travOrderRow.classList.toggle("gr-hidden", !isDijkstra);
+        if (isDijkstra) {
+            els.travOrderLabel.textContent = "Settled order";
+            chipList(els.travOrder, step.settled.map(String), "nothing settled yet", (v, i) => `${i + 1}: vertex ${v}`);
+        }
+        const reached = step.snapshot.vertices.filter((v) => step.dist[v] !== Infinity).length;
+        els.travStatVisitedLabel.textContent = isDijkstra ? "Settled" : "Reached";
+        els.travStatVisited.textContent = `${isDijkstra ? step.settled.length : reached} / ${n}`;
+        els.travStatComponentLabel.textContent = isDijkstra ? "Relaxations" : "Pass (relaxations)";
+        els.travStatComponent.textContent = isDijkstra
+            ? String(step.relaxations)
+            : `${bellmanPassText(step, n)} (${step.relaxations})`;
+        return;
+    }
+
+    // Topological sort.
+    const isKahn = step.kind === "topoKahn";
+    els.travFrontierRow.classList.remove("gr-hidden");
+    els.travOrderRow.classList.remove("gr-hidden");
+    if (isKahn) {
+        els.travFrontierLabel.textContent = "Ready set (smallest first)";
+        chipList(els.travFrontier, step.ready.map(String), "empty", (v, i) => `${i === 0 ? "next: " : ""}vertex ${v}`);
+        els.travCallRow.classList.add("gr-hidden");
+    } else {
+        els.travFrontierLabel.textContent = "Call stack (top → bottom)";
+        chipList(els.travFrontier, step.callStack.map((v) => `Visit(${v})`), "empty",
+            (f, i) => `${i === 0 ? "top frame: " : ""}${f}`);
+        els.travCallRow.classList.remove("gr-hidden");
+        els.travCallLabel.textContent = "Post-order (finish order)";
+        chipList(els.travCallStack, step.postOrder.map(String), "nothing finished yet", (v, i) => `finished ${i + 1}: vertex ${v}`);
+    }
+    els.travOrderLabel.textContent = isKahn ? "Topological order so far" : "Reversed post-order so far";
+    chipList(els.travOrder, step.order.map(String), "empty", (v, i) => `${i + 1}: vertex ${v}`);
+    els.travStatVisitedLabel.textContent = isKahn ? "Output" : "Finished";
+    els.travStatVisited.textContent = `${isKahn ? step.order.length : step.postOrder.length} / ${n}`;
+    els.travStatComponentLabel.textContent = "Cycle";
+    els.travStatComponent.textContent = step.cycle ? [...step.cycle, step.cycle[0]].join(" → ") : "none found";
 }
 
 function render(step, index, p) {
@@ -1206,7 +1541,7 @@ function render(step, index, p) {
         els.statEdges.textContent = String(snap.edges.length);
         els.statMode.textContent = modeLabel(snap.directed, snap.weighted);
         els.statOperation.textContent = step.traversal
-            ? GRAPH_TRAVERSAL_INFO[step.kind].short
+            ? ALGOS[step.kind].info.short
             : OP_LABELS[step.operation] ?? step.operation;
 
         const err = snapshotIntegrityError(snap, adjList, matrixData);
@@ -1566,20 +1901,65 @@ function handleClear() {
     notify(res.steps[0].message, "info");
 }
 
+const TOPO_OPTION_LABELS = { topoKahn: "Topological sort (Kahn)", topoDfs: "Topological sort (DFS)" };
+
+/**
+ * Enable only the algorithms that apply to the current graph mode and explain why inline.
+ * Topological sort needs a directed graph; "All components" and the start vertex only
+ * apply to some algorithms.
+ */
 function syncTraversalInputs() {
-    els.travStart.disabled = els.travAll.checked;
-    if (els.travAll.checked) {
+    const directed = els.directedToggle.checked;
+    const weighted = els.weightedToggle.checked;
+    let switched = false;
+    for (const opt of els.travAlgo.options) {
+        if (!Object.hasOwn(TOPO_OPTION_LABELS, opt.value)) continue;
+        opt.disabled = !directed;
+        opt.textContent = directed ? TOPO_OPTION_LABELS[opt.value] : `${TOPO_OPTION_LABELS[opt.value]}: needs a directed graph`;
+        if (!directed && opt.selected) {
+            switched = true;
+        }
+    }
+    if (switched) els.travAlgo.value = "bfs";
+
+    const algo = ALGOS[els.travAlgo.value];
+    const family = algo.family;
+    els.travAll.disabled = family !== "trav";
+    if (family !== "trav") els.travAll.checked = false;
+    const startOff = family === "topo" || (family === "trav" && els.travAll.checked);
+    els.travStart.disabled = startOff;
+    if (startOff) {
         els.travStart.setAttribute("aria-invalid", "false");
         els.travStart.removeAttribute("aria-describedby");
     }
+
+    const notes = [];
+    if (switched) notes.push("Switched to BFS because topological sort needs a directed graph.");
+    if (!directed) {
+        notes.push("Topological sort is off: an undirected edge points both ways, so neither endpoint can come first. Turn on Directed to use it.");
+    }
+    if (family === "sp") {
+        notes.push(weighted ? "Edge weights are the costs (1–99, never negative)." : "Unweighted graph: every edge costs 1.");
+        if (els.travAlgo.value === "bellmanFord") {
+            notes.push("Negative weights (and negative cycles) cannot be entered here; the detection pass still runs.");
+        }
+    } else if (family === "topo") {
+        notes.push("Topological sort uses every vertex, so the start vertex is not used.");
+    }
+    if (family !== "trav") notes.push("“All components” only applies to BFS / DFS.");
+    els.travAlgoHint.textContent = notes.join(" ");
+    els.travSummary.textContent = algo.info.summary;
+    els.travBtn.textContent = family === "trav" ? "Traverse" : "Run";
 }
 
 function handleTraverse(e) {
     e.preventDefault();
     const kind = els.travAlgo.value;
-    const all = els.travAll.checked;
+    const algo = ALGOS[kind];
+    if (!algo) return;
+    const all = algo.family === "trav" && els.travAll.checked;
     let start = null;
-    if (!all) {
+    if (!all && algo.family !== "topo") {
         const parsed = parseStartVertex(els.travStart.value, graph);
         if (!parsed.ok) {
             notify(parsed.error, "error");
@@ -1593,35 +1973,58 @@ function handleTraverse(e) {
     els.travStart.setAttribute("aria-invalid", "false");
     els.travStart.removeAttribute("aria-describedby");
 
-    const res = traceTraversal(kind, graph, start, { allComponents: all });
-    if (!res.ok) {
+    let res;
+    if (algo.family === "trav") res = traceTraversal(kind, graph, start, { allComponents: all });
+    else if (algo.family === "sp") res = traceShortestPath(kind, graph, start);
+    else res = topologicalSort(graph, algo.method);
+
+    // A topological sort that finds a cycle is ok:false but still has steps to replay.
+    if (!res.ok && res.steps.length === 0) {
         notify(res.error, "error");
         return;
     }
-    const { value } = res;
-    // One shared snapshot per run: the graph does not change during a traversal.
+    // One shared snapshot per run: the graph does not change while an algorithm runs.
+    const snapshot = graph.snapshot();
     const steps = res.steps.map((s) => ({
         ...s,
         traversal: true,
+        family: algo.family,
         kind,
-        mode: value.mode,
-        snapshot: value.graph,
+        mode: algo.family === "trav" ? res.value.mode : "single",
+        source: start,
+        snapshot,
         operation: "traversal",
         vertexIds: s.vertex === null ? [] : [s.vertex],
     }));
     loadSteps(steps, { autoPlay: false });
-    const info = GRAPH_TRAVERSAL_INFO[kind];
-    const n = value.graph.vertices.length;
-    const summary = all
-        ? `${info.short} over all components: ${value.componentCount} ${value.componentCount === 1 ? "component" : "components"}, order ${value.order.join(", ")}.`
-        : `${info.short} from ${start}: reached ${value.order.length} of ${n} ${n === 1 ? "vertex" : "vertices"}, order ${value.order.join(", ")}.`;
-    notify(`${summary} ${steps.length} steps ready; press Play or Step.`, "success");
+
+    const { info } = algo;
+    const n = snapshot.vertices.length;
+    const ready = `${steps.length} steps ready; press Play or Step.`;
+    if (!res.ok) {
+        notify(`${info.short}: ${res.error} ${ready}`, "warning");
+        return;
+    }
+    const { value } = res;
+    let summary;
+    if (algo.family === "trav") {
+        summary = all
+            ? `${info.short} over all components: ${value.componentCount} ${value.componentCount === 1 ? "component" : "components"}, order ${value.order.join(", ")}.`
+            : `${info.short} from ${start}: reached ${value.order.length} of ${n} ${n === 1 ? "vertex" : "vertices"}, order ${value.order.join(", ")}.`;
+    } else if (algo.family === "sp") {
+        const dists = snapshot.vertices.map((v) => `${v}: ${fmtDist(value.dist[v])}`).join(", ");
+        summary = `${info.short} from ${start}: distances ${dists}.`;
+    } else {
+        summary = `${info.short}: order ${value.order.join(", ")}.`;
+    }
+    notify(`${summary} ${ready}`, "success");
 }
 
 /* ---------- Event Wiring ---------- */
 
 els.travForm.addEventListener("submit", handleTraverse);
 els.travAll.addEventListener("change", syncTraversalInputs);
+els.travAlgo.addEventListener("change", syncTraversalInputs);
 
 els.directedToggle.addEventListener("change", handleModeToggle);
 els.weightedToggle.addEventListener("change", handleModeToggle);
@@ -1721,18 +2124,17 @@ cxBody.replaceChildren(
 
 const travCxBody = $("travCxTable");
 travCxBody.replaceChildren(
-    ...TRAVERSAL_KINDS.map((kind) => {
-        const info = GRAPH_TRAVERSAL_INFO[kind];
+    ...Object.values(ALGOS).map(({ family, info }) => {
         const tr = document.createElement("tr");
         const th = document.createElement("th");
         th.scope = "row";
         th.textContent = info.name;
-        const cells = [info.complexity.timeList, info.complexity.timeMatrix, `${info.complexity.space} (${info.frontierName} + visited)`]
-            .map((text) => {
-                const td = document.createElement("td");
-                td.textContent = text;
-                return td;
-            });
+        const space = family === "trav" ? `${info.complexity.space} (${info.frontierName} + visited)` : info.complexity.space;
+        const cells = [info.complexity.timeList, info.complexity.timeMatrix, space].map((text) => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            return td;
+        });
         tr.append(th, ...cells);
         return tr;
     }),

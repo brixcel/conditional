@@ -49,6 +49,8 @@ src/algorithms/sorting.js        bubble/selection/insertion/merge/quick/heap wit
 src/pages/sorting-page.js        DOM controller for sorting.html
 src/algorithms/searching.js      linear/binary/interpolation search with traced steps (G4)
 src/pages/searching-page.js      DOM controller for searching.html
+src/algorithms/graph-traversal.js BFS / iterative + recursive DFS with traced steps (C23)
+src/algorithms/shortest-paths.js Dijkstra (binary heap), Bellman-Ford (+ negative-cycle check), topological sort (Kahn / DFS) (C26); graph.html "Graph Algorithms" card
 tests/*.test.js                  real-code tests (node:test)
 tests/legacy-regression.cjs      site-wide page checks (every page: no style="", no dialogs, main.css + shared.js, listed in nav)
 .claude/agents/*.md              nine specialist agent definitions
