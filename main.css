@@ -1881,6 +1881,18 @@ input:disabled, select:disabled {
 @media (prefers-reduced-motion: reduce) {
     .bar-fill { transition: none; }
     .skip-link, .theme-toggle-btn { transition: none; }
+    /* Global: near-zero (not zero) durations so animationend/transitionend still fire. */
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    /* These set `animation: ... !important` on a class, which outranks `*` above. */
+    .node-highlight, .stack-bar-pop, .car-exit {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
 
 /* --------------------------------------------------------------------------

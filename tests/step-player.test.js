@@ -121,3 +121,57 @@ test("default timers work when the browser checks the receiver (Illegal invocati
         globalThis.clearTimeout = realClear;
     }
 });
+
+/** Player whose onStep records [index, isPlaying] at every emit. */
+function makeTracked(steps = ["a", "b", "c", "d"]) {
+    const timers = fakeTimers();
+    const emits = [];
+    const p = new StepPlayer({ onStep: (s, i, pl) => emits.push([i, pl.isPlaying]), baseDelay: 100, ...timers });
+    p.load(steps);
+    emits.length = 0; // ignore the load render
+    return { p, timers, emits };
+}
+
+test("isPlaying is true at every intermediate emit during autoplay and false at the final one", () => {
+    const { p, timers, emits } = makeTracked();
+    p.play();
+    while (timers.tick()) { /* run to the end */ }
+    assert.equal(p.index, 3);
+    assert.equal(p.isPlaying, false);
+    assert.deepEqual(emits, [[0, true], [1, true], [2, true], [3, false]]);
+});
+
+test("pausing mid-run emits isPlaying false", () => {
+    const { p, timers, emits } = makeTracked();
+    p.play();
+    timers.tick();
+    p.pause();
+    assert.deepEqual(emits, [[0, true], [1, true], [1, false]]);
+    assert.equal(timers.pending(), 0);
+});
+
+test("play -> pause -> play resumes and reports isPlaying true", () => {
+    const { p, timers, emits } = makeTracked();
+    p.play();
+    timers.tick();
+    p.pause();
+    emits.length = 0;
+    p.play();
+    assert.deepEqual(emits, [[1, true]]);
+    timers.tick();
+    assert.deepEqual(emits, [[1, true], [2, true]]);
+    timers.tick();
+    assert.deepEqual(emits, [[1, true], [2, true], [3, false]]);
+    assert.equal(timers.pending(), 0);
+});
+
+test("pausing from inside onStep during autoplay stops playback", () => {
+    const timers = fakeTimers();
+    const p = new StepPlayer({ onStep: (s, i, pl) => { if (i === 1 && pl.isPlaying) pl.pause(); }, baseDelay: 100, ...timers });
+    p.load(["a", "b", "c", "d"]);
+    p.play();
+    timers.tick();
+    assert.equal(p.index, 1);
+    assert.equal(p.isPlaying, false);
+    assert.equal(timers.pending(), 0);
+});

@@ -92,12 +92,17 @@ export class StepPlayer {
 
     get delay() { return Math.round(this.baseDelay / this.speed); }
 
+    // Advance first, re-arm the timer if more steps remain, and only then emit, so every
+    // render during autoplay sees isPlaying === true and the last step renders once with false.
+    // (Emitting before re-arming made pages draw a "Play" label mid-run.) onStep may still
+    // pause() from inside the emit: the timer already exists, so pause() clears it.
     scheduleNext() {
         this.timer = this.setTimer(() => {
             this.timer = null;
-            const moved = this.next();
-            if (moved && !this.atEnd) this.scheduleNext();
-            else this.emit(); // final render with isPlaying === false
+            if (this.atEnd) { this.emit(); return; }
+            this.index += 1;
+            if (!this.atEnd) this.scheduleNext();
+            this.emit();
         }, this.delay);
     }
 
