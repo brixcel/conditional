@@ -32,6 +32,45 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G8: Binary Search Tree module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 11:43 (Philippine time)
+- Branch: `gemini/g8-bst`
+- Commit(s): `ee8a36a`
+- Files changed: `src/structures/bst.js`, `tests/bst.test.js`, `src/core/tree-layout.js` (added `layoutBinaryTree` only; `layoutCompleteTree` untouched), `tests/tree-layout.test.js` (added 5 tests), `bst.html`, `src/pages/bst-page.js`, `main.css` (new section 15 only; sections 1–14 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/bst.js` (`BSTNode`, `BinarySearchTree`, `BST_INFO`, `TRAVERSAL_ORDERS`) with real linked node objects `{ id, value, left, right }`, stable monotonically increasing integer IDs, unique integer keys (`0` and negatives supported), capacity `1..31`, and edge-count `height()` (empty = `-1`, single node = `0`). Implements `insert`, `search`, `delete` (all 3 cases: leaf, one child, and two children via **in-order successor** with `find-successor` / `copy-successor` / relink steps), `min`, `max`, `traverse("inorder"|"preorder"|"postorder"|"levelorder")` (with growing `visited` array and `O(n)` index-head BFS queue), `clear`, `toArray`, `snapshot`, and `integrityError()` (strict ancestor bounds, strictly increasing in-order walk, cycle/shared-child guard, integer check, size === node count).
+  - Added `layoutBinaryTree(snapshot, { levelGap, minGap })` to `src/core/tree-layout.js` placing nodes by in-order index (`x = inorderIndex * minGap + minGap/2`, `y = depth * levelGap`) with cycle guard, plus 5 tests in `tests/tree-layout.test.js`.
+  - Added `tests/bst.test.js` (14 tests): 300 seeded random sequences (65 ops each, keys `-50..50`) verified against a sorted-array model and an independent reference BST (including exact `height()`, `integrityError() === null`, valid 1-based `step.line`, monotonic `comparisons`, and snapshot immutability after every operation), plus root delete for all 3 cases (including direct right child successor and deep left-descendant successor with its own right subtree), all 4 traversals vs hand-written arrays, duplicates, empty/full boundaries, and corruption tests for `integrityError()`.
+  - **Delete mutation check:** Temporarily broke two-child `delete()` by setting `succParent.left/right = null` instead of `succRight`; `tests/bst.test.js` failed 3 tests immediately (the 300-sequence property test at `round=2 op=52` via `integrityError()` reporting `reachable node count (4) does not equal size (5)`, plus both targeted two-child root delete tests). Restored the fix and re-ran `npm test`.
+  - Created `bst.html`, `src/pages/bst-page.js`, and minimal `main.css` section 15 (reusing section 14 `.hp-*` classes; zero inline `style=""` in `bst.html`, zero `.style` / `.innerHTML` in `bst-page.js`, zero native dialogs). Includes Value input + Insert/Search/Delete/Min/Max/Clear, traversal select + Traverse, Build list (with upfront duplicate rejection) + Random, pooled SVG tree + pooled `<ol>` traversal/in-order output, coalesced rAF `scheduleReveal`, static `#bstAlert`/`#bstStatus` live regions, auto-play `aria-live="off"` tracking across `StepPlayer` ticks, Best/Average/Worst complexity table, and 4 concept cards. Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents with all findings resolved prior to commit.
+- npm test output (paste the real lines):
+    # tests 199
+    # pass 199
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `bst.html` on `http://localhost:5507` at both `1280px` and `375px` widths in **both** light and dark themes via `#themeToggle`. Console clean: yes (0 errors, 0 uncaught rejections, 0 dialogs). Verified **Play** advances the step counter (`Step 1 / 21` → `Step 4 / 21` at 4×) while keeping `#stepMessage` `aria-live="off"` during every auto-play tick and `"polite"` on pause; verified all 3 delete cases on `[50, 30, 70, 20, 40, 60, 80, 65]` (Case 3 root `50` showed `TARGET`/`SUCC` labels and `"Relinking…"`, root became `60`; Case 1 leaf `80`; Case 2 one-child `70` promoting `65`); verified all 4 traversals (`inorder`, `preorder`, `postorder`, `levelorder`) growing from 1 to all visited nodes; verified `-10`/`0` insert, duplicate insert `role="alert"`, duplicate Build rejection without mutating tree, 31-node Build (`height = 4`, 32nd insert overflow `role="alert"` + line 1 highlight), Clear + empty Min (line 1 highlight), and at `375px` with 31 nodes `scrollWidth === clientWidth` (`360px`, 0 horizontal page scroll) while `#treeStage` scrolls sideways (`1564px` inside `268px`), `.field-grow` stays `67px`, `.bst-cell` animation is `"none"`, and `.bst-svg .hp-edge` renders `#64748B` (light, 4.55:1) / `#94A3B8` (dark, 6.97:1).
+- Not done / not verified: Full screen-reader voiceover listening pass was not run. Did not edit `shared.js`, `index.html`, `src/structures/heap.js`, `src/core/step-player.js`, or `main.css` sections 1–14.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under Trees / Non-Linear Structures, alongside AVL Tree and Binary Heap):**
+     - `SVG_ICONS.bst`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="13" r="2.5"/><circle cx="18" cy="13" r="2.5"/><circle cx="14" cy="20" r="2.5"/><line x1="10.4" y1="6.9" x2="7.5" y2="11"/><line x1="13.6" y1="6.9" x2="16.5" y2="11"/><line x1="16.9" y1="15.2" x2="15.1" y2="17.8"/></svg>`
+     - Item: `{ label: "Binary Search Tree (BST)", href: "bst.html", iconKey: "bst" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `bst.html`
+     - Title: `Binary Search Tree (BST)`
+     - Description: `Step through BST search paths, all three deletion cases (including the in-order successor), and In-Order, Pre-Order, Post-Order, and Level-Order traversals.`
+     - Footer: `O(log n) Avg · O(n) Worst` &rarr; `Launch Visualizer`
+  3. **Classes added to `main.css` section 15:** `.hp-scroll-region:focus-visible`, `.hp-array-list`, `.bst-sr-only`, `.bst-svg .hp-edge`, `.bst-svg .hp-edge.bst-path`, `.bst-svg .hp-node.bst-path .hp-node-circle`, `.bst-svg .hp-node.hp-compare .hp-node-circle`, `.bst-svg .hp-node.hp-swap .hp-node-circle`, `.bst-cell` (with `.hp-root`/`.hp-select`/`.hp-compare`/`.hp-swap`/`.hp-settled` border-style cues and `prefers-reduced-motion` disable).
+  4. **Small core note (`src/core/step-player.js`):** During our A11y audit we noticed `StepPlayer.scheduleNext()` sets `this.timer = null` *before* calling `this.next()`, so `p.isPlaying` is momentarily `false` on timer ticks. We worked around it cleanly in `bst-page.js` with `autoPlaying` without editing `step-player.js`; fixing it in `step-player.js` later would also benefit other pages.
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 17:19
+- Verdict: approved with fixes (qa-engineer: independent 40,000-op check ALL OK; mutations of successor delete, ancestor bounds and in-order layout all caught)
+- Blocking issues: `#bstAlert`/`#bstStatus` started `hidden`, so the first message could be missed and c11's a11y test failed. Fixed by Claude's visualization-engineer agent (regions always rendered, empty = no box). Also fixed: final autoplay frame now announced, the Valid indicator checks the shown step's snapshot, duplicate insert into a full tree reports the duplicate, delete cases 1-2 end with `done`. The StepPlayer note is fixed separately on `claude/fix-player-label`; your `autoPlaying` workaround still behaves correctly with it.
+- Merged in: `claude/g8-bst-merge` (with nav entry + card), waiting for the user
+
+---
+
 ### G7: Heap page + tree layout helper
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-26 11:02 (Philippine time)
