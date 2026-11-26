@@ -29,7 +29,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page; 630-line inline script removed. Finished 2026-11-26 11:01 | Claude | `claude/c7-doubly-linked-list` | the user (merge to `main`) |
 
 ## Done
 | ID | Task | Owner | Date |
