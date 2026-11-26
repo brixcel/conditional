@@ -14,8 +14,8 @@
             <h1 class="page-title">Hash Table Visualization</h1>
             <p class="page-desc">
                 Map integer keys to buckets using <code>h(k) = ((k mod m) + m) mod m</code>.
-                Switch between <strong>Separate Chaining</strong> and <strong>Linear Probing</strong>
-                to watch collisions, probe sequences, tombstones, and rehashing step by step.
+                Switch between <strong>Separate Chaining</strong>, <strong>Linear Probing</strong>, and
+                <strong>Quadratic Probing</strong> to watch collisions, probe sequences, tombstones, and rehashing step by step.
             </p>
         </header>
 
@@ -44,10 +44,11 @@
                         <select id="strategySelect">
                             <option value="chaining" selected>Separate Chaining (Buckets + Chains)</option>
                             <option value="linear">Linear Probing (Open Addressing)</option>
+                            <option value="quadratic">Quadratic Probing (Open Addressing, prime m)</option>
                         </select>
                     </label>
                     <label class="field">
-                        <span class="field-label">Table Size m (3–19)</span>
+                        <span class="field-label">Table Size m <span id="capacityHint">(3–19)</span></span>
                         <input type="text" id="capacityInput" class="input-sm" inputmode="numeric" autocomplete="off"
                                value="7" aria-describedby="htMessage">
                     </label>
@@ -134,6 +135,7 @@
                         <div><span>Load Factor (&alpha; = n/m)</span><strong id="statLoad">0.00</strong></div>
                         <div><span>Tombstones (DELETED)</span><strong id="statTombstones">0</strong></div>
                         <div><span>Probes (This Op)</span><strong id="statProbes">0</strong></div>
+                        <div><span>Quadratic Probe (i)</span><strong id="statProbeStep">N/A</strong></div>
                         <div><span>Total Collisions</span><strong id="statCollisions">0</strong></div>
                     </div>
                 </div>
@@ -164,19 +166,19 @@
             <div class="grid-2">
                 <div class="check">
                     <h2>Modulo Hashing &amp; Negative Keys</h2>
-                    <p>Using <code>((k mod m) + m) mod m</code> guarantees a valid bucket index in <code>[0, m &minus; 1]</code> even for negative keys. Choosing a prime table size <code>m</code> (such as 7, 11, or 13) reduces clustering when keys share common factors.</p>
+                    <p>Using <code>((k mod m) + m) mod m</code> guarantees a valid bucket index in <code>[0, m &minus; 1]</code> even for negative keys. Choosing a prime table size <code>m</code> (such as 7, 11, or 13) reduces clustering when keys share common factors. Quadratic Probing requires a prime <code>m</code>.</p>
                 </div>
                 <div class="check">
                     <h2>Load Factor (&alpha; = n / m) &amp; Rehashing</h2>
-                    <p>As &alpha; grows, chains lengthen in Separate Chaining and probe runs grow sharply in Linear Probing. Rehashing allocates a fresh table size and reinserts every live key, restoring O(1) expected time.</p>
+                    <p>As &alpha; grows, chains lengthen in Separate Chaining and probe runs grow sharply in open addressing. Quadratic Probing refuses a new key once &alpha; would pass 0.5 (at most <code>&lfloor;m/2&rfloor;</code> entries). Rehashing allocates a fresh table size and reinserts every live key, restoring O(1) expected time.</p>
                 </div>
                 <div class="check">
-                    <h2>Primary Clustering (Linear Probing)</h2>
-                    <p>In Linear Probing, consecutive occupied slots merge into long runs. Any key hashing into a run must walk to the end of it, making the cluster even longer.</p>
+                    <h2>Primary vs Secondary Clustering</h2>
+                    <p>In Linear Probing, consecutive occupied slots merge into long runs (primary clustering): any key hashing into a run must walk to the end of it, making the cluster even longer. Quadratic Probing jumps by <code>i&sup2;</code> (offsets 0, 1, 4, 9, &hellip;), so runs do not merge, but keys with the same home slot still follow the same path (secondary clustering).</p>
                 </div>
                 <div class="check">
                     <h2>Why DELETED Tombstones Matter</h2>
-                    <p>Setting a deleted slot back to <code>EMPTY</code> in Linear Probing would break search chains for keys inserted later via collisions. A <code>DELETED</code> tombstone tells Search to keep probing while letting Insert reuse the slot.</p>
+                    <p>Setting a deleted slot back to <code>EMPTY</code> in Linear or Quadratic Probing would break search chains for keys inserted later via collisions. A <code>DELETED</code> tombstone tells Search to keep probing while letting Insert reuse the slot.</p>
                 </div>
             </div>
         </div>
