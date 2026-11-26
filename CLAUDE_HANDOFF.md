@@ -159,6 +159,13 @@ reviews each report before merging. The newest entries go at the top.
      - `.dsu-sw-path`, `.dsu-sw-root-found`, `.dsu-sw-compress`, `.dsu-sw-link`, `.dsu-sw-same`, `.dsu-sw-diff`
      - `.dsu-hidden` (kept last with all SVG/label modifiers), plus `@media (max-width: 640px)` and `@media (prefers-reduced-motion: reduce)` rules.
 
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-27 02:22
+- Verdict: approved (qa-engineer: 80,000-op check against a label-array model in all four option modes; planted mutation caught; static keyboard/slider/a11y tests pass)
+- Blocking issues: none. Your CSS section number clashed with sections already on `main`, so it was renumbered at merge; please number new sections after the highest one on `main`.
+- Merged in: `claude/g11-g13-merge` (Advanced Structures nav category + cards)
+
 ---
 
 ### G10: Graph representation module + page

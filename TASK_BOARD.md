@@ -27,6 +27,9 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| G13 | Segment Tree module + page; Claude renumbered its CSS section (26) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
+| G12 | Fenwick Tree (BIT) module + page; Claude renumbered its CSS section (25) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
+| G11 | Disjoint Set Union (Union-Find) module + page; Claude renumbered its CSS section (24) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
 | C23 | BFS, iterative and recursive DFS, all-components traversal (`src/algorithms/graph-traversal.js`, 600 seeded graphs vs reference) + traversal panel on graph.html (queue/stack, call stack, visit order, tree edges in all three views); main.css section 21 | Claude (algorithms agent) | 2026-11-27 02:14 (merged to `main`) |
 | C21 | Red-Black Tree module (CLRS insert/delete fix-ups, every case named, 300-seed invariant tests) + page with 20 case demos, double-black and NIL markers; main.css section 19 | Claude (data-structures + visualization-engineer agents) | 2026-11-26 21:25 (merged to `main`) |
 | C20 | Stack, regular, circular and priority queue pages on the step player with keyboard shortcuts and pseudocode; Stack Pop now always needs the typed top value (letters no longer slip through); circular ring drawn as SVG (main.css section 18); Stack lesson + quiz updated | Claude (visualization-engineer agent) | 2026-11-26 21:24 (merged to `main`) |
