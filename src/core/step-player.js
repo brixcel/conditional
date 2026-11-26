@@ -15,7 +15,9 @@ export class StepPlayer {
      * @param {(fn: Function, ms: number) => any} [opts.setTimer]
      * @param {(id: any) => void} [opts.clearTimer]
      */
-    constructor({ onStep, baseDelay = 700, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
+    // Defaults wrap the globals: storing setTimeout itself and calling it as this.setTimer(...)
+    // makes browsers throw "Illegal invocation" (wrong `this`), which broke Play on every page.
+    constructor({ onStep, baseDelay = 700, setTimer = (fn, ms) => setTimeout(fn, ms), clearTimer = (id) => clearTimeout(id) } = {}) {
         if (typeof onStep !== "function") throw new TypeError("StepPlayer requires an onStep callback");
         this.onStep = onStep;
         this.baseDelay = baseDelay;

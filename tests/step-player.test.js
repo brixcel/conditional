@@ -91,3 +91,33 @@ test("prev while playing pauses playback", () => {
     assert.equal(p.isPlaying, false);
     assert.equal(p.index, 0);
 });
+
+test("default timers work when the browser checks the receiver (Illegal invocation regression)", async () => {
+    // Browsers throw "Illegal invocation" if setTimeout/clearTimeout are called with `this`
+    // set to anything but the global object. Node does not, so simulate that check here.
+    const realSet = globalThis.setTimeout;
+    const realClear = globalThis.clearTimeout;
+    const strict = (real) => function (...args) {
+        if (this !== undefined && this !== globalThis) throw new TypeError("Illegal invocation");
+        return real(...args);
+    };
+    globalThis.setTimeout = strict(realSet);
+    globalThis.clearTimeout = strict(realClear);
+    try {
+        const seen = [];
+        const p = new StepPlayer({ onStep: (s) => seen.push(s), baseDelay: 1 });
+        p.load(["a", "b", "c"]);
+        p.play();                      // schedules with the default setTimer
+        p.pause();                     // cancels with the default clearTimer
+        p.play();
+        // Wait for playback to finish (up to 2 s, so a busy test machine doesn't flake).
+        for (let waited = 0; !p.atEnd && waited < 2000; waited += 10) {
+            await new Promise((resolve) => realSet(resolve, 10));
+        }
+        assert.equal(p.atEnd, true, "playback reached the last step");
+        assert.deepEqual([...new Set(seen)], ["a", "b", "c"]);
+    } finally {
+        globalThis.setTimeout = realSet;
+        globalThis.clearTimeout = realClear;
+    }
+});
