@@ -1,14 +1,20 @@
 /**
  * ============================================================================
- * Comprehensive DSA & Regression Test Suite
- * Data Structures & Algorithms Visualization Project (Phases 1 - 6)
+ * Page & Architecture Regression Checks
+ * Data Structures & Algorithms Visualization Project
  * ============================================================================
  * Run: node tests/legacy-regression.cjs   (or: npm test)
  *
- * NOTE (2026-11): suites 1-8 test COPIES of the classes written inside this
- * file, not the code the pages load. A pass here does not prove the live page
- * is correct. New tests must import the real module (see tests/*.test.js).
- * Suite 9 does read the real HTML/CSS/JS files.
+ * History (C10, 2026-11): this file used to hold suites 1-8, which tested
+ * COPIES of the Stack / Queue / Linked List / AVL classes pasted into this file.
+ * They were removed; their behaviours are now asserted against the real code in
+ * tests/structures.test.js, tests/*linked-list.test.js and tests/avl-real.test.js.
+ *
+ * What remains reads the real files on disk:
+ *   - every *.html page in the repo root (discovered, not hard-coded)
+ *   - the local scripts each page loads, plus everything under src/pages/
+ *   - main.css tokens and the shared.js navigation config
+ * Plain CommonJS, no dependencies.
  */
 
 const fs = require('fs');
@@ -37,783 +43,164 @@ function suite(name, fn) {
   fn();
 }
 
-// ----------------------------------------------------------------------------
-// 1. STACK REGRESSION SUITE
-// ----------------------------------------------------------------------------
-suite('1. Stack (LIFO) Model & Invariants', () => {
-  class Stack {
-    constructor(maxSize = 8) {
-      this.items = [];
-      this.maxSize = maxSize;
-    }
-    push(item) {
-      if (this.isFull()) return { success: false, error: 'Stack Overflow' };
-      this.items.push(item);
-      return { success: true, item };
-    }
-    pop() {
-      if (this.isEmpty()) return { success: false, error: 'Stack Underflow' };
-      return { success: true, item: this.items.pop() };
-    }
-    peek() {
-      if (this.isEmpty()) return null;
-      return this.items[this.items.length - 1];
-    }
-    isEmpty() { return this.items.length === 0; }
-    isFull() { return this.items.length >= this.maxSize; }
-    size() { return this.items.length; }
-    clear() { this.items = []; }
+const ROOT = path.join(__dirname, '..');
+const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+const toPosix = (p) => p.split(path.sep).join('/');
+
+/** Native dialogs. The lookbehind keeps showAlert( / myconfirm( from matching; window.alert( still matches. */
+const DIALOG_RE = /(?<![\w$])(alert|prompt|confirm)\s*\(/g;
+/** Inline style attributes, double or single quoted. */
+const STYLE_ATTR_RE = /\sstyle\s*=\s*["']/gi;
+
+function lineOf(text, index) {
+  return text.slice(0, index).split('\n').length;
+}
+
+/** Returns ["file:line alert(", ...] for every native dialog call in `text`. */
+function findDialogs(rel, text) {
+  const hits = [];
+  for (const m of text.matchAll(DIALOG_RE)) hits.push(`${rel}:${lineOf(text, m.index)} ${m[1]}(`);
+  return hits;
+}
+
+/** Local <script src> values (classic and type="module"), in document order. */
+function localScriptSrcs(html) {
+  const out = [];
+  for (const m of html.matchAll(/<script\b[^>]*?\bsrc\s*=\s*["']([^"']+)["'][^>]*>/gi)) {
+    const src = m[1].split(/[?#]/)[0];
+    if (/^(?:[a-z]+:)?\/\//i.test(src) || src.startsWith('data:')) continue; // remote, not ours
+    out.push(src.replace(/^\.\//, ''));
   }
+  return out;
+}
 
-  test('Stack initial state is empty with size 0', () => {
-    const s = new Stack(6);
-    assert.strictEqual(s.isEmpty(), true);
-    assert.strictEqual(s.isFull(), false);
-    assert.strictEqual(s.size(), 0);
-    assert.strictEqual(s.peek(), null);
+/** Stylesheet hrefs from <link rel="stylesheet">. */
+function stylesheetHrefs(html) {
+  const out = [];
+  for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = m[0];
+    if (!/\brel\s*=\s*["'][^"']*\bstylesheet\b/i.test(tag)) continue;
+    const href = tag.match(/\bhref\s*=\s*["']([^"']+)["']/i);
+    if (href) out.push(href[1].replace(/^\.\//, ''));
+  }
+  return out;
+}
+
+/** All files under a directory, as repo-relative POSIX paths. */
+function walk(relDir) {
+  const abs = path.join(ROOT, relDir);
+  if (!fs.existsSync(abs)) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+    const rel = toPosix(path.join(relDir, entry.name));
+    if (entry.isDirectory()) out.push(...walk(rel));
+    else if (/\.(m?js)$/.test(entry.name)) out.push(rel);
+  }
+  return out.sort();
+}
+
+/** The href values inside the navCategories array literal in shared.js. */
+function navHrefs(sharedJs) {
+  const start = sharedJs.indexOf('navCategories = [');
+  assert.ok(start !== -1, 'shared.js has no "navCategories = [" declaration');
+  // Find the matching closing bracket of the array literal.
+  let depth = 0;
+  let end = -1;
+  for (let i = sharedJs.indexOf('[', start); i < sharedJs.length; i++) {
+    if (sharedJs[i] === '[') depth++;
+    else if (sharedJs[i] === ']' && --depth === 0) { end = i; break; }
+  }
+  assert.ok(end !== -1, 'navCategories array literal is not closed');
+  const block = sharedJs.slice(start, end + 1);
+  return [...block.matchAll(/\bhref\s*:\s*["']([^"']+)["']/g)].map((m) => m[1]);
+}
+
+const htmlPages = fs.readdirSync(ROOT).filter((f) => f.endsWith('.html')).sort();
+const sharedJs = read('shared.js');
+
+// ----------------------------------------------------------------------------
+// 1. PAGE DISCOVERY & NAVIGATION
+// ----------------------------------------------------------------------------
+suite('1. Page Discovery & Navigation (shared.js navCategories)', () => {
+  test(`Discovered ${htmlPages.length} HTML pages in the repo root, including index.html`, () => {
+    assert.ok(htmlPages.includes('index.html'), 'index.html not found in repo root');
+    assert.ok(htmlPages.length >= 2, `expected several pages, found ${htmlPages.length}`);
   });
 
-  test('Stack push & pop adheres strictly to LIFO ordering', () => {
-    const s = new Stack(5);
-    s.push(10);
-    s.push(20);
-    s.push(30);
-    assert.strictEqual(s.size(), 3);
-    assert.strictEqual(s.peek(), 30);
-    assert.strictEqual(s.pop().item, 30);
-    assert.strictEqual(s.peek(), 20);
-    assert.strictEqual(s.pop().item, 20);
-    assert.strictEqual(s.pop().item, 10);
-    assert.strictEqual(s.isEmpty(), true);
+  let hrefs = [];
+  test('navCategories in shared.js lists at least one href, with no duplicates', () => {
+    hrefs = navHrefs(sharedJs);
+    assert.ok(hrefs.length > 0, 'navCategories has no href entries');
+    const dupes = hrefs.filter((h, i) => hrefs.indexOf(h) !== i);
+    assert.deepStrictEqual(dupes, [], `duplicate nav hrefs: ${dupes.join(', ')}`);
   });
 
-  test('Stack overflow guard prevents pushing beyond capacity', () => {
-    const s = new Stack(3);
-    assert.strictEqual(s.push(1).success, true);
-    assert.strictEqual(s.push(2).success, true);
-    assert.strictEqual(s.push(3).success, true);
-    assert.strictEqual(s.isFull(), true);
-    const overflowRes = s.push(4);
-    assert.strictEqual(overflowRes.success, false);
-    assert.strictEqual(overflowRes.error, 'Stack Overflow');
-    assert.strictEqual(s.size(), 3);
+  test('Every navCategories href points at an existing file', () => {
+    const missing = hrefs.filter((h) => !fs.existsSync(path.join(ROOT, h.split(/[?#]/)[0])));
+    assert.deepStrictEqual(missing, [], `nav hrefs with no file: ${missing.join(', ')}`);
   });
 
-  test('Stack underflow guard prevents popping empty stack', () => {
-    const s = new Stack(3);
-    const underflowRes = s.pop();
-    assert.strictEqual(underflowRes.success, false);
-    assert.strictEqual(underflowRes.error, 'Stack Underflow');
-    assert.strictEqual(s.peek(), null);
-  });
-
-  test('Stack clear operation empties all items', () => {
-    const s = new Stack(5);
-    s.push(10);
-    s.push(20);
-    s.clear();
-    assert.strictEqual(s.isEmpty(), true);
-    assert.strictEqual(s.size(), 0);
-    assert.strictEqual(s.peek(), null);
+  test('Every HTML page except index.html is listed in navCategories', () => {
+    const unlisted = htmlPages.filter((p) => p !== 'index.html' && !hrefs.includes(p));
+    assert.deepStrictEqual(unlisted, [], `pages missing from the nav: ${unlisted.join(', ')}`);
   });
 });
 
 // ----------------------------------------------------------------------------
-// 2. REGULAR QUEUE REGRESSION SUITE
+// 2. PER-PAGE CHECKS (every *.html in the repo root)
 // ----------------------------------------------------------------------------
-suite('2. Regular Queue (FIFO) Model & Invariants', () => {
-  class Queue {
-    constructor(maxSize = 8) {
-      this.items = [];
-      this.maxSize = maxSize;
-    }
-    enqueue(item) {
-      if (this.isFull()) return { success: false, error: 'Queue Overflow' };
-      this.items.push(item);
-      return { success: true, item };
-    }
-    dequeue() {
-      if (this.isEmpty()) return { success: false, error: 'Queue Underflow' };
-      return { success: true, item: this.items.shift() };
-    }
-    peek() { return this.isEmpty() ? null : this.items[0]; }
-    rear() { return this.isEmpty() ? null : this.items[this.items.length - 1]; }
-    isEmpty() { return this.items.length === 0; }
-    isFull() { return this.items.length >= this.maxSize; }
-    size() { return this.items.length; }
-    clear() { this.items = []; }
-  }
+suite('2. Per-Page Structure, Inline Styles & Native Dialogs', () => {
+  for (const page of htmlPages) {
+    const html = read(page);
+    const scripts = localScriptSrcs(html);
 
-  test('Queue adheres strictly to FIFO ordering', () => {
-    const q = new Queue(5);
-    q.enqueue('First');
-    q.enqueue('Second');
-    q.enqueue('Third');
-    assert.strictEqual(q.peek(), 'First');
-    assert.strictEqual(q.rear(), 'Third');
-    assert.strictEqual(q.dequeue().item, 'First');
-    assert.strictEqual(q.peek(), 'Second');
-    assert.strictEqual(q.dequeue().item, 'Second');
-    assert.strictEqual(q.dequeue().item, 'Third');
-    assert.strictEqual(q.isEmpty(), true);
+    test(`${page}: doctype, <title>, no legacy Tailwind CDN`, () => {
+      assert.ok(/<!DOCTYPE html>/i.test(html), 'missing <!DOCTYPE html>');
+      assert.ok(/<title>[^<]*\S[^<]*<\/title>/i.test(html), 'missing or empty <title>');
+      assert.ok(!html.includes('cdn.tailwindcss.com'), 'contains the legacy Tailwind CDN');
+    });
+
+    test(`${page}: loads main.css and shared.js`, () => {
+      assert.ok(stylesheetHrefs(html).includes('main.css'), 'no <link rel="stylesheet" href="main.css">');
+      assert.ok(scripts.includes('shared.js'), 'no <script src="shared.js">');
+    });
+
+    test(`${page}: has 0 style="" attributes`, () => {
+      const hits = [...html.matchAll(STYLE_ATTR_RE)].map((m) => `${page}:${lineOf(html, m.index)}`);
+      assert.deepStrictEqual(hits, [], `inline style attributes at ${hits.join(', ')}`);
+    });
+
+    test(`${page}: 0 alert/prompt/confirm in the page and its local scripts (${scripts.join(', ') || 'none'})`, () => {
+      const missing = scripts.filter((s) => !fs.existsSync(path.join(ROOT, s)));
+      assert.deepStrictEqual(missing, [], `page loads scripts that do not exist: ${missing.join(', ')}`);
+      const hits = [...findDialogs(page, html), ...scripts.flatMap((s) => findDialogs(s, read(s)))];
+      assert.deepStrictEqual(hits, [], `native dialogs: ${hits.join('; ')}`);
+    });
+  }
+});
+
+// ----------------------------------------------------------------------------
+// 3. PAGE MODULES (src/pages/**, which module pages import from)
+// ----------------------------------------------------------------------------
+suite('3. Page Modules under src/pages/', () => {
+  const pageModules = walk('src/pages');
+
+  test(`src/pages/ contains page modules (${pageModules.length} found)`, () => {
+    assert.ok(pageModules.length > 0, 'no .js files under src/pages/');
   });
 
-  test('Queue overflow & underflow boundaries', () => {
-    const q = new Queue(2);
-    assert.strictEqual(q.enqueue('A').success, true);
-    assert.strictEqual(q.enqueue('B').success, true);
-    assert.strictEqual(q.isFull(), true);
-    assert.strictEqual(q.enqueue('C').success, false);
-    assert.strictEqual(q.dequeue().item, 'A');
-    assert.strictEqual(q.dequeue().item, 'B');
-    assert.strictEqual(q.dequeue().success, false);
+  test('0 alert/prompt/confirm in any file under src/pages/', () => {
+    const hits = pageModules.flatMap((f) => findDialogs(f, read(f)));
+    assert.deepStrictEqual(hits, [], `native dialogs: ${hits.join('; ')}`);
   });
 });
 
 // ----------------------------------------------------------------------------
-// 3. CIRCULAR QUEUE REGRESSION SUITE
+// 4. SHARED CSS & NAV MODULE
 // ----------------------------------------------------------------------------
-suite('3. Circular Queue Modulo & Wrap-Around Logic', () => {
-  class CircularQueue {
-    constructor(capacity = 5) {
-      this.capacity = capacity;
-      this.items = new Array(capacity).fill(null);
-      this.front = -1;
-      this.rear = -1;
-      this.count = 0;
-    }
-    enqueue(value) {
-      if (this.isFull()) return { success: false, error: 'Queue is full' };
-      if (this.isEmpty()) {
-        this.front = 0;
-        this.rear = 0;
-      } else {
-        this.rear = (this.rear + 1) % this.capacity;
-      }
-      this.items[this.rear] = value;
-      this.count++;
-      return { success: true, front: this.front, rear: this.rear };
-    }
-    dequeue() {
-      if (this.isEmpty()) return { success: false, error: 'Queue is empty' };
-      const val = this.items[this.front];
-      this.items[this.front] = null;
-      this.count--;
-      if (this.front === this.rear) {
-        this.front = -1;
-        this.rear = -1;
-      } else {
-        this.front = (this.front + 1) % this.capacity;
-      }
-      return { success: true, value: val, front: this.front, rear: this.rear };
-    }
-    isEmpty() { return this.count === 0; }
-    isFull() { return this.count === this.capacity; }
-  }
-
-  test('Circular Queue multi-cycle wrap-around enqueue & dequeue', () => {
-    const cq = new CircularQueue(4);
-    // Fill queue
-    cq.enqueue(1);
-    cq.enqueue(2);
-    cq.enqueue(3);
-    cq.enqueue(4);
-    assert.strictEqual(cq.isFull(), true);
-    assert.strictEqual(cq.front, 0);
-    assert.strictEqual(cq.rear, 3);
-
-    // Dequeue 3 items
-    assert.strictEqual(cq.dequeue().value, 1);
-    assert.strictEqual(cq.dequeue().value, 2);
-    assert.strictEqual(cq.dequeue().value, 3);
-    assert.strictEqual(cq.front, 3);
-    assert.strictEqual(cq.rear, 3);
-    assert.strictEqual(cq.count, 1);
-
-    // Enqueue 3 new items (wrap around to 0, 1, 2)
-    cq.enqueue(5); // rear = 0
-    cq.enqueue(6); // rear = 1
-    cq.enqueue(7); // rear = 2
-    assert.strictEqual(cq.isFull(), true);
-    assert.strictEqual(cq.front, 3);
-    assert.strictEqual(cq.rear, 2);
-
-    // Dequeue in expected cyclic sequence
-    assert.strictEqual(cq.dequeue().value, 4); // slot 3
-    assert.strictEqual(cq.dequeue().value, 5); // slot 0
-    assert.strictEqual(cq.dequeue().value, 6); // slot 1
-    assert.strictEqual(cq.dequeue().value, 7); // slot 2
-    assert.strictEqual(cq.isEmpty(), true);
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 4. PRIORITY QUEUE REGRESSION SUITE
-// ----------------------------------------------------------------------------
-suite('4. Priority Queue Precedence & Order', () => {
-  class PriorityQueue {
-    constructor(maxSize = 8) {
-      this.items = [];
-      this.maxSize = maxSize;
-    }
-    enqueue(value, priority = 3) {
-      if (this.isFull()) return { success: false, error: 'Queue is full' };
-      const p = parseInt(priority, 10);
-      const elem = { value, priority: isNaN(p) ? 3 : Math.max(1, Math.min(5, p)) };
-      let added = false;
-      for (let i = 0; i < this.items.length; i++) {
-        if (elem.priority > this.items[i].priority) {
-          this.items.splice(i, 0, elem);
-          added = true;
-          break;
-        }
-      }
-      if (!added) this.items.push(elem);
-      return { success: true, item: elem };
-    }
-    dequeue() {
-      if (this.isEmpty()) return { success: false, error: 'Queue is empty' };
-      return { success: true, item: this.items.shift() };
-    }
-    peek() { return this.isEmpty() ? null : this.items[0]; }
-    isEmpty() { return this.items.length === 0; }
-    isFull() { return this.items.length >= this.maxSize; }
-  }
-
-  test('Higher numeric priority elements are dequeued first', () => {
-    const pq = new PriorityQueue(10);
-    pq.enqueue('Normal Task', 2);
-    pq.enqueue('Urgent Task', 5);
-    pq.enqueue('Low Task', 1);
-    pq.enqueue('High Task', 4);
-
-    assert.strictEqual(pq.peek().value, 'Urgent Task');
-    assert.strictEqual(pq.dequeue().item.value, 'Urgent Task');
-    assert.strictEqual(pq.dequeue().item.value, 'High Task');
-    assert.strictEqual(pq.dequeue().item.value, 'Normal Task');
-    assert.strictEqual(pq.dequeue().item.value, 'Low Task');
-    assert.strictEqual(pq.isEmpty(), true);
-  });
-
-  test('Priority clamping strictly bounds priority to 1-5', () => {
-    const pq = new PriorityQueue(5);
-    pq.enqueue('Max Clamp', 999);
-    pq.enqueue('Min Clamp', -50);
-    assert.strictEqual(pq.items[0].priority, 5);
-    assert.strictEqual(pq.items[1].priority, 1);
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 5. SINGLY LINKED LIST REGRESSION SUITE
-// ----------------------------------------------------------------------------
-suite('5. Singly Linked List Operations & Invariants', () => {
-  class SNode {
-    constructor(val) {
-      this.value = val;
-      this.next = null;
-    }
-  }
-
-  class SinglyLinkedList {
-    constructor() {
-      this.head = null;
-      this.tail = null;
-      this.length = 0;
-    }
-    append(val) {
-      const node = new SNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-      } else {
-        this.tail.next = node;
-        this.tail = node;
-      }
-      this.length++;
-    }
-    prepend(val) {
-      const node = new SNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-      } else {
-        node.next = this.head;
-        this.head = node;
-      }
-      this.length++;
-    }
-    insertAt(index, val) {
-      if (index < 0 || index > this.length) return false;
-      if (index === 0) { this.prepend(val); return true; }
-      if (index === this.length) { this.append(val); return true; }
-      const node = new SNode(val);
-      let curr = this.head;
-      for (let i = 0; i < index - 1; i++) curr = curr.next;
-      node.next = curr.next;
-      curr.next = node;
-      this.length++;
-      return true;
-    }
-    deleteHead() {
-      if (!this.head) return null;
-      const val = this.head.value;
-      this.head = this.head.next;
-      this.length--;
-      if (this.length === 0) this.tail = null;
-      return val;
-    }
-    deleteTail() {
-      if (!this.head) return null;
-      if (this.length === 1) return this.deleteHead();
-      let curr = this.head;
-      while (curr.next !== this.tail) curr = curr.next;
-      const val = this.tail.value;
-      curr.next = null;
-      this.tail = curr;
-      this.length--;
-      return val;
-    }
-    deleteAt(index) {
-      if (index < 0 || index >= this.length) return null;
-      if (index === 0) return this.deleteHead();
-      if (index === this.length - 1) return this.deleteTail();
-      let curr = this.head;
-      for (let i = 0; i < index - 1; i++) curr = curr.next;
-      const val = curr.next.value;
-      curr.next = curr.next.next;
-      this.length--;
-      return val;
-    }
-    reverse() {
-      let prev = null;
-      let curr = this.head;
-      this.tail = this.head;
-      while (curr) {
-        const next = curr.next;
-        curr.next = prev;
-        prev = curr;
-        curr = next;
-      }
-      this.head = prev;
-    }
-    sort() {
-      const arr = this.toArray().sort((a, b) => a - b);
-      this.head = null;
-      this.tail = null;
-      this.length = 0;
-      arr.forEach(v => this.append(v));
-    }
-    toArray() {
-      const arr = [];
-      let curr = this.head;
-      while (curr) {
-        arr.push(curr.value);
-        curr = curr.next;
-      }
-      return arr;
-    }
-  }
-
-  test('SLL Prepend, Append, and InsertAt arbitrary index', () => {
-    const sll = new SinglyLinkedList();
-    sll.append(20);
-    sll.prepend(10);
-    sll.append(40);
-    sll.insertAt(2, 30);
-    assert.deepStrictEqual(sll.toArray(), [10, 20, 30, 40]);
-    assert.strictEqual(sll.head.value, 10);
-    assert.strictEqual(sll.tail.value, 40);
-    assert.strictEqual(sll.length, 4);
-  });
-
-  test('SLL Deletion from Head, Tail, and Middle index', () => {
-    const sll = new SinglyLinkedList();
-    [10, 20, 30, 40, 50].forEach(v => sll.append(v));
-    assert.strictEqual(sll.deleteHead(), 10);
-    assert.strictEqual(sll.deleteTail(), 50);
-    assert.strictEqual(sll.deleteAt(1), 30);
-    assert.deepStrictEqual(sll.toArray(), [20, 40]);
-    assert.strictEqual(sll.head.value, 20);
-    assert.strictEqual(sll.tail.value, 40);
-  });
-
-  test('SLL Reversal inverts pointer order correctly', () => {
-    const sll = new SinglyLinkedList();
-    [1, 2, 3, 4, 5].forEach(v => sll.append(v));
-    sll.reverse();
-    assert.deepStrictEqual(sll.toArray(), [5, 4, 3, 2, 1]);
-    assert.strictEqual(sll.head.value, 5);
-    assert.strictEqual(sll.tail.value, 1);
-  });
-
-  test('SLL Sort arranges values in ascending order', () => {
-    const sll = new SinglyLinkedList();
-    [45, 12, 89, 3, 23].forEach(v => sll.append(v));
-    sll.sort();
-    assert.deepStrictEqual(sll.toArray(), [3, 12, 23, 45, 89]);
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 6. DOUBLY LINKED LIST REGRESSION SUITE
-// ----------------------------------------------------------------------------
-suite('6. Doubly Linked List Bidirectional Invariants', () => {
-  class DNode {
-    constructor(val) {
-      this.value = val;
-      this.prev = null;
-      this.next = null;
-    }
-  }
-
-  class DoublyLinkedList {
-    constructor() {
-      this.head = null;
-      this.tail = null;
-      this.length = 0;
-    }
-    append(val) {
-      const node = new DNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-      } else {
-        node.prev = this.tail;
-        this.tail.next = node;
-        this.tail = node;
-      }
-      this.length++;
-    }
-    prepend(val) {
-      const node = new DNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-      } else {
-        node.next = this.head;
-        this.head.prev = node;
-        this.head = node;
-      }
-      this.length++;
-    }
-    deleteHead() {
-      if (!this.head) return null;
-      const val = this.head.value;
-      if (this.head === this.tail) {
-        this.head = null;
-        this.tail = null;
-      } else {
-        this.head = this.head.next;
-        this.head.prev = null;
-      }
-      this.length--;
-      return val;
-    }
-    deleteTail() {
-      if (!this.tail) return null;
-      const val = this.tail.value;
-      if (this.head === this.tail) {
-        this.head = null;
-        this.tail = null;
-      } else {
-        this.tail = this.tail.prev;
-        this.tail.next = null;
-      }
-      this.length--;
-      return val;
-    }
-    verifyBidirectionalPointers() {
-      let curr = this.head;
-      let count = 0;
-      while (curr) {
-        count++;
-        if (curr.next && curr.next.prev !== curr) return false;
-        if (curr.prev && curr.prev.next !== curr) return false;
-        curr = curr.next;
-      }
-      return count === this.length;
-    }
-  }
-
-  test('DLL Maintains strict prev & next reciprocity through operations', () => {
-    const dll = new DoublyLinkedList();
-    dll.append(100);
-    dll.append(200);
-    dll.prepend(50);
-    dll.append(300);
-    assert.strictEqual(dll.verifyBidirectionalPointers(), true);
-    assert.strictEqual(dll.deleteHead(), 50);
-    assert.strictEqual(dll.verifyBidirectionalPointers(), true);
-    assert.strictEqual(dll.deleteTail(), 300);
-    assert.strictEqual(dll.verifyBidirectionalPointers(), true);
-    assert.strictEqual(dll.head.value, 100);
-    assert.strictEqual(dll.tail.value, 200);
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 7. CIRCULAR LINKED LIST REGRESSION SUITE
-// ----------------------------------------------------------------------------
-suite('7. Circular Linked List Loopback & Cycle Invariants', () => {
-  class CNode {
-    constructor(val) {
-      this.value = val;
-      this.next = null;
-    }
-  }
-
-  class CircularLinkedList {
-    constructor() {
-      this.head = null;
-      this.tail = null;
-      this.length = 0;
-    }
-    append(val) {
-      const node = new CNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-        node.next = this.head;
-      } else {
-        this.tail.next = node;
-        this.tail = node;
-        this.tail.next = this.head;
-      }
-      this.length++;
-    }
-    prepend(val) {
-      const node = new CNode(val);
-      if (!this.head) {
-        this.head = node;
-        this.tail = node;
-        node.next = this.head;
-      } else {
-        node.next = this.head;
-        this.head = node;
-        this.tail.next = this.head;
-      }
-      this.length++;
-    }
-    deleteHead() {
-      if (!this.head) return null;
-      const val = this.head.value;
-      if (this.head === this.tail) {
-        this.head = null;
-        this.tail = null;
-      } else {
-        this.head = this.head.next;
-        this.tail.next = this.head;
-      }
-      this.length--;
-      return val;
-    }
-    verifyCycle() {
-      if (!this.head) return this.length === 0 && !this.tail;
-      return this.tail.next === this.head;
-    }
-  }
-
-  test('CLL maintains tail.next === head cycle at all times', () => {
-    const cll = new CircularLinkedList();
-    cll.append(10);
-    cll.append(20);
-    cll.prepend(5);
-    assert.strictEqual(cll.verifyCycle(), true);
-    assert.strictEqual(cll.tail.next.value, 5);
-    assert.strictEqual(cll.deleteHead(), 5);
-    assert.strictEqual(cll.verifyCycle(), true);
-    assert.strictEqual(cll.head.value, 10);
-    assert.strictEqual(cll.tail.next.value, 10);
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 8. AVL TREE SELF-BALANCING & ROTATIONS SUITE
-// ----------------------------------------------------------------------------
-suite('8. AVL Tree Self-Balancing & Rotations', () => {
-  class AVLNode {
-    constructor(val) {
-      this.value = val;
-      this.left = null;
-      this.right = null;
-      this.height = 1;
-    }
-  }
-
-  class AVLTree {
-    constructor() {
-      this.root = null;
-      this.rotations = [];
-    }
-    getHeight(n) { return n ? n.height : 0; }
-    getBalanceFactor(n) { return n ? this.getHeight(n.left) - this.getHeight(n.right) : 0; }
-    updateHeight(n) {
-      if (n) n.height = 1 + Math.max(this.getHeight(n.left), this.getHeight(n.right));
-    }
-    rotateRight(y) {
-      const x = y.left;
-      const T2 = x.right;
-      x.right = y;
-      y.left = T2;
-      this.updateHeight(y);
-      this.updateHeight(x);
-      return x;
-    }
-    rotateLeft(x) {
-      const y = x.right;
-      const T2 = y.left;
-      y.left = x;
-      x.right = T2;
-      this.updateHeight(x);
-      this.updateHeight(y);
-      return y;
-    }
-    insert(val) {
-      this.root = this._insert(this.root, val);
-    }
-    _insert(node, val) {
-      if (!node) return new AVLNode(val);
-      if (val < node.value) node.left = this._insert(node.left, val);
-      else if (val > node.value) node.right = this._insert(node.right, val);
-      else return node; // No duplicates
-
-      this.updateHeight(node);
-      const bf = this.getBalanceFactor(node);
-
-      // LL Case -> Right Rotation
-      if (bf > 1 && val < node.left.value) {
-        this.rotations.push('LL');
-        return this.rotateRight(node);
-      }
-      // RR Case -> Left Rotation
-      if (bf < -1 && val > node.right.value) {
-        this.rotations.push('RR');
-        return this.rotateLeft(node);
-      }
-      // LR Case -> Left-Right Rotation
-      if (bf > 1 && val > node.left.value) {
-        this.rotations.push('LR');
-        node.left = this.rotateLeft(node.left);
-        return this.rotateRight(node);
-      }
-      // RL Case -> Right-Left Rotation
-      if (bf < -1 && val < node.right.value) {
-        this.rotations.push('RL');
-        node.right = this.rotateRight(node.right);
-        return this.rotateLeft(node);
-      }
-      return node;
-    }
-    inOrder(node = this.root, res = []) {
-      if (node) {
-        this.inOrder(node.left, res);
-        res.push(node.value);
-        this.inOrder(node.right, res);
-      }
-      return res;
-    }
-    isBalanced(node = this.root) {
-      if (!node) return true;
-      const bf = this.getBalanceFactor(node);
-      if (Math.abs(bf) > 1) return false;
-      return this.isBalanced(node.left) && this.isBalanced(node.right);
-    }
-  }
-
-  test('AVL: LL Rotation (Right Rotation) on [30, 20, 10]', () => {
-    const tree = new AVLTree();
-    tree.insert(30);
-    tree.insert(20);
-    tree.insert(10);
-    assert.strictEqual(tree.root.value, 20);
-    assert.strictEqual(tree.root.left.value, 10);
-    assert.strictEqual(tree.root.right.value, 30);
-    assert.strictEqual(tree.isBalanced(), true);
-    assert.strictEqual(tree.rotations.includes('LL'), true);
-  });
-
-  test('AVL: RR Rotation (Left Rotation) on [10, 20, 30]', () => {
-    const tree = new AVLTree();
-    tree.insert(10);
-    tree.insert(20);
-    tree.insert(30);
-    assert.strictEqual(tree.root.value, 20);
-    assert.strictEqual(tree.root.left.value, 10);
-    assert.strictEqual(tree.root.right.value, 30);
-    assert.strictEqual(tree.isBalanced(), true);
-    assert.strictEqual(tree.rotations.includes('RR'), true);
-  });
-
-  test('AVL: LR Double Rotation on [30, 10, 20]', () => {
-    const tree = new AVLTree();
-    tree.insert(30);
-    tree.insert(10);
-    tree.insert(20);
-    assert.strictEqual(tree.root.value, 20);
-    assert.strictEqual(tree.root.left.value, 10);
-    assert.strictEqual(tree.root.right.value, 30);
-    assert.strictEqual(tree.isBalanced(), true);
-    assert.strictEqual(tree.rotations.includes('LR'), true);
-  });
-
-  test('AVL: RL Double Rotation on [10, 30, 20]', () => {
-    const tree = new AVLTree();
-    tree.insert(10);
-    tree.insert(30);
-    tree.insert(20);
-    assert.strictEqual(tree.root.value, 20);
-    assert.strictEqual(tree.root.left.value, 10);
-    assert.strictEqual(tree.root.right.value, 30);
-    assert.strictEqual(tree.isBalanced(), true);
-    assert.strictEqual(tree.rotations.includes('RL'), true);
-  });
-
-  test('AVL: Randomized dataset strictly preserves BST & Balance invariants', () => {
-    const tree = new AVLTree();
-    const values = [50, 25, 75, 10, 30, 60, 80, 5, 15, 27, 35, 55, 65, 78, 90, 1, 4, 12, 18];
-    values.forEach(v => tree.insert(v));
-    
-    assert.strictEqual(tree.isBalanced(), true, 'Tree must remain balanced (|BF| <= 1)');
-    const inOrder = tree.inOrder();
-    const sorted = [...values].sort((a, b) => a - b);
-    assert.deepStrictEqual(inOrder, sorted, 'In-order traversal must equal sorted dataset');
-  });
-});
-
-// ----------------------------------------------------------------------------
-// 9. ARCHITECTURE & HTML/CSS/JS INTEGRATION SUITE
-// ----------------------------------------------------------------------------
-suite('9. Architecture, CSS Tokens & Nav Integration', () => {
-  const workspace = path.join(__dirname, '..');
-  const htmlFiles = [
-    'index.html',
-    'stack.html',
-    'regular-queue.html',
-    'circular-queue.html',
-    'priority-queue.html',
-    'singly-linked-list.html',
-    'doubly-linked-list.html',
-    'circular-linked-list.html',
-    'avl-tree.html'
-  ];
-
-  test('All 9 HTML documents exist with valid academic structure and no legacy Tailwind CDN', () => {
-    for (const file of htmlFiles) {
-      const filePath = path.join(workspace, file);
-      assert.strictEqual(fs.existsSync(filePath), true, `File missing: ${file}`);
-      const content = fs.readFileSync(filePath, 'utf8');
-      
-      assert.strictEqual(content.includes('<!DOCTYPE html>'), true, `${file} missing <!DOCTYPE html>`);
-      assert.strictEqual(/<title>.*<\/title>/i.test(content), true, `${file} missing <title>`);
-      assert.strictEqual(content.includes('main.css'), true, `${file} missing main.css stylesheet link`);
-      assert.strictEqual(content.includes('shared.js'), true, `${file} missing shared.js script link`);
-      assert.strictEqual(content.includes('cdn.tailwindcss.com'), false, `${file} contains legacy tailwind CDN link`);
-    }
-  });
-
+suite('4. CSS Tokens & Shared Navigation Module', () => {
   test('Academic CSS design tokens and layout classes are defined in main.css', () => {
-    const cssContent = fs.readFileSync(path.join(workspace, 'main.css'), 'utf8');
+    const cssContent = read('main.css');
     assert.strictEqual(cssContent.includes('--primary:'), true, 'main.css missing --primary token');
     assert.strictEqual(cssContent.includes('--bg-page:'), true, 'main.css missing --bg-page token');
     assert.strictEqual(cssContent.includes('--font-main:'), true, 'main.css missing --font-main token');
@@ -825,19 +212,19 @@ suite('9. Architecture, CSS Tokens & Nav Integration', () => {
   });
 
   test('Shared navigation module (shared.js) initializes overlay, drawer and toast', () => {
-    const jsContent = fs.readFileSync(path.join(workspace, 'shared.js'), 'utf8');
-    assert.strictEqual(jsContent.includes('initNavigation'), true, 'shared.js missing initNavigation');
-    assert.strictEqual(jsContent.includes('showToast'), true, 'shared.js missing showToast');
-    assert.strictEqual(jsContent.includes('navCategories'), true, 'shared.js missing categorized navCategories');
+    assert.strictEqual(sharedJs.includes('initNavigation'), true, 'shared.js missing initNavigation');
+    assert.strictEqual(sharedJs.includes('showToast'), true, 'shared.js missing showToast');
+    assert.strictEqual(sharedJs.includes('navCategories'), true, 'shared.js missing categorized navCategories');
+  });
+
+  test('0 alert/prompt/confirm in shared.js', () => {
+    const hits = findDialogs('shared.js', sharedJs);
+    assert.deepStrictEqual(hits, [], `native dialogs: ${hits.join('; ')}`);
   });
 });
 
 console.log(`\n======================================================`);
 console.log(` SUMMARY: ${passedTests} / ${totalTests} assertions passed (${Math.round(passedTests / totalTests * 100)}%)`);
 console.log(`======================================================\n`);
-
-if (passedTests !== totalTests) {
-  process.exit(1);
-}
 
 if (passedTests !== totalTests) process.exitCode = 1;

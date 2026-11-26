@@ -65,6 +65,21 @@ test("stack: constructor and push validate input", () => {
     assert.throws(() => new Stack(2).push(Infinity), TypeError);
 });
 
+test("stack: starts empty and clear() empties it (ported from legacy suite 1)", () => {
+    const s = new Stack(5);
+    assert.equal(s.isEmpty(), true);
+    assert.equal(s.isFull(), false);
+    assert.equal(s.size, 0);
+    assert.equal(s.peek(), null);
+    s.push(10); s.push(20);
+    s.clear();
+    assert.equal(s.isEmpty(), true);
+    assert.equal(s.size, 0);
+    assert.equal(s.top, -1);
+    assert.equal(s.peek(), null);
+    assert.equal(s.push(30).ok, true, "space is usable again after clear");
+});
+
 /* ---------------- Linear queue ---------------- */
 
 test("linear queue: FIFO order and pointer bookkeeping over random operations", () => {
@@ -118,6 +133,22 @@ test("linear queue: emptying resets the pointers so space is usable again", () =
     assert.equal(q.enqueue(3).ok, true);
 });
 
+test("linear queue: isFull at capacity; plain overflow and underflow at the boundaries (ported from legacy suite 2)", () => {
+    const q = new LinearQueue(2);
+    assert.equal(q.enqueue(1).ok, true);
+    assert.equal(q.enqueue(2).ok, true);
+    assert.equal(q.isFull(), true);
+    const over = q.enqueue(3);
+    assert.equal(over.ok, false);
+    assert.equal(over.steps[0].type, "overflow", "front is 0, so this is a real overflow, not a false one");
+    assert.equal(q.size, 2);
+    assert.equal(q.dequeue().value, 1);
+    assert.equal(q.dequeue().value, 2);
+    const under = q.dequeue();
+    assert.equal(under.ok, false);
+    assert.match(under.error, /underflow/);
+});
+
 /* ---------------- Circular queue ---------------- */
 
 test("circular queue: FIFO, wrap-around and size over random operations", () => {
@@ -164,6 +195,30 @@ test("circular queue: reuses freed slots where a linear queue cannot", () => {
 
 test("circular queue: capacity limits", () => {
     for (const bad of [1, 0, 101, 3.5]) assert.throws(() => new CircularQueue(bad), RangeError);
+});
+
+test("circular queue: exact front/rear indices over two wrap-around cycles (ported from legacy suite 3)", () => {
+    const q = new CircularQueue(4);
+    for (const v of [1, 2, 3, 4]) q.enqueue(v);
+    assert.equal(q.isFull(), true);
+    assert.deepEqual([q.front, q.rear], [0, 3]);
+    assert.equal(q.dequeue().value, 1);
+    assert.equal(q.dequeue().value, 2);
+    assert.equal(q.dequeue().value, 3);
+    assert.deepEqual([q.front, q.rear, q.size], [3, 3, 1]);
+    for (const [v, rear] of [[5, 0], [6, 1], [7, 2]]) {
+        assert.equal(q.enqueue(v).ok, true);
+        assert.equal(q.rear, rear, `enqueue ${v} wraps rear to ${rear}`);
+    }
+    assert.equal(q.isFull(), true);
+    assert.deepEqual([q.front, q.rear], [3, 2]);
+    for (const [v, slot] of [[4, 3], [5, 0], [6, 1], [7, 2]]) {
+        const r = q.dequeue();
+        assert.equal(r.value, v);
+        assert.deepEqual(r.steps[0].indices, [slot], `${v} leaves from slot ${slot}`);
+    }
+    assert.equal(q.isEmpty(), true);
+    assert.deepEqual([q.front, q.rear], [-1, -1]);
 });
 
 /* ---------------- Priority queue ---------------- */

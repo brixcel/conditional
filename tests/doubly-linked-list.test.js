@@ -205,3 +205,23 @@ test("doubly linked list: integrityError catches a broken back pointer", () => {
     list.head.prev = list.tail;
     assert.match(list.integrityError(), /head.prev must be NULL/);
 });
+
+test("doubly linked list: prev/next stay reciprocal through append, prepend, deleteHead, deleteTail (ported from legacy suite 6)", () => {
+    const list = new DoublyLinkedList(8);
+    assert.equal(list.append(100).ok, true);
+    assert.equal(list.append(200).ok, true);
+    assert.equal(list.prepend(50).ok, true);
+    assert.equal(list.append(300).ok, true);
+    assert.equal(list.integrityError(), null);
+    assert.deepEqual(list.toArray(), [50, 100, 200, 300]);
+    assert.equal(list.deleteHead().value, 50);
+    assert.equal(list.integrityError(), null);
+    assert.equal(list.head.prev, null);
+    assert.equal(list.deleteTail().value, 300);
+    assert.equal(list.integrityError(), null);
+    assert.equal(list.tail.next, null);
+    assert.equal(list.head.value, 100);
+    assert.equal(list.tail.value, 200);
+    assert.equal(list.head.next, list.tail);
+    assert.equal(list.tail.prev, list.head);
+});
