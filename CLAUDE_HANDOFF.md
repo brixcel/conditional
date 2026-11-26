@@ -32,6 +32,69 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G7: Heap page + tree layout helper
+- Author: Gemini (Antigravity)
+- Finished at: 2026-11-26 11:02 (Philippine time)
+- Branch: `gemini/g7-heap-page`
+- Commit(s): `9f599be`
+- Files changed: `src/core/tree-layout.js`, `tests/tree-layout.test.js`, `heap.html`, `src/pages/heap-page.js`, `main.css` (new section 14 only; sections 1–13 untouched)
+- Summary:
+  - Created pure, DOM-free `src/core/tree-layout.js` exporting `DEFAULT_TREE_LAYOUT` and `layoutCompleteTree(n, { levelGap, minGap })`, returning `{ nodes: [{ index, depth, x, y }], edges: [{ from, to }], width, height }` with deepest leaves spaced `minGap` apart, `y = depth * levelGap`, and parents centred over their child slots.
+  - Added `tests/tree-layout.test.js` (3 tests) verifying `n = 0, 1, 2, 3, 7, 31, 63` for node/edge counts, `to = 2*from + 1 | + 2`, non-overlapping level spacing (`>= minGap`), parent centring between children, `y = depth * levelGap`, and argument validation.
+  - Added section 14 to `main.css` (zero edits to sections 1–13, zero hard-coded colours — uses only section 1 tokens): `.hp-svg`, `.hp-edge`, `.hp-node`, `.hp-node-circle`, `.hp-node-value`, `.hp-node-index`, `.hp-cell`, `.hp-empty`, and highlight/root modifiers `.hp-root`, `.hp-select`, `.hp-compare`, `.hp-swap`, `.hp-settled` (plus `prefers-reduced-motion` override).
+  - Created `heap.html` and `src/pages/heap-page.js` using `BinaryHeap` (`src/structures/heap.js`), `StepPlayer` (`src/core/step-player.js`), `parseInteger` (`src/core/validate.js`), `parseArrayInput` + `randomArray` (`src/algorithms/sorting.js`), and `layoutCompleteTree`: capacity 31, Min/Max kind selector (rebuilds existing items with `BinaryHeap.from`), Insert (`-99..999`), Extract Root, Peek, Clear, Build Heap (`1..31` values, O(n) bottom-up), Random Values, synchronized inline SVG tree + 0-indexed array row with `.hp-*` step highlights, exact G7 pseudocode line mapping (no highlight on `overflow`/`underflow`), live counters, complexity table, and keyboard shortcuts (`Space`, `←`, `→`, `Home`). Zero inline `style=""` in `heap.html`, zero `.style` writes and zero `.innerHTML` in `src/pages/heap-page.js`.
+  - Caught and fixed a scrubber-while-playing edge case during browser verification: reading `els.progress.value` before `player.pause()` prevents `pause()`'s re-render from snapping the scrubber back before `goTo()`.
+- npm test output (paste the real lines):
+    # tests 160
+    # pass 160
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser checks done: Verified `heap.html` on `http://localhost:5505` at both `1280px` and `375px` widths in **both** light and dark themes via `#themeToggle`. Console clean: yes (0 errors, 0 uncaught rejections, 0 dialogs). Verified **Play** actually advances the step counter (`Step 1 / 17` → `Step 4 / 17` at 4×), scrubbing while playing jumps cleanly (`Step 5 / 5`, root `-5`), Insert (`-5`, `0`), Extract (populated + empty-heap underflow inline `role="alert"` with no pseudocode highlight), Build of 31 values (31 SVG nodes, 30 edges, 31 array cells, 32nd insert triggers inline `role="alert"` overflow), Min → Max kind switch (rebuilds all 31 items, root becomes `50`), invalid/XSS input (`abc`, `<img ...>` rejected inline with 0 injected nodes), and at `375px` with 31 nodes `scrollWidth === clientWidth` (`360px`, 0 horizontal page scroll) while `#treeStage` scrolls sideways (`812px` inside `268px`), `.field-grow` stays `67px` tall, and SVG `.hp-node-circle` transitions cleanly between light (`rgb(255, 255, 255)`) and dark (`rgb(17, 24, 39)`).
+- Not done / not verified: Full keyboard-only Tab traversal across every control was not manually audited. Did not edit `shared.js`, `index.html`, `src/structures/heap.js`, `tests/heap.test.js`, or `src/core/step-player.js`.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under Trees / Non-Linear Structures):**
+     - `SVG_ICONS.heap`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="10.5" y1="7.5" x2="7.5" y2="15.5"/><line x1="13.5" y1="7.5" x2="16.5" y2="15.5"/></svg>`
+     - Item: `{ label: "Binary Heap (Min / Max)", href: "heap.html", iconKey: "heap" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `heap.html`
+     - Title: `Binary Heap (Min / Max)`
+     - Description: `Visualize Min-Heap and Max-Heap inserts, root extractions, and O(n) bottom-up heapify in synchronized tree and array views.`
+     - Footer: `O(1) Peek · O(log n) Update` &rarr; `Launch Visualizer`
+  3. **Classes added to `main.css` section 14:** `.hp-svg`, `.hp-edge`, `.hp-node`, `.hp-node-circle`, `.hp-node-value`, `.hp-node-index`, `.hp-root`, `.hp-select`, `.hp-compare`, `.hp-swap`, `.hp-settled`, `.hp-cell`, `.hp-empty`.
+  4. **Tiny note for other StepPlayer pages:** In `heap-page.js` I captured `const target = Number(els.progress.value)` before `player.pause()` so dragging the range scrubber while playing doesn't snap back when `pause()` triggers `render()`. `sorting-page.js`, `searching-page.js`, and `hash-table-page.js` could benefit from the same 1-line tweak later.
+
+#### Review (filled in by Claude, code review by the qa-engineer agent)
+- Reviewed at: 2026-11-26 11:14 (Philippine time)
+- Reviewed commit: `3d1a401` (feature `9f599be`)
+- Verdict: **MERGE**, with two small fixes made by Claude in the merge.
+- Scope: exactly the 4 new files, `main.css` (one hunk appended = section 14 only) and the two docs. `heap.js`, `heap.test.js`,
+  `step-player.js`, `shared.js`, `index.html` untouched. Trial merge into `main` (`29edd0a`, after C7) had no conflicts.
+- Tests on the merged tree:
+    # tests 169
+    # pass 169
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- qa-engineer (code + tests, no browser): `layoutCompleteTree` matches the spec; an independent check of every n = 0..255 found
+  0 failures (no overlap below minGap, parents centred, in bounds). Mutation check: 6 of 6 deliberately broken layouts caught.
+  The real page module was driven against a stub DOM: LINE_MAP matches the spec table and covers every step type `heap.js`
+  emits; every error path (bad value, bad list, > 31 values, empty extract/peek, 32nd insert) shows inline with `role="alert"`.
+  No `style=""`, `.style`, `innerHTML`, dialogs or hard-coded colours.
+- Claude (browser): 375 / 1280 px, light / dark: no page overflow, 31-node tree scrolls inside its box, array view matches,
+  Play advances, Pause / Reset / scrub work, 0 console errors, 0 dialogs.
+- Fixed by Claude:
+  1. With 31 nodes, edges from level 3 to the leaves ran through the `[7]`..`[14]` index labels (16 crossings measured).
+     `.hp-node-index` now has a halo in the stage colour (`paint-order: stroke; stroke: var(--bg-stage)`), so edges stop at
+     the label in both themes.
+  2. Clear and switching kind on an empty heap loaded a made-up `done` step, which highlighted build line 3 (`siftDown(i)`)
+     although nothing ran. That step is now type `clear` (not in LINE_MAP), so no line is highlighted.
+  3. Nav entry (Tree Structures) and homepage card added as requested; module count is now 10 Structures.
+- Non-blocking, for later (site-wide, not G7): Space on a focused button can both toggle Play and press the button
+  (same in `searching-page.js`); Random Values only draws 1..99.
+- Blocking issues: none.
+- Merged in: branch `claude/g7-heap-merge` (merge of `gemini/g7-heap-page` into `main` at `29edd0a`); the user puts it on `main`.
+
+---
+
 ### G6: Hash Table module + page (unassigned; was pushed as `gemini/g5-hash-table`)
 - Author: Gemini (Antigravity), finished 2026-11-26 10:28. Full report: `docs/reports/G6-hash-table.md`.
 - Files: `src/structures/hash-table.js`, `src/pages/hash-table-page.js`, `hash-table.html`, `tests/hash-table.test.js` (all new).
