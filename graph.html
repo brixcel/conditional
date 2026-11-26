@@ -104,6 +104,55 @@
         </div>
 
         <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Traversal (BFS &amp; DFS)</h2>
+            </div>
+            <p class="concept-body" id="travSummary">
+                Run a breadth-first or depth-first search on the graph above and replay every step below.
+                Ties always go to the smallest vertex ID; directed graphs follow out-edges only.
+            </p>
+            <form class="control-section" id="travForm" novalidate>
+                <div class="control-section-title">5. Traverse the Graph</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="travAlgo">Algorithm</label>
+                        <select id="travAlgo">
+                            <option value="bfs" selected>BFS (queue)</option>
+                            <option value="dfsIterative">DFS (iterative, stack)</option>
+                            <option value="dfsRecursive">DFS (recursive, call stack)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="travStart">Start vertex (0&ndash;11)</label>
+                        <input type="text" id="travStart" class="input-sm gr-input-xs" inputmode="numeric"
+                               autocomplete="off" placeholder="e.g. 0" value="0">
+                    </div>
+                    <label class="gr-toggle" for="travAll">
+                        <input type="checkbox" id="travAll">
+                        <span>All components</span>
+                    </label>
+                    <button type="submit" class="btn" id="travBtn">Traverse</button>
+                </div>
+                <p class="text-muted gr-mode-hint" id="travHint">
+                    &ldquo;All components&rdquo; restarts from the smallest unvisited vertex until every vertex is visited (the start vertex is ignored).
+                </p>
+            </form>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Traversal complexity" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Algorithm</th>
+                            <th scope="col">Adjacency List</th>
+                            <th scope="col">Adjacency Matrix</th>
+                            <th scope="col">Extra Space</th>
+                        </tr>
+                    </thead>
+                    <tbody id="travCxTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="card-header gr-card-header">
                 <h2 class="card-title">Synchronized Graph Views</h2>
                 <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
@@ -172,11 +221,18 @@
                         Graph is empty. Add a vertex or load the sample graph.
                     </p>
                 </div>
-                <div class="bar-legend gr-legend" aria-hidden="true">
+                <div class="bar-legend gr-legend" id="buildLegend" aria-hidden="true">
                     <span><i class="sw gr-sw-add"></i> Added vertex / edge (dotted)</span>
                     <span><i class="sw gr-sw-endpoint"></i> Edge endpoint (dashed)</span>
                     <span><i class="sw gr-sw-remove"></i> Removed edge / endpoint (dash-dot in graph, double in list/matrix)</span>
                     <span><i class="sw gr-sw-empty"></i> No edge in matrix (null &middot;)</span>
+                </div>
+                <div class="bar-legend gr-legend gr-hidden" id="travLegend" aria-hidden="true">
+                    <span><i class="sw gr-sw-trav-current"></i> Current vertex (extra outer ring / double border)</span>
+                    <span><i class="sw gr-sw-trav-frontier"></i> In queue / on stack (dashed, &ldquo;queued&rdquo; / &ldquo;on stack&rdquo;)</span>
+                    <span><i class="sw gr-sw-trav-visited"></i> Visited (thick solid, visit number #k)</span>
+                    <span><i class="sw gr-sw-trav-tree"></i> Tree edge (thick solid line)</span>
+                    <span><i class="sw gr-sw-trav-check"></i> Edge being checked (dashed line)</span>
                 </div>
             </div>
 
@@ -207,6 +263,29 @@
                             No vertices in adjacency matrix.
                         </p>
                     </div>
+                </div>
+            </div>
+
+            <div class="gr-trav-panel gr-hidden" id="travPanel" role="group" aria-labelledby="travPanelTitle">
+                <div class="control-section-title" id="travPanelTitle">Traversal State</div>
+                <div class="gr-trav-row">
+                    <span class="gr-trav-row-label" id="travFrontierLabel">Queue (front &rarr; back)</span>
+                    <ol class="gr-adj-neighbors gr-trav-chips" id="travFrontier" role="list" aria-labelledby="travFrontierLabel"></ol>
+                </div>
+                <div class="gr-trav-row gr-hidden" id="travCallRow">
+                    <span class="gr-trav-row-label" id="travCallLabel">Call stack (top &rarr; bottom)</span>
+                    <ol class="gr-adj-neighbors gr-trav-chips" id="travCallStack" role="list" aria-labelledby="travCallLabel"></ol>
+                </div>
+                <div class="gr-trav-row">
+                    <span class="gr-trav-row-label" id="travOrderLabel">Visit order</span>
+                    <ol class="gr-adj-neighbors gr-trav-chips" id="travOrder" role="list" aria-labelledby="travOrderLabel"></ol>
+                </div>
+                <div class="state-monitor stat-grid">
+                    <div><span>Algorithm</span><strong id="travStatAlgo">&mdash;</strong></div>
+                    <div><span>Current</span><strong id="travStatCurrent">&mdash;</strong></div>
+                    <div><span>Visited</span><strong id="travStatVisited">0</strong></div>
+                    <div><span>Edges checked</span><strong id="travStatEdges">0</strong></div>
+                    <div><span>Component</span><strong id="travStatComponent">&mdash;</strong></div>
                 </div>
             </div>
 

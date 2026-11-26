@@ -4,12 +4,15 @@
  * playback from src/core/step-player.js; keyboard binding from src/core/player-keys.js;
  * integer validation from src/core/validate.js.
  * Reuses main.css section 14–16 classes — zero inline styling writes, zero HTML string injection.
+ * C23: the Traversal card replays traced BFS / DFS steps from src/algorithms/graph-traversal.js
+ * through the same StepPlayer and views (section 17 classes + section 21 "Graph Traversal").
  */
 import { StepPlayer } from "../core/step-player.js";
 import { bindPlayerKeys } from "../core/player-keys.js";
 import { parseInteger } from "../core/validate.js";
 import { layoutCircle } from "../core/graph-layout.js";
 import { Graph, GRAPH_INFO, GRAPH_LIMITS } from "../structures/graph.js";
+import { GRAPH_TRAVERSAL_INFO, TRAVERSAL_KINDS, traceTraversal, parseStartVertex } from "../algorithms/graph-traversal.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const NODE_RADIUS = 19;
@@ -92,6 +95,24 @@ const els = {
     statMode: $("statMode"),
     statOperation: $("statOperation"),
     statIntegrity: $("statIntegrity"),
+    buildLegend: $("buildLegend"),
+    travForm: $("travForm"),
+    travAlgo: $("travAlgo"),
+    travStart: $("travStart"),
+    travAll: $("travAll"),
+    travBtn: $("travBtn"),
+    travLegend: $("travLegend"),
+    travPanel: $("travPanel"),
+    travFrontierLabel: $("travFrontierLabel"),
+    travFrontier: $("travFrontier"),
+    travCallRow: $("travCallRow"),
+    travCallStack: $("travCallStack"),
+    travOrder: $("travOrder"),
+    travStatAlgo: $("travStatAlgo"),
+    travStatCurrent: $("travStatCurrent"),
+    travStatVisited: $("travStatVisited"),
+    travStatEdges: $("travStatEdges"),
+    travStatComponent: $("travStatComponent"),
 };
 
 const LIVE_BASE_CLASS = "alert-banner alert-live bst-live";
@@ -348,6 +369,62 @@ function snapshotIntegrityError(snap, adjList, matrixData) {
     return null;
 }
 
+/* ---------- Traversal frame state (derived from one recorded traversal step) ---------- */
+
+// Step types whose `edge` is the edge currently being checked from `edge.from`.
+const EDGE_CHECK_TYPES = new Set(["discover", "enqueue", "push", "skip-visited", "tree-edge"]);
+
+/** Returns null for graph-editing steps; otherwise the per-frame highlight sets. */
+function traversalState(step) {
+    if (!step.traversal) return null;
+    const checking = EDGE_CHECK_TYPES.has(step.type) && step.edge !== null;
+    const current = checking ? step.edge.from : step.vertex;
+    const treeKeys = new Set();
+    for (const e of step.treeEdges) {
+        treeKeys.add(`${e.from}->${e.to}`);
+        if (!step.snapshot.directed) treeKeys.add(`${e.to}->${e.from}`);
+    }
+    return {
+        kind: step.kind,
+        current,
+        edge: step.edge,
+        frontier: new Set(step.frontier),
+        visited: new Set(step.visited),
+        orderIndex: new Map(step.order.map((v, i) => [v, i + 1])),
+        treeKeys,
+    };
+}
+
+function travFrontierWord(kind) {
+    return kind === "bfs" ? "queued" : kind === "dfsIterative" ? "on stack" : "on call stack";
+}
+
+/** Classes + screen-reader suffix for a vertex during a traversal frame. */
+function travVertexState(trav, id) {
+    const classes = [];
+    const notes = [];
+    if (trav.visited.has(id)) {
+        classes.push("gr-trav-visited");
+        notes.push(trav.orderIndex.has(id) ? `visited #${trav.orderIndex.get(id)}` : "marked visited");
+    }
+    if (trav.frontier.has(id)) {
+        classes.push("gr-trav-frontier");
+        notes.push(travFrontierWord(trav.kind));
+    }
+    if (id === trav.current) {
+        classes.push("gr-trav-current");
+        notes.push("current");
+    }
+    return { classes, note: notes.length ? ` (${notes.join(", ")})` : "" };
+}
+
+function travEdgeState(trav, u, v, directed) {
+    const isTree = trav.treeKeys.has(`${u}->${v}`);
+    const e = trav.edge;
+    const isCheck = e !== null && ((e.from === u && e.to === v) || (!directed && e.from === v && e.to === u));
+    return { isTree, isCheck };
+}
+
 /* ---------- View 1: Inline SVG Graph (pooled nodes & edges) ---------- */
 
 function createPooledEdge(parentLayer) {
@@ -361,11 +438,13 @@ function createPooledEdge(parentLayer) {
 
 function createPooledNode(parentLayer) {
     const group = svgEl("g", { class: "hp-node gr-node" });
+    const haloEl = svgEl("circle", { class: "gr-trav-halo gr-hidden", r: NODE_RADIUS + 6 });
     const circleEl = svgEl("circle", { class: "hp-node-circle gr-node-circle", r: NODE_RADIUS });
     const valueEl = svgEl("text", { class: "hp-node-value gr-node-value" });
-    group.append(circleEl, valueEl);
+    const badgeEl = svgEl("text", { class: "gr-trav-badge gr-hidden" });
+    group.append(haloEl, circleEl, valueEl, badgeEl);
     parentLayer.append(group);
-    return { group, circleEl, valueEl };
+    return { group, haloEl, circleEl, valueEl, badgeEl };
 }
 
 function ensureEdgePool(count) {
@@ -479,6 +558,7 @@ function renderSvgGraph(step) {
         `${step.message} Vertices: ${snap.vertices.join(", ")}. ` +
         `${eCount > 0 ? `Edges: ${edgeSummary}.` : "No edges."}`;
 
+    const trav = traversalState(step);
     const posById = new Map(layout.nodes.map((nd) => [nd.id, nd]));
     const edgeKeySet = new Set(snap.edges.map((e) => `${e.from}->${e.to}`));
 
@@ -502,15 +582,27 @@ function renderSvgGraph(step) {
 
         const isAdded = step.type === "add-edge" && edgeMatchesStep(edge, step.edge, snap.directed);
 
+        let edgeClass = isAdded ? "hp-edge gr-edge gr-state-add" : "hp-edge gr-edge";
+        let marker = isAdded ? "url(#gr-arrow-add)" : "url(#gr-arrow-default)";
+        if (trav) {
+            const { isTree, isCheck } = travEdgeState(trav, edge.from, edge.to, snap.directed);
+            edgeClass = "hp-edge gr-edge";
+            if (isTree) {
+                edgeClass += " gr-trav-tree";
+                marker = "url(#gr-arrow-add)";
+            }
+            if (isCheck) {
+                edgeClass += isTree ? " gr-trav-active" : " gr-trav-check";
+                if (!isTree) marker = "url(#gr-arrow-compare)";
+            }
+        }
+
         entry.group.setAttribute("class", "gr-edge-group");
         entry.pathEl.setAttribute("d", geom.d);
-        entry.pathEl.setAttribute("class", isAdded ? "hp-edge gr-edge gr-state-add" : "hp-edge gr-edge");
+        entry.pathEl.setAttribute("class", edgeClass);
 
         if (snap.directed) {
-            entry.pathEl.setAttribute(
-                "marker-end",
-                isAdded ? "url(#gr-arrow-add)" : "url(#gr-arrow-default)",
-            );
+            entry.pathEl.setAttribute("marker-end", marker);
         } else {
             entry.pathEl.removeAttribute("marker-end");
         }
@@ -587,6 +679,20 @@ function renderSvgGraph(step) {
         } else if (isActive && step.type === "remove-edge") {
             nodeClasses.push("gr-state-remove");
         }
+
+        let badge = "";
+        if (trav) {
+            nodeClasses.push(...travVertexState(trav, id).classes);
+            if (trav.orderIndex.has(id)) badge = `#${trav.orderIndex.get(id)}`;
+            else if (trav.frontier.has(id)) badge = travFrontierWord(trav.kind);
+        }
+        entry.haloEl.setAttribute("class", trav && id === trav.current ? "gr-trav-halo" : "gr-trav-halo gr-hidden");
+        entry.haloEl.setAttribute("cx", pos.x.toFixed(1));
+        entry.haloEl.setAttribute("cy", pos.y.toFixed(1));
+        entry.badgeEl.setAttribute("class", badge ? "gr-trav-badge" : "gr-trav-badge gr-hidden");
+        entry.badgeEl.setAttribute("x", pos.x.toFixed(1));
+        entry.badgeEl.setAttribute("y", (pos.y + NODE_RADIUS + 13).toFixed(1));
+        entry.badgeEl.textContent = badge;
 
         entry.group.setAttribute("class", nodeClasses.join(" "));
         entry.circleEl.setAttribute("cx", pos.x.toFixed(1));
@@ -677,6 +783,7 @@ function renderAdjacencyList(step, adjList) {
 
     const activeSet = new Set(Array.isArray(step.vertexIds) ? step.vertexIds : []);
     const stepEdge = step.edge;
+    const trav = traversalState(step);
 
     for (let i = 0; i < adjList.length; i++) {
         const { id, neighbors } = adjList[i];
@@ -707,6 +814,12 @@ function renderAdjacencyList(step, adjList) {
             badgeClasses.push("gr-state-remove");
             vertexSrSuffix = " (edge removed)";
         }
+        if (trav) {
+            const vs = travVertexState(trav, id);
+            badgeClasses.push(...vs.classes);
+            if (id === trav.current) rowClasses.push("gr-trav-row-current");
+            vertexSrSuffix = vs.note;
+        }
 
         row.li.className = rowClasses.join(" ");
         row.badge.className = badgeClasses.join(" ");
@@ -736,7 +849,21 @@ function renderAdjacencyList(step, adjList) {
                     ((id === stepEdge.from && to === stepEdge.to) ||
                         (!snap.directed && id === stepEdge.to && to === stepEdge.from));
 
-                slot.chip.className = isAddedChip ? "gr-adj-chip mono gr-chip-add" : "gr-adj-chip mono";
+                let chipClass = isAddedChip ? "gr-adj-chip mono gr-chip-add" : "gr-adj-chip mono";
+                let travNote = "";
+                if (trav) {
+                    const { isTree, isCheck } = travEdgeState(trav, id, to, snap.directed);
+                    chipClass = "gr-adj-chip mono";
+                    if (isTree) {
+                        chipClass += " gr-trav-chip-tree";
+                        travNote += ", tree edge";
+                    }
+                    if (isCheck) {
+                        chipClass += " gr-trav-chip-check";
+                        travNote += ", being checked";
+                    }
+                }
+                slot.chip.className = chipClass;
                 slot.toSpan.textContent = String(to);
                 if (snap.weighted) {
                     slot.wtSpan.className = "gr-chip-weight";
@@ -748,7 +875,7 @@ function renderAdjacencyList(step, adjList) {
 
                 const weightNote = snap.weighted ? `, weight ${weight}` : "";
                 const stateNote = isAddedChip ? ", added" : "";
-                slot.sr.textContent = `neighbor ${to}${weightNote}${stateNote}`;
+                slot.sr.textContent = `neighbor ${to}${weightNote}${stateNote}${travNote}`;
             }
             for (let j = neighbors.length; j < row.chipPool.length; j++) {
                 row.chipPool[j].chip.className = "gr-adj-chip mono gr-hidden";
@@ -768,7 +895,8 @@ function renderAdjacencyList(step, adjList) {
 
 /* ---------- View 3: Adjacency Matrix (Reused Grid) ---------- */
 
-function headerHighlightClass(id, step, activeSet) {
+function headerHighlightClass(id, step, activeSet, trav = null) {
+    if (trav) return travVertexState(trav, id).classes.map((c) => `${c}-hdr`).join(" ");
     if (step.type === "add-vertex" && activeSet.has(id)) return "gr-matrix-hdr-add";
     if (step.type === "add-edge" && step.edge && (id === step.edge.from || id === step.edge.to)) {
         return "gr-matrix-hdr-endpoint";
@@ -862,15 +990,16 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
 
     const activeSet = new Set(Array.isArray(step.vertexIds) ? step.vertexIds : []);
     const stepEdge = step.edge;
+    const trav = traversalState(step);
 
     for (let j = 0; j < n; j++) {
-        matrixColHeaders[j].className = headerHighlightClass(ids[j], step, activeSet);
+        matrixColHeaders[j].className = headerHighlightClass(ids[j], step, activeSet, trav);
     }
 
     for (let i = 0; i < n; i++) {
         const u = ids[i];
         const row = matrixBodyGrid[i];
-        row.rowHdr.className = headerHighlightClass(u, step, activeSet);
+        row.rowHdr.className = headerHighlightClass(u, step, activeSet, trav);
 
         for (let j = 0; j < n; j++) {
             const v = ids[j];
@@ -891,7 +1020,20 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
                     (!snap.directed && u === stepEdge.to && v === stepEdge.from));
 
             let cls = "";
-            if (isAddedCell) cls = "gr-matrix-cell-add";
+            let travNote = "";
+            if (trav && val !== null) {
+                const { isTree, isCheck } = travEdgeState(trav, u, v, snap.directed);
+                if (isCheck) {
+                    cls = "gr-trav-cell-check";
+                    travNote += ", being checked";
+                } else if (isTree) {
+                    cls = "gr-trav-cell-tree";
+                }
+                if (isTree) travNote += ", tree edge";
+            }
+            if (cls) {
+                // traversal class already chosen
+            } else if (isAddedCell) cls = "gr-matrix-cell-add";
             else if (isRemovedCell) cls = "gr-matrix-cell-remove";
             else if (val !== null) cls = "gr-matrix-edge";
             else if (isDiag) cls = "gr-matrix-diag";
@@ -903,7 +1045,7 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
             let nextSr;
             if (val !== null) {
                 const desc = snap.weighted ? `weight ${val}` : "connected";
-                nextSr = `${u} to ${v}: ${desc}${isAddedCell ? ", added" : ""}`;
+                nextSr = `${u} to ${v}: ${desc}${isAddedCell ? ", added" : ""}${travNote}`;
             } else if (isDiag) {
                 nextSr = `${u} to ${u}: no self-loop`;
             } else {
@@ -917,6 +1059,34 @@ function renderAdjacencyMatrix(step, { ids, matrix }) {
 /* ---------- Pseudocode, Live State & Player Render ---------- */
 
 function updatePseudocode(step) {
+    if (step.traversal) {
+        const info = GRAPH_TRAVERSAL_INFO[step.kind];
+        const key = `trav:${step.kind}:${step.mode}`;
+        if (key !== currentCodeKey) {
+            currentCodeKey = key;
+            const lines = step.mode === "all" ? info.pseudocodeAll : info.pseudocode;
+            els.codeHeading.textContent = `Pseudocode — ${info.name}${step.mode === "all" ? ", all components" : ""}`;
+            els.code.replaceChildren(
+                ...lines.map((line) => {
+                    const li = document.createElement("li");
+                    li.textContent = line;
+                    return li;
+                }),
+            );
+        }
+    } else {
+        updateBuildPseudocode(step);
+    }
+    const activeLine = step.line ?? 0;
+    [...els.code.children].forEach((li, i) => {
+        const isCurrent = i + 1 === activeLine;
+        li.classList.toggle("active", isCurrent);
+        if (isCurrent) li.setAttribute("aria-current", "step");
+        else li.removeAttribute("aria-current");
+    });
+}
+
+function updateBuildPseudocode(step) {
     const op = GRAPH_INFO.pseudocode[step.operation] ? step.operation : "build";
     if (op !== currentCodeKey) {
         currentCodeKey = op;
@@ -929,14 +1099,66 @@ function updatePseudocode(step) {
             }),
         );
     }
+}
 
-    const activeLine = step.line ?? 0;
-    [...els.code.children].forEach((li, i) => {
-        const isCurrent = i + 1 === activeLine;
-        li.classList.toggle("active", isCurrent);
-        if (isCurrent) li.setAttribute("aria-current", "step");
-        else li.removeAttribute("aria-current");
-    });
+/* ---------- Traversal state panel (queue / stack, call stack, visit order) ---------- */
+
+function chipList(listEl, values, emptyText, srLabel) {
+    if (values.length === 0) {
+        const li = document.createElement("li");
+        li.className = "gr-adj-empty-item";
+        li.textContent = emptyText;
+        listEl.replaceChildren(li);
+        return;
+    }
+    listEl.replaceChildren(
+        ...values.map((text, i) => {
+            const li = document.createElement("li");
+            li.className = i === 0 ? "gr-adj-chip mono gr-trav-chip-first" : "gr-adj-chip mono";
+            const vis = document.createElement("span");
+            vis.setAttribute("aria-hidden", "true");
+            vis.textContent = text;
+            const sr = document.createElement("span");
+            sr.className = "visually-hidden";
+            sr.textContent = srLabel(text, i);
+            li.append(vis, sr);
+            return li;
+        }),
+    );
+}
+
+function renderTraversalPanel(step) {
+    const isTrav = Boolean(step.traversal);
+    els.travPanel.classList.toggle("gr-hidden", !isTrav);
+    els.travLegend.classList.toggle("gr-hidden", !isTrav);
+    els.buildLegend.classList.toggle("gr-hidden", isTrav);
+    if (!isTrav) return;
+
+    const info = GRAPH_TRAVERSAL_INFO[step.kind];
+    const trav = traversalState(step);
+    const frontier = step.frontier.map(String);
+    if (step.kind === "bfs") {
+        els.travFrontierLabel.textContent = "Queue (front → back)";
+        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "front: " : ""}vertex ${v}`);
+    } else if (step.kind === "dfsIterative") {
+        els.travFrontierLabel.textContent = "Stack (top → bottom)";
+        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "top: " : ""}vertex ${v}`);
+    } else {
+        els.travFrontierLabel.textContent = "Active vertices (deepest first)";
+        chipList(els.travFrontier, frontier, "empty", (v, i) => `${i === 0 ? "deepest: " : ""}vertex ${v}`);
+    }
+    els.travCallRow.classList.toggle("gr-hidden", step.kind !== "dfsRecursive");
+    if (step.kind === "dfsRecursive") {
+        chipList(els.travCallStack, step.callStack.map((v) => `Visit(${v})`), "empty",
+            (f, i) => `${i === 0 ? "top frame: " : ""}${f}`);
+    }
+    chipList(els.travOrder, step.order.map(String), "nothing visited yet", (v, i) => `${i + 1}: vertex ${v}`);
+
+    els.travStatAlgo.textContent = info.short;
+    els.travStatCurrent.textContent = trav.current === null ? "—" : String(trav.current);
+    els.travStatVisited.textContent = `${step.visited.length} / ${step.snapshot.vertices.length}`;
+    els.travStatEdges.textContent = String(step.edgesExamined);
+    els.travStatComponent.textContent = step.component === null ? "—" : String(step.component);
 }
 
 function render(step, index, p) {
@@ -970,6 +1192,7 @@ function render(step, index, p) {
         renderSvgGraph(step);
         renderAdjacencyList(step, adjList);
         renderAdjacencyMatrix(step, matrixData);
+        renderTraversalPanel(step);
 
         els.stepMessage.setAttribute("aria-live", "off");
         if (els.stepMessage.textContent !== step.message) {
@@ -982,7 +1205,9 @@ function render(step, index, p) {
         els.statVertices.textContent = `${snap.vertices.length} / ${GRAPH_LIMITS.maxVertices}`;
         els.statEdges.textContent = String(snap.edges.length);
         els.statMode.textContent = modeLabel(snap.directed, snap.weighted);
-        els.statOperation.textContent = OP_LABELS[step.operation] ?? step.operation;
+        els.statOperation.textContent = step.traversal
+            ? GRAPH_TRAVERSAL_INFO[step.kind].short
+            : OP_LABELS[step.operation] ?? step.operation;
 
         const err = snapshotIntegrityError(snap, adjList, matrixData);
         els.statIntegrity.textContent = err === null ? "OK" : `Error (${err})`;
@@ -1341,7 +1566,62 @@ function handleClear() {
     notify(res.steps[0].message, "info");
 }
 
+function syncTraversalInputs() {
+    els.travStart.disabled = els.travAll.checked;
+    if (els.travAll.checked) {
+        els.travStart.setAttribute("aria-invalid", "false");
+        els.travStart.removeAttribute("aria-describedby");
+    }
+}
+
+function handleTraverse(e) {
+    e.preventDefault();
+    const kind = els.travAlgo.value;
+    const all = els.travAll.checked;
+    let start = null;
+    if (!all) {
+        const parsed = parseStartVertex(els.travStart.value, graph);
+        if (!parsed.ok) {
+            notify(parsed.error, "error");
+            els.travStart.setAttribute("aria-invalid", "true");
+            els.travStart.setAttribute("aria-describedby", "graphError");
+            els.travStart.focus();
+            return;
+        }
+        start = parsed.value;
+    }
+    els.travStart.setAttribute("aria-invalid", "false");
+    els.travStart.removeAttribute("aria-describedby");
+
+    const res = traceTraversal(kind, graph, start, { allComponents: all });
+    if (!res.ok) {
+        notify(res.error, "error");
+        return;
+    }
+    const { value } = res;
+    // One shared snapshot per run: the graph does not change during a traversal.
+    const steps = res.steps.map((s) => ({
+        ...s,
+        traversal: true,
+        kind,
+        mode: value.mode,
+        snapshot: value.graph,
+        operation: "traversal",
+        vertexIds: s.vertex === null ? [] : [s.vertex],
+    }));
+    loadSteps(steps, { autoPlay: false });
+    const info = GRAPH_TRAVERSAL_INFO[kind];
+    const n = value.graph.vertices.length;
+    const summary = all
+        ? `${info.short} over all components: ${value.componentCount} ${value.componentCount === 1 ? "component" : "components"}, order ${value.order.join(", ")}.`
+        : `${info.short} from ${start}: reached ${value.order.length} of ${n} ${n === 1 ? "vertex" : "vertices"}, order ${value.order.join(", ")}.`;
+    notify(`${summary} ${steps.length} steps ready; press Play or Step.`, "success");
+}
+
 /* ---------- Event Wiring ---------- */
+
+els.travForm.addEventListener("submit", handleTraverse);
+els.travAll.addEventListener("change", syncTraversalInputs);
 
 els.directedToggle.addEventListener("change", handleModeToggle);
 els.weightedToggle.addEventListener("change", handleModeToggle);
@@ -1439,9 +1719,29 @@ cxBody.replaceChildren(
     }),
 );
 
+const travCxBody = $("travCxTable");
+travCxBody.replaceChildren(
+    ...TRAVERSAL_KINDS.map((kind) => {
+        const info = GRAPH_TRAVERSAL_INFO[kind];
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.scope = "row";
+        th.textContent = info.name;
+        const cells = [info.complexity.timeList, info.complexity.timeMatrix, `${info.complexity.space} (${info.frontierName} + visited)`]
+            .map((text) => {
+                const td = document.createElement("td");
+                td.textContent = text;
+                return td;
+            });
+        tr.append(th, ...cells);
+        return tr;
+    }),
+);
+
 /* ---------- Silent Initial Load ---------- */
 
 syncModeInputs();
+syncTraversalInputs();
 buildSampleGraph({ silent: true, landAtEnd: true, autoPlay: false });
 announceReady = true;
 liveReady = true;

@@ -35,7 +35,7 @@
                 </div>
                 <div class="prop-item">
                     <div class="prop-label">Interactive Modules</div>
-                    <div class="prop-value">13 Structures &middot; 8 Sorts &middot; 3 Searches</div>
+                    <div class="prop-value">17 Structures &middot; 8 Sorts &middot; 3 Searches</div>
                 </div>
             </div>
         </div>
@@ -220,6 +220,20 @@
                         <span>Launch &rarr;</span>
                     </div>
                 </a>
+                <!-- Red-Black Tree -->
+                <a href="red-black-tree.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">
+                            <svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3" fill="currentColor"/><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3" fill="currentColor"/><line x1="10.3" y1="7.5" x2="7.7" y2="14.5"/><line x1="13.7" y1="7.5" x2="16.3" y2="14.5"/></svg>
+                        </div>
+                        <h3 class="topic-card-title">Red-Black Tree</h3>
+                        <p class="topic-card-desc">Watch red-red violations and double-black nodes get fixed by recolouring and rotations, with a demo for every insert and delete case.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>O(log n) guaranteed</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
                 <!-- Graph -->
                 <a href="graph.html" class="topic-card">
                     <div>
@@ -231,6 +245,48 @@
                     </div>
                     <div class="topic-card-footer">
                         <span>O(V + E) list &middot; O(V&sup2;) matrix</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+                <!-- Disjoint Set Union (Union-Find) -->
+                <a href="dsu.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">
+                            <svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.2"/><circle cx="4" cy="15" r="2.2"/><circle cx="10" cy="15" r="2.2"/><line x1="6.1" y1="8" x2="4.8" y2="12.9"/><line x1="7.9" y1="8" x2="9.2" y2="12.9"/><circle cx="18" cy="8" r="2.2"/><circle cx="18" cy="17" r="2.2"/><line x1="18" y1="10.2" x2="18" y2="14.8"/></svg>
+                        </div>
+                        <h3 class="topic-card-title">Disjoint Set Union (Union-Find)</h3>
+                        <p class="topic-card-desc">Compare tall naive chains against Union by Rank and Path Compression across synchronized parent-pointer trees and aligned parent[] / rank[] arrays.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>O(α(n)) Amortised · O(n) Space</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+                <!-- Fenwick Tree (BIT) -->
+                <a href="fenwick-tree.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">
+                            <svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="8" height="4" rx="1"/><rect x="13" y="10" width="8" height="4" rx="1"/><rect x="3" y="16" width="3.5" height="4" rx="1"/><rect x="8" y="16" width="3.5" height="4" rx="1"/><rect x="13" y="16" width="3.5" height="4" rx="1"/><rect x="17.5" y="16" width="3.5" height="4" rx="1"/></svg>
+                        </div>
+                        <h3 class="topic-card-title">Fenwick Tree (BIT)</h3>
+                        <p class="topic-card-desc">Explore power-of-two responsibility ranges, lowbit (j & -j) binary jumps, O(n) bottom-up build, point updates, and O(log n) prefix & range sum queries.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>O(log n) Update & Query · O(n) Build</span>
+                        <span>Launch &rarr;</span>
+                    </div>
+                </a>
+                <!-- Segment Tree -->
+                <a href="segment-tree.html" class="topic-card">
+                    <div>
+                        <div class="topic-card-icon">
+                            <svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="4" rx="1"/><rect x="2" y="10" width="8" height="4" rx="1"/><rect x="14" y="10" width="8" height="4" rx="1"/><rect x="1.5" y="17" width="4" height="4" rx="1"/><rect x="6.5" y="17" width="4" height="4" rx="1"/><rect x="13.5" y="17" width="4" height="4" rx="1"/><rect x="18.5" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="6" y2="10"/><line x1="14" y1="7" x2="18" y2="10"/><line x1="5" y1="14" x2="3.5" y2="17"/><line x1="7" y1="14" x2="8.5" y2="17"/><line x1="17" y1="14" x2="15.5" y2="17"/><line x1="19" y1="14" x2="20.5" y2="17"/></svg>
+                        </div>
+                        <h3 class="topic-card-title">Segment Tree</h3>
+                        <p class="topic-card-desc">Visualize range sum and range minimum queries through full, partial, and disjoint interval overlaps, O(n) recursive builds, and O(log n) leaf-to-root point updates.</p>
+                    </div>
+                    <div class="topic-card-footer">
+                        <span>O(log n) Query & Update · O(n) Build</span>
                         <span>Launch &rarr;</span>
                     </div>
                 </a>

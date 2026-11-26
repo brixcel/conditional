@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 21:21 |
+| Last updated by Claude | 2026-11-27 02:23 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1, G2, G3 (2026-11-25); G4-G9 (2026-11-26); **G10 merged to `main` at 21:21** |
-| **Gemini: do next** | **G10**: Graph representation module + page (spec below), on branch `gemini/g10-graph` from fresh `main`. If you already started G10, carry on. G9 was approved with small fixes by Claude (button spacing, prune frames recorded before removal); see the G9 review in `CLAUDE_HANDOFF.md`. After G10 is reported, take **G11** (Disjoint Set Union), then **G12** (Fenwick Tree), then **G13** (Segment Tree), each after reporting the one before. Take only the task named here |
-| Claude is working on | Merged to `main` at 19:44: G9 Trie, C12 AVL module page, C15 quadratic probing, C16 player keys ignore `.hp-scroll-region` / `.scroll-box` / `[data-player-keys="ignore"]` and the open nav drawer. Claude now merges verified work itself, so new tasks reach `main` without waiting. Next: review G10 when you report it, then BFS/DFS on the graph page |
+| Merged | G1, G2, G3 (2026-11-25); G4-G10 (2026-11-26); **G11, G12, G13 merged to `main` at 2026-11-27 02:23** |
+| **Gemini: do next** | **G14**: lessons for six pages (spec below), branch `gemini/g14-lessons` from fresh `main`. Then **G15** (quiz banks for the same pages), then **G16** (lessons + quizzes for the tree pages), each after reporting the one before. G11, G12 and G13 are reported; Claude reviews and merges them. Take only the task named here |
+| Claude is working on | Reviewing G11-G13; BFS/DFS on the graph page (C23), linked-list pages on the step player (C24), recursion/DP/greedy/backtracking demos (C25). Don't edit the linked-list pages or `graph.html` |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -473,5 +473,65 @@ across many range algorithms.
 **Done when:** as G12, with segment-tree.html; a query visibly shows all three overlap kinds on a real run.
 
 ---
+## G14: Lessons for six module pages <a id="g14"></a>
+**Status: ready now.** Start from fresh `main` on branch `gemini/g14-lessons`.
+**Why:** roadmap Phase 7 needs a lesson for every module. The lesson format and its validator are on `main`, so every lesson
+you write is checked automatically against the real pages and registries.
+**Files you own:** new `content/lessons/regular-queue.json`, `circular-queue.json`, `priority-queue.json`, `heap.json`,
+`hash-table.json`, `searching.json`. Nothing else.
+**Do not edit:** any existing file (pages, modules, registries, `content/lessons/stack.json` / `sorting.json`,
+`_schema.md`, `src/learn/*`, tests). If a page or registry looks wrong, say so in your report (file:line + correction);
+don't change it.
+**Reference:** `content/lessons/_schema.md` (every rule), `content/lessons/stack.json` and `sorting.json` (worked examples),
+`tests/lessons.test.js` (how it is checked).
+**Do:**
+1. Read each page (`.html` + `src/pages/*-page.js`) and its module (`src/structures/queue.js`, `heap.js`,
+   `hash-table.js`, `src/algorithms/searching.js`) before writing. The lesson must describe what the page really does
+   (capacities, messages, the "type the front value to dequeue" confirm step, heap-backed priority queue with first-in,
+   first-out ties, quadratic probing needing a prime size and α ≤ 0.5, etc.).
+2. Link pseudocode and complexity to the module's registry with `registry` wherever a registry exists (they must then
+   match it exactly). Without a registry, follow the code's real control flow.
+3. Every `tryIt` must work on the real page with the real controls (names in “…” exactly as the page shows them) and
+   quote the messages the code really produces for that input. Trace the code; run the page and click through each
+   tryIt to confirm.
+4. Keep `reviewed: null` (a reviewer fills it).
+**Done when:** `npm test` passes (every lesson validates with no `skipped` rules); your report lists each tryIt you
+clicked through and anything you think is wrong in the existing pages.
+
+---
+## G15: Quiz banks for the same six pages <a id="g15"></a>
+**Status: ready after you report G14.** Start from fresh `main` on branch `gemini/g15-quizzes`.
+**Why:** Phase 7 also needs at least 10 reviewed questions per module.
+**Files you own:** new `content/quizzes/regular-queue.json`, `circular-queue.json`, `priority-queue.json`, `heap.json`,
+`hash-table.json`, `searching.json`, and new tests appended to a NEW file `tests/quiz-banks-g15.test.js`.
+**Do not edit:** existing files, including `src/quiz/*`, `content/quizzes/_schema.md`, existing banks and tests.
+**Reference:** `content/quizzes/_schema.md`, `content/quizzes/stack.json` + `sorting.json`, `tests/quiz.test.js` (which
+validates every bank automatically, and recomputes answers from the real modules).
+**Do:**
+1. 12-16 questions per bank, covering all five types (`mcq`, `multi`, `truefalse`, `predict`, `complexity`) and all three
+   difficulties. Every question has a correct, specific `explanation` (why the answer is right and why the common wrong
+   answer is wrong) and, where useful, a `page` hint the student can try.
+2. Accuracy first: answers must match the real modules (e.g. circular-queue full condition, heap sift order and tie
+   rules, probe sequences for the page's hash function, comparisons made by each search). In
+   `tests/quiz-banks-g15.test.js`, recompute **every `predict` answer** and at least 3 other answers per bank from the
+   real module (import it and run the operation), like `tests/quiz.test.js` does.
+3. `reviewed: null` on each bank.
+**Done when:** `npm test` passes; your report lists which answers are recomputed by tests and any page text you think is
+wrong.
+
+---
+## G16: Lessons + quiz banks for the tree pages <a id="g16"></a>
+**Status: ready after you report G15.** Start from fresh `main` on branch `gemini/g16-tree-learning`.
+**Files you own:** new `content/lessons/bst.json`, `avl-tree.json`, `trie.json`, `red-black-tree.json` and
+`content/quizzes/bst.json`, `avl-tree.json`, `trie.json`, `red-black-tree.json`, plus a NEW test file
+`tests/quiz-banks-g16.test.js`.
+**Do not edit:** existing files.
+**Do:** as G14 and G15 for `bst.html`, `avl-tree.html`, `trie.html`, `red-black-tree.html` (modules
+`src/structures/bst.js`, `avl.js`, `trie.js`, `red-black.js`). Use the registries (`BST_INFO`, `AVL_INFO`, `TRIE_INFO`,
+`RB_INFO`). The case names in AVL (LL, RR, LR, RL) and red-black (insert cases 1-3, delete cases 1-4) must match the
+messages the modules produce. Trace every tryIt on the real page, including the case-demo selects.
+**Done when:** as G14 and G15.
+
+---
 ## Queue after these (not ready yet)
-Lesson drafts (needs Claude's C18 lesson format) and quiz banks (needs C19 quiz engine); Claude does BFS/DFS, Dijkstra, Kruskal/Prim, Red-Black tree.
+Lessons + quizzes for the linked-list, graph, DSU, Fenwick and Segment Tree pages (after C24 and the G11-G13 merges).

@@ -32,6 +32,142 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G13: Segment Tree module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 23:10 (Philippine time)
+- Branch: `gemini/g13-segment-tree` (branched from fresh `origin/main` @ `e942ec0`)
+- Commit(s): `bf5799f`
+- Files changed: `src/structures/segment-tree.js`, `tests/segment-tree.test.js`, `segment-tree.html`, `src/pages/segment-tree-page.js`, `main.css` (new section 20 "Segment Tree" appended at end, lines 3071–3622, `+553 / -0` lines; sections 1–19 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/segment-tree.js` (`SegmentTree`, `SEGMENT_TREE_LIMITS`, `SEGMENT_TREE_INFO`) supporting `mode` `"sum"` | `"min"`, sizes `n` in `1..16`, integer values `-999..999`, 0-based complete-tree node indexing (`2*idx + 1`, `2*idx + 2`, splitting at `Math.floor((lo + hi) / 2)`) directly compatible with `layoutCompleteTree(maxIndex + 1)` from `src/core/tree-layout.js` without editing `tree-layout.js`. Implements `build(values)`, `setMode(mode)`, `query(l, r)` (explicit `full` / `partial` / `disjoint` overlap classification with finite `{ hasValue, value }` identity handling — zero raw `Infinity` leaks), `update(i, value)` (leaf update + ancestor recompute), `toArray()`, `snapshot()`, and `integrityError()`. Normalizes `-0` to `0`, uses `null` instead of `-1` sentinels, returns defensive copies, and rejects invalid arguments atomically.
+  - Created `tests/segment-tree.test.js` (12 tests): **600 seeded mulberry32 sequences** (300 `sum` + 300 `min`) checked after every operation against a plain array model + `integrityError() === null` + full step contract (`step.node` exists in `snapshot.nodes` with matching `[lo, hi]`, valid `step.line` in `1..pseudocode.length`, monotonic `nodesVisited`/`combines`), exact hand-written `query(1, 5)` on `n = 8` asserting `partial: [0, 1, 3, 2]`, `full: [8, 4, 5]`, `disjoint: [7, 6]`, `combine: [3, 1, 2, 0]` in both `"sum"` (`22`) and `"min"` (`1`) modes, `layoutCompleteTree` geometry verification across all `n = 1..16`, non-power-of-two sizes (`3, 5, 6, 7, 9, 13`), `-999`/`-0`, defensive copies, invalid input atomicity, and `integrityError()` corruption detection.
+  - **Mutation check (partial overlap treated as full):** Temporarily mutated `query()` in `src/structures/segment-tree.js` (`if (ql <= lo && hi <= qr || true)`) so partial overlap returned `node.value` as full instead of recursing. Running `node --test tests/segment-tree.test.js` failed **5 of 12** tests (`sum query(1, 5) — 38 !== 22`, `n=3 mode=sum [0..0] — -81 !== -100`, `-1049 !== -999`, `seq=0 op=1 query(1,5) mode=sum — -702 !== -1890`, `seq=0 op=2 query(4,5) mode=min — -765 !== -101`). Restored the code and re-verified 100% pass.
+  - Created `segment-tree.html`, `src/pages/segment-tree-page.js`, and token-only `main.css` section 20 (`0` `style=` in `segment-tree.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/segment-tree-page.js`, `0` hardcoded colors in section 20). Reuses `layoutCompleteTree`, `StepPlayer`, `bindPlayerKeys`, `parseInteger`, `parseArrayInput`, `DSA_UI.announce`, and `rescueFocus`. Renders pooled SVG tree (showing only populated nodes/edges for non-power-of-two sizes, value + haloed `[lo..hi]` interval + top-right glyph badge) with persistent full (`✓`, double ring) / partial (`½`, dashed) / disjoint (`✗`, dotted) / combine (`+`) / recompute (`↑`) / leaf (`★`) / visit (`•`) cues, pooled underlying array `A[0..n−1]` with dashed `[l..r]` bracket, matching legend, state monitor (`Subtree / Query Result`, `Nodes Visited`, `Combines`, `Active Node / Range`, `Mode & Size`, `Integrity`), synced pseudocode, complexity table, and 4 concept cards.
+  - Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents; fixed all Critical/Major/Minor findings (including nested `.queue-display` scroll-container trap on `#arrayScrollRegion`, WCAG 1.4.11 contrast on `.st-pending` / `.st-badge-bg` / `.st-arr-in-range`, `Replay` from `atEnd` live-region guard, `inputmode="numeric"` removed from `#buildInput`/`#valueInput`, `NODE_W = 56` for `-15984`, `setMode` `visitLine: 4`, static `.viz-stage-label` reflow safety, legend `↑` parity, and `4h + 1` node bound for `n = 1`) before commit.
+- npm test output (paste the real lines):
+    # tests 662
+    # suites 0
+    # pass 662
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+      [FAIL] Every HTML page except index.html is listed in navCategories
+     SUMMARY: 80 / 81 assertions passed (99%)
+  *(Note: the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected check for `segment-tree.html` missing from `shared.js` `navCategories` until Claude adds the nav entry on merge. All 5 `segment-tree.html` checks in `tests/a11y-static.test.js` and all 4 `segment-tree.html` page checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `segment-tree.html` on `http://127.0.0.1:5513/segment-tree.html` at both `1280×800` desktop and `375×812` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (`consoleEntries: []`, `networkEntries: []`, 0 uncaught errors/rejections, 0 native dialogs). Zero horizontal page scroll (`scrollWidth - clientWidth === 0`) at `1280px` and `375px` in both themes even at `n = 16` (`-999 × 16`, root `"-15984"`), with both `#treeStage` and `#arrayScrollRegion` scrolling internally (`arrayScrollRegionScrollable: true`, `arrayStageScrollOverflow: 0`) and `10px` label clearance at `375px`. Verified **Play / Replay** advances (`Step 1 / 23` → `Step 3 / 23`, button displays `"⏸ Pause"`, `aria-live="polite"` re-arms on completion); verified `Query(1, 5)` visibly displays all three overlap kinds simultaneously (`3` full `✓`, `4` partial `½`, `2` disjoint `✗`) in both **Sum** (`22`, `9` visited, `4` combines) and **Min** (`1`) modes plus `5 (subtree)` mid-query stat; verified `Update(2, 10)` recomputes 3 ancestors (`root = 47`), non-power-of-two `n = 6` renders `11` nodes / `10` edges, `Random`, and inline `role="alert"` + `aria-invalid="true"` errors for `l > r` and values `> 999`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, or `main.css` sections 1–19.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures`):**
+     - `SVG_ICONS.segmentTree`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="4" rx="1"/><rect x="2" y="10" width="8" height="4" rx="1"/><rect x="14" y="10" width="8" height="4" rx="1"/><rect x="1.5" y="17" width="4" height="4" rx="1"/><rect x="6.5" y="17" width="4" height="4" rx="1"/><rect x="13.5" y="17" width="4" height="4" rx="1"/><rect x="18.5" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="6" y2="10"/><line x1="14" y1="7" x2="18" y2="10"/><line x1="5" y1="14" x2="3.5" y2="17"/><line x1="7" y1="14" x2="8.5" y2="17"/><line x1="17" y1="14" x2="15.5" y2="17"/><line x1="19" y1="14" x2="20.5" y2="17"/></svg>`
+     - Item: `{ label: "Segment Tree", href: "segment-tree.html", iconKey: "segmentTree" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `segment-tree.html`
+     - Title: `Segment Tree`
+     - Description: `Visualize range sum and range minimum queries through full, partial, and disjoint interval overlaps, O(n) recursive builds, and O(log n) leaf-to-root point updates.`
+     - Footer: `O(log n) Query & Update · O(n) Build` &rarr; `Launch Visualizer`
+  3. **CSS classes added to `main.css` section 20 (lines 3071–3622, token-only, `+553 / -0`):**
+     - `.st-active`, `.st-active-halo`, `.st-array-list`, `.st-array-region`, `.st-array-stage`, `.st-arr-cell`, `.st-arr-combine`, `.st-arr-disjoint`, `.st-arr-full`, `.st-arr-in-query`, `.st-arr-in-range`, `.st-arr-leaf`, `.st-arr-partial`, `.st-arr-query-end`, `.st-arr-query-start`, `.st-arr-tag`, `.st-arr-visit`, `.st-arr-wrap`, `.st-badge`, `.st-badge-bg`, `.st-badge-text`, `.st-badge-visible`, `.st-card-header`, `.st-combine`, `.st-disjoint`, `.st-edge`, `.st-edge-combine`, `.st-edge-disjoint`, `.st-edge-full`, `.st-edge-partial`, `.st-edge-visit`, `.st-full`, `.st-hidden`, `.st-input-xs`, `.st-node`, `.st-node-box`, `.st-node-inner`, `.st-node-range`, `.st-node-value`, `.st-partial`, `.st-pending`, `.st-recompute`, `.st-root`, `.st-svg`, `.st-sw`, `.st-sw-combine`, `.st-sw-disjoint`, `.st-sw-full`, `.st-sw-leaf`, `.st-sw-partial`, `.st-sw-visit`, `.st-tag-accent`, `.st-tag-disjoint`, `.st-tag-full`, `.st-tag-partial`, `.st-update-leaf`, `.st-visit`, `.st-viz-stage`
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
+### G12: Fenwick Tree (Binary Indexed Tree) module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 22:38 (Philippine time)
+- Branch: `gemini/g12-fenwick`
+- Commit(s): `bcda8c6`
+- Files changed: `src/structures/fenwick.js`, `tests/fenwick.test.js`, `fenwick-tree.html`, `src/pages/fenwick-page.js`, `main.css` (new section 17 only, lines 2386–3037, `+652 / -0` lines; sections 1–16 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/fenwick.js` (`FenwickTree`, `FENWICK_LIMITS`, `FENWICK_INFO`, `lowbit`, `formatBinary`) backed by 0-based `values[0..n-1]` (`a`) and 1-based `tree[0..n]` (`tree[0] === 0`), supporting `n` in `1..32`, bounded integers `-999..999`, `O(n)` bottom-up `build`/`from`, `O(log n)` `update(i, delta)`, `set(i, value)`, `prefixSum(i)`, `rangeSum(l, r)` (`prefixSum(r) - prefixSum(l - 1)`), `clear`, `toArray`, `treeArray`, `snapshot`, and `integrityError()`. Normalizes `-0` to `0`, uses `null` (zero `-1` sentinels) for inactive fields, guards 32-bit `lowbit(j)` overflow (`> 0x7fffffff`), parenthesizes negative `leftSum` in range messages, and emits `index === j` with matching `lowbit === lowbit(j)` on every indexed step.
+  - Created `tests/fenwick.test.js` (11 tests): 300 seeded mulberry32 operation sequences (hitting `n = 1`, `n = 32`, and random sizes) verified after every op against a plain array model + `integrityError() === null` + step contract (`step.lowbit === lowbit(step.index)`, valid `step.type` enum, 1-based `step.line`), hand-written `n = 8` paths (`build([1..8])`, `update(2, 5) -> [3, 4, 8]`, `prefixSum(6) -> [7, 6, 4]`, `rangeSum(2, 6)`, multi-step left walk & overlapping `rangeSum(5, 6)`, negative `leftSum` formatting), `n = 1` / `n = 32` boundaries, `set` `delta = 0` no-op (`line: 1`) and post-overflow `set`, invalid inputs leaving state untouched, `-0` normalization, defensive copies (including caller input non-mutation), and `integrityError()` corruption detection.
+  - **Mutation check (`lowbit`):** Temporarily replaced `j & -j` with `j & (j - 1)` in `lowbit(j)`. Running `node --test tests/fenwick.test.js` failed **9 of 11** tests (`AssertionError: lowbit(1): 0 !== 1`, `Invalid lowbit(1) = 0`, etc.); restored `j & -j` and re-verified all 509 Node tests pass.
+  - Created `fenwick-tree.html`, `src/pages/fenwick-page.js`, and token-only `main.css` section 17 (`0` `style=` in `fenwick-tree.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/fenwick-page.js`, `0` hardcoded colors in section 17). Stage 1 shows an index-aligned `a[0..n-1]` / `tree[1..n]` / `lowbit (covers)` table; Stage 2 renders a pooled SVG coverage-bar tier diagram (`lb = 1, 2, 4, 8, 16, 32`) with binary jump arcs (`+lb ↑` / `−lb ↓`), non-colour WCAG 1.4.1 borders + badges (`•`, `+`, `↑`, `↓`, `−`, `±`), synced pseudocode, state monitor (`Running Total`, `Cells Accessed`, `Index j (Binary)`, `Lowbit (j & -j)`, `Size n`, `Integrity`), complexity table, and 4 concept cards. Uses `StepPlayer`, `bindPlayerKeys`, `DSA_UI.announce`, `rescueFocus`, single-span player buttons, and quiet autoplay with `aria-live="polite"` re-arming.
+  - Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents; fixed all Critical/Major/Minor findings (including `build()` `index`/`lowbit` alignment, WCAG 1.4.11 border/stroke contrast using `--text-light` & `--border-focus`, `range-left` dashed distinction from `range-right` double, `aria-live` re-arming, overlapping right/left `±` badge, and `a[i]` terminology consistency) before commit.
+- npm test output (paste the real lines):
+    # tests 509
+    # suites 0
+    # pass 509
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+      [FAIL] Every HTML page except index.html is listed in navCategories
+     SUMMARY: 72 / 73 assertions passed (99%)
+  *(Note: the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected check for `fenwick-tree.html` missing from `shared.js` `navCategories` until Claude adds the nav entry on merge. All 5 `fenwick-tree.html` checks in `tests/a11y-static.test.js` and all 4 `fenwick-tree.html` page checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `fenwick-tree.html` on `http://127.0.0.1:5512/fenwick-tree.html` at both `1280×800` desktop and `375×812` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (0 console entries, 0 uncaught errors/rejections, 0 native dialogs). Zero horizontal page scroll (`scrollWidth - clientWidth === 0`) at `1280px` and `375px` in both themes even at `n = 32` (`#arraysStage` and `#barsStage` scroll internally). Verified **Play** advances automatically (`Step 1 / 9` → `Step 3 / 9` → `Step 9 / 9`, button displays `"⏸ Pause"`, `aria-live="polite"` re-arms on completion); verified `build` steps display matching `Index j` & `Lowbit (j & -j)` (`1 (0001)` + `1 (0001)`, `2 (0010)` + `2 (0010)`) with jump arcs (`+1 ↑`, `+2 ↑`); verified `update(2, 5)` visits `[3, 4, 8]` with upward arc, `prefixSum(6)` sums `21` with downward arc, `rangeSum(5, 6)` displays right `+`, left `−`, and overlapping `±` badges (`["±","−","+","+"]`), `set`, `Random`, `Clear`, and inline `role="alert"` + `aria-invalid="true"` errors for `l > r` and delta `> 999`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, or `main.css` sections 1–16.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures`):**
+     - `SVG_ICONS.fenwick`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="8" height="4" rx="1"/><rect x="13" y="10" width="8" height="4" rx="1"/><rect x="3" y="16" width="3.5" height="4" rx="1"/><rect x="8" y="16" width="3.5" height="4" rx="1"/><rect x="13" y="16" width="3.5" height="4" rx="1"/><rect x="17.5" y="16" width="3.5" height="4" rx="1"/></svg>`
+     - Item: `{ label: "Fenwick Tree (BIT)", href: "fenwick-tree.html", iconKey: "fenwick" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `fenwick-tree.html`
+     - Title: `Fenwick Tree (BIT)`
+     - Description: `Explore power-of-two responsibility ranges, lowbit (j & -j) binary jumps, O(n) bottom-up build, point updates, and O(log n) prefix & range sum queries.`
+     - Footer: `O(log n) Update & Query · O(n) Build` &rarr; `Launch Visualizer`
+  3. **CSS classes added to `main.css` section 17 (lines 2386–3037, token-only, `+652 / -0`):**
+     - `.fw-add`, `.fw-arc-dot`, `.fw-arc-down`, `.fw-arc-group`, `.fw-arc-head`, `.fw-arc-label`, `.fw-arc-path`, `.fw-arc-up`, `.fw-bar-badge`, `.fw-bar-group`, `.fw-bar-inner-rect`, `.fw-bar-rect`, `.fw-bar-text`, `.fw-card-header`, `.fw-cell`, `.fw-cell-badge`, `.fw-cell-val`, `.fw-col-guide`, `.fw-col-head`, `.fw-covered`, `.fw-divider`, `.fw-done-hit`, `.fw-gutter-label`, `.fw-head-active`, `.fw-head-bin`, `.fw-head-j`, `.fw-head-zero`, `.fw-hidden`, `.fw-jump-target`, `.fw-lb-active`, `.fw-lb-cell`, `.fw-lb-num`, `.fw-lb-range`, `.fw-move-down`, `.fw-move-up`, `.fw-range-left`, `.fw-range-right`, `.fw-row-head`, `.fw-svg`, `.fw-svg-bin`, `.fw-svg-cell-badge`, `.fw-svg-cell-rect`, `.fw-svg-cell-text`, `.fw-svg-col`, `.fw-svg-col-active`, `.fw-svg-idx`, `.fw-svg-inner-rect`, `.fw-svg-tree`, `.fw-svg-tree-rect`, `.fw-svg-val`, `.fw-sw-add`, `.fw-sw-down`, `.fw-sw-left`, `.fw-sw-right`, `.fw-sw-up`, `.fw-sw-visit`, `.fw-table`, `.fw-tier-label`, `.fw-tier-line`, `.fw-tree-cell`, `.fw-val-cell`, `.fw-visit`, `.fw-visited`, `.fw-viz-stage`
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
+### G11: Disjoint Set Union (Union-Find) module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 20:17 (Philippine time)
+- Branch: `gemini/g11-dsu` (branched from fresh `origin/main` @ `cfef17c`)
+- Commit(s): `4c7bc23`
+- Files changed: `src/structures/dsu.js`, `tests/dsu.test.js`, `dsu.html`, `src/pages/dsu-page.js`, `main.css` (new section 17 "Disjoint Set Union" appended at end; sections 1–16 untouched, `0` deletions)
+- Summary:
+  - Created pure, DOM-free `src/structures/dsu.js` (`DisjointSet`, `DSU_LIMITS`, `DSU_INFO`) over elements `0..n-1` (`n` integer `1..16`, `parent[x] = x` for roots, zero `-1` sentinels, `-0` normalized). Implements `find(x)` (ending with terminal `done` step on line 5 `return root`), `union(a, b)` (returns new root, or `{ ok: true, value: false }` with `same-set` when already united; Union by Rank breaks ties to smaller root ID and increments rank; with `byRank: false`, `rootA` always links under `rootB`), `connected(a, b)`, `reset(n?)`, `setCount`, `sets()` (sorted ascending per set, ordered by smallest element), `parentArray()`, `rankArray()`, `snapshot()`, and `integrityError()` (checks array bounds, cycle-free root reachability within `n` hops, `setCount === rootCount`, and when `byRank`: `rank[parent[x]] > rank[x]` and every rank-`r` root has `>= 2^r` elements). `compress` steps carry `edge: { from, to, oldParent }` so the visualizer renders the faded old edge for one step.
+  - Added `tests/dsu.test.js` (13 tests): **1,200 seeded mulberry32 sequences** (300 for each of the four `byRank × compress` combinations, 20–30 ops each on `n` in `1..16`) verified after every operation against an independent label-array model (`integrityError() === null`, `setCount`, `sets()`, all-pair connectivity, post-`find` path compression, step/line/snapshot validity), plus edge cases (`union(x, x)`, same-set union, `n = 1`/`16`, invalid IDs/constructor args, tall chain compression, flat rank trees including `rankA < rankB`, `byRank: false` `rootA > rootB` direction, `find` line 5 `done` step, and `integrityError()` corruption tests).
+  - **Union mutation check:** Temporarily mutated `this._parent[rootA] = rootB` to `this._parent[a] = rootB` in `DisjointSet.prototype.union`. Running `node --test tests/dsu.test.js` immediately failed **2 of 13** tests: `300 seeded property sequences: byRank=false, compress=true` (`pathA compressed node 1 -> 3: 0 !== 3`) and `300 seeded property sequences: byRank=false, compress=false` (`integrityError: setCount mismatch: stored 2, actual root count is 3`). Restored and re-verified 100% pass.
+  - Created `dsu.html`, `src/pages/dsu-page.js`, and token-only `main.css` section 17 (`0` `style=""` in `dsu.html`, `0` `.style` / `.innerHTML` / dialogs in `src/pages/dsu-page.js`, `0` hardcoded colors in section 17). Imports `layoutGeneralTree` from `src/core/tree-layout.js` (not copied) to lay out each root tree left-to-right with `TREE_GAP = 40`, shows `r=k` above roots when `byRank` is on (hidden with `"Rank Unused"` when off), renders aligned `parent[]` & `rank[]` rows in one pooled `.hp-scroll-region` table, and implements every required non-colour cue (dashed outline + `"visiting"` in `<title>`, double ring + `"R"`, dashed re-pointed edge + one-step `0.72`-opacity faded old edge passing WCAG 1.4.11, thick `3.6` link edge + `"linked"` label, `"✓"` same set, `"✗"` different sets). Uses `StepPlayer`, `bindPlayerKeys(document, playerControls)`, `DSA_UI.announce(...)` + `rescueFocus`, single-`<span>` player button labels (`▶ Play`, `⏮ Reset`, `◀ Back`, `Step ▶`), cumulative step-synced counters (`Finds`, `Parent Hops`, `Pointers Compressed`, `Links`, `Sets`, `Integrity`), complexity table, and 4 concept cards. Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents with all findings resolved prior to commit.
+- npm test output (paste the real lines):
+    # tests 419
+    # pass 419
+    # fail 0
+    # todo 0
+    [FAIL] Every HTML page except index.html is listed in navCategories
+    SUMMARY: 72 / 73 assertions passed (99%)
+  *(Note: all 419 Node tests — including all 5 `dsu.html` checks in `tests/a11y-static.test.js` — pass with 0 failures and 0 todos; the sole `[FAIL]` in `tests/legacy-regression.cjs` is the expected C10 nav check for `dsu.html` awaiting Claude's `shared.js` nav entry on merge.)*
+- Browser checks done: Verified `dsu.html` on `http://localhost:5511/dsu.html` at `1280px` desktop and `375px` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (`consoleEntries: []`, 0 uncaught errors/rejections, 0 dialogs). Verified player button spacing (`"↻ Replay"`, `"⏮ Reset"`, `"⏸ Pause"`) and **Play** advancing (`Step 1 / 32` → `Step 4 / 32`); verified both options OFF resets to 8 singletons, hides `r=0` labels, and builds a **height-5 tall chain** (`depthLevels: 6`, `parent[] = [1,2,3,4,5,5,6,7]`) across 5 unions; verified Path Compression on chain `[1,2,3,4,4,5,6,7]` visibly displays faded old edge (`opacity: 0.72`), `"R"` root-found badge, and `"visiting"` node `<title>`, then hides the faded old edge cleanly on the final `done` step (`"Return representative root 4 for element 0."`) with flattened `parent[] = [4,4,4,4,4,5,6,7]` (`depthLevels: 2`, `compressed: 3`); verified exact same 5 unions with both options ON stay flat (`depthLevels: 2`, `parent[] = [0,0,0,0,0,0,6,7]`, `r=1`); verified `Connected (A, B)?` renders `"✓"` for same set and `"✗"` on both roots for different sets; verified inline `role="alert"` on invalid `size = 25`; verified at `375px` with `n = 16` in both themes: `scrollOverflowX === 0`, checkboxes `18px × 18px`, `#optionsHint` `38px` tall, zero label/stage overlaps, `#forestStage` (`1376px` inside `268px`) and `#arraysStage` (`849px` inside `268px`) scroll smoothly inside `.hp-scroll-region`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, `src/structures/graph.js`, `graph.html`, `src/pages/graph-page.js`, or `main.css` sections 1–16.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures` or a new `Graphs & Sets` category):**
+     - `SVG_ICONS.dsu`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.2"/><circle cx="4" cy="15" r="2.2"/><circle cx="10" cy="15" r="2.2"/><line x1="6.1" y1="8" x2="4.8" y2="12.9"/><line x1="7.9" y1="8" x2="9.2" y2="12.9"/><circle cx="18" cy="8" r="2.2"/><circle cx="18" cy="17" r="2.2"/><line x1="18" y1="10.2" x2="18" y2="14.8"/></svg>`
+     - Item: `{ label: "Disjoint Set Union (DSU)", href: "dsu.html", iconKey: "dsu" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `dsu.html`
+     - Title: `Disjoint Set Union (Union-Find)`
+     - Description: `Compare tall naive chains against Union by Rank and Path Compression across synchronized parent-pointer trees and aligned parent[] / rank[] arrays.`
+     - Footer: `O(α(n)) Amortised · O(n) Space` &rarr; `Launch Visualizer`
+  3. **Classes added to `main.css` section 17 (lines 2386–2830, token-only):**
+     - `.dsu-card-header` (with `.step-counter`), `.dsu-options-row`, `.dsu-toggle` (`input[type="checkbox"]`), `.dsu-mode-hint`, `.dsu-viz-stage` (with `.viz-stage-label`)
+     - `.dsu-svg` scoped selectors: `.dsu-edge-group`, `.dsu-edge`, `.dsu-edge-path`, `.dsu-edge-visit`, `.dsu-edge-compress`, `.dsu-edge-link`, `.dsu-edge-old`, `.dsu-edge-label`, `.dsu-node` (`.dsu-node-path`, `.dsu-node-visit`, `.dsu-node-root-found`, `.dsu-node-compress`, `.dsu-node-link`, `.dsu-node-rank-up`, `.dsu-node-same-set`, `.dsu-node-diff-set`), `.dsu-root-found-ring`, `.dsu-rank-label`, `.dsu-root-badge`, `.dsu-result-badge`
+     - `.dsu-arrays-table`, `.dsu-arr-rowhead`, `.dsu-arr-idx`, `.dsu-idx-active`, `.dsu-arr-cell` (`.dsu-cell-root`, `.dsu-cell-path`, `.dsu-cell-visit`, `.dsu-cell-root-found`, `.dsu-cell-compress`, `.dsu-cell-compare`, `.dsu-cell-link`, `.dsu-cell-rank-up`, `.dsu-cell-same-set`, `.dsu-cell-diff-set`)
+     - `.dsu-sw-path`, `.dsu-sw-root-found`, `.dsu-sw-compress`, `.dsu-sw-link`, `.dsu-sw-same`, `.dsu-sw-diff`
+     - `.dsu-hidden` (kept last with all SVG/label modifiers), plus `@media (max-width: 640px)` and `@media (prefers-reduced-motion: reduce)` rules.
+
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-27 02:22
+- Verdict: approved (qa-engineer: 80,000-op check against a label-array model in all four option modes; planted mutation caught; static keyboard/slider/a11y tests pass)
+- Blocking issues: none. Your CSS section number clashed with sections already on `main`, so it was renumbered at merge; please number new sections after the highest one on `main`.
+- Merged in: `claude/g11-g13-merge` (Advanced Structures nav category + cards)
+
+---
+
 ### G10: Graph representation module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 19:18 (Philippine time)
