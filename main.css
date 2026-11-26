@@ -1783,20 +1783,38 @@ input:disabled, select:disabled {
    13. Utility Classes (shared across legacy & module pages to replace inline styles)
    Available utilities:
    - Inputs:     .input-sm (140px), .input-md (200px), .input-lg (260px)
-   - Typography: .field-label (defined above), .text-muted, .text-secondary,
-                 .text-italic, .mono (monospace + tabular numerals)
+   - Typography: .field-label (defined above), .inline-label, .checkbox-label,
+                 .text-muted, .text-secondary, .text-accent, .text-italic,
+                 .mono (monospace + tabular numerals), .log-title,
+                 .section-heading, .section-subtitle
    - Queue:      .car-empty (freed/empty linear queue slot styling),
-                 .slot-wrap, .slot-label, .slot-label-active
-   - Layout:     .scroll-box-clean (borderless scroll container inside .viz-stage)
+                 .slot-wrap, .slot-label, .slot-label-active,
+                 .pq-pipeline, .pq-endpoint-label
+   - Layout:     .scroll-box-clean (borderless scroll container inside .viz-stage),
+                 .m-auto, .mt-sm
    -------------------------------------------------------------------------- */
 .input-sm { width: 140px; max-width: 100%; }
 .input-md { width: 200px; max-width: 100%; }
 .input-lg { width: 260px; max-width: 100%; }
 
+.inline-label { font-weight: 600; font-size: 0.9rem; }
+.checkbox-label { cursor: pointer; font-size: 0.9rem; }
 .text-muted { color: var(--text-muted); }
 .text-secondary { color: var(--text-secondary); }
+.text-accent { color: var(--primary-text); }
 .text-italic { font-style: italic; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.log-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.section-heading { margin-bottom: 4px; }
+.section-subtitle { font-size: 0.9rem; margin-bottom: 16px; }
+.m-auto { margin: auto; }
+.mt-sm { margin-top: 8px; }
 
 .car-empty {
     background: transparent;
@@ -1825,6 +1843,19 @@ input:disabled, select:disabled {
     color: var(--primary-text);
 }
 
+.pq-pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+}
+.pq-endpoint-label {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 .scroll-box-clean {
     margin: 0;
     background: transparent;
@@ -1835,6 +1866,7 @@ input:disabled, select:disabled {
     .bars { height: 190px; }
     .player-controls .btn { flex: 1 1 calc(50% - 8px); }
     .field-inline { width: 100%; justify-content: space-between; }
+    .field-grow { flex: 0 0 auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

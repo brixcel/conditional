@@ -53,8 +53,8 @@
             <div class="control-section">
                 <div class="control-section-title">1. Ring Allocation &amp; Reset</div>
                 <div class="controls-row">
-                    <label for="queueSize" style="font-weight: 600; font-size: 0.9rem;">Capacity (2-100):</label>
-                    <input type="number" id="queueSize" min="2" max="100" placeholder="e.g. 6" style="width: 140px;">
+                    <label for="queueSize" class="inline-label">Capacity (2-100):</label>
+                    <input type="number" id="queueSize" class="input-sm" min="2" max="100" placeholder="e.g. 6">
                     <button type="button" id="cqAllocateBtn" class="btn">Allocate Ring</button>                    
                     <button type="button" id="cqResetBtn" class="btn btn-danger">Reset Queue</button>
                 </div>
@@ -63,10 +63,10 @@
             <div class="control-section">
                 <div class="control-section-title">2. Enqueue &amp; Dequeue Mutations</div>
                 <div class="controls-row">
-                    <input type="text" id="enqueueValue" inputmode="numeric" aria-label="Value to enqueue (1 to 1000)" placeholder="Integer 1–1000 to enqueue" style="width: 200px;">
+                    <input type="text" id="enqueueValue" class="input-md" inputmode="numeric" aria-label="Value to enqueue (1 to 1000)" placeholder="Integer 1–1000 to enqueue">
                     <button type="button" id="cqEnqueueBtn" class="btn" data-tooltip="Insert element at cyclic rear">Enqueue</button>
 
-                    <input type="text" id="dequeueValue" inputmode="numeric" aria-label="Type the front value to dequeue" placeholder="Verify front to dequeue" style="width: 200px;">
+                    <input type="text" id="dequeueValue" class="input-md" inputmode="numeric" aria-label="Type the front value to dequeue" placeholder="Verify front to dequeue">
                     <button type="button" id="cqDequeueBtn" class="btn btn-danger" data-tooltip="Remove element from cyclic front">Dequeue</button>
                 </div>
             </div>

@@ -51,7 +51,7 @@
             <div class="control-section">
                 <div class="control-section-title">1. Queue Sizing &amp; Reset</div>
                 <div class="controls-row">
-                    <input id="queueSize" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" style="width: 200px;" required>
+                    <input id="queueSize" class="input-md" type="number" placeholder="Max Queue Size (1-100)" min="1" max="100" required>
                     <button id="setQueueSizeBtn" class="btn" aria-label="Set Queue Size">Set Queue Size</button>
                     <button id="resetQueueSizeBtn" class="btn btn-danger" aria-label="Reset Queue Size">Reset Queue</button>
                 </div>
@@ -60,7 +60,7 @@
             <div class="control-section">
                 <div class="control-section-title">2. Enqueue / Dequeue Mutations</div>
                 <div class="controls-row">
-                    <input id="queueInput" type="text" placeholder="Enter integer element" style="width: 200px;">
+                    <input id="queueInput" class="input-md" type="text" placeholder="Enter integer element">
                     <button id="enqueueBtn" class="btn" aria-label="Enqueue Element" disabled>Enqueue (Rear)</button>
                     <button id="dequeueBtn" class="btn btn-danger" aria-label="Dequeue Element" disabled>Dequeue (Front)</button>
                 </div>
