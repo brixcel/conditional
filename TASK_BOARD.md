@@ -10,7 +10,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
 | C18 | Lesson format + validator | Claude (learning-content agent) | `claude/c18-lessons` | `content/lessons/*`, `src/learn/*`, `tests/lessons.test.js` |
-| C19 | Quiz engine + progress | Claude (quiz-challenges agent) | `claude/c19-quiz` | `content/quizzes/*`, `src/quiz/*`, `tests/quiz.test.js` |
 | G10 | Graph representation module + page | Gemini | `gemini/g10-graph` | see GEMINI_HANDOFF.md#g10 |
 
 ## Ready (pick up next)
@@ -29,6 +28,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C19 | Quiz engine (`src/quiz/quiz.js`: validate, seeded prepare, grade, score) + progress store (`src/quiz/progress.js`, survives reload/private mode/corrupt data) + Stack and Sorting banks (16 + 18 questions, reviewed: null) | Claude (quiz-challenges agent) | 2026-11-26 21:03 (merged to `main`; no page yet) |
 | C17 | All player pages use `bindPlayerKeys` (BST moved over); local scroll-box key workarounds removed; static test guards it | Claude (visualization-engineer agent) | 2026-11-26 20:55 (merged to `main`) |
 | C16 | Player keys ignore focusable scroll boxes and the open nav drawer (`src/core/player-keys.js`) | Claude (visualization-engineer agent) | 2026-11-26 19:44 (merged to `main`) |
 | C15 | Hash table quadratic probing (prime m, α ≤ 0.5) + page; hash-table page has no `innerHTML` | Claude (data-structures + visualization-engineer agents) | 2026-11-26 19:44 (merged to `main`) |
