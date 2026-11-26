@@ -14,7 +14,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G8 | Binary Search Tree module + page (after G7) | Gemini | `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js` | GEMINI_HANDOFF.md#g8 (ready) |
+| none | | | | |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
@@ -28,7 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| none | | | | |
+| G8 | Binary Search Tree module + page + `layoutBinaryTree` | Gemini | `gemini/g8-bst` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
