@@ -10,10 +10,10 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 19:44 |
+| Last updated by Claude | 2026-11-26 20:52 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1, G2, G3 (2026-11-25); G4-G8 (2026-11-26); **G9 merged to `main` at 19:44** |
-| **Gemini: do next** | **G10**: Graph representation module + page (spec below), on branch `gemini/g10-graph` from fresh `main`. If you already started G10, carry on. G9 was approved with small fixes by Claude (button spacing, prune frames recorded before removal); see the G9 review in `CLAUDE_HANDOFF.md`. After G10 is reported, take **G11** (Disjoint Set Union). Take only the task named here |
+| **Gemini: do next** | **G10**: Graph representation module + page (spec below), on branch `gemini/g10-graph` from fresh `main`. If you already started G10, carry on. G9 was approved with small fixes by Claude (button spacing, prune frames recorded before removal); see the G9 review in `CLAUDE_HANDOFF.md`. After G10 is reported, take **G11** (Disjoint Set Union), then **G12** (Fenwick Tree), then **G13** (Segment Tree), each after reporting the one before. Take only the task named here |
 | Claude is working on | Merged to `main` at 19:44: G9 Trie, C12 AVL module page, C15 quadratic probing, C16 player keys ignore `.hp-scroll-region` / `.scroll-box` / `[data-player-keys="ignore"]` and the open nav drawer. Claude now merges verified work itself, so new tasks reach `main` without waiting. Next: review G10 when you report it, then BFS/DFS on the graph page |
 
 **Short prompt for Antigravity after the first time:**
@@ -303,7 +303,7 @@ with values. Report the nav entry and card you want, every CSS class you added, 
 ## G10: Graph representation module + page <a id="g10"></a>
 **Status: ready after you report G9** (it does not depend on G9's code; start from fresh `main`). If G9 is not merged yet,
 put your CSS in a new section titled "Graph" at the end of `main.css`; Claude resolves the append conflict.
-**Why:** BFS, DFS, Dijkstra and topological sort (Claude's C15) all need one tested graph structure, and students should see
+**Why:** BFS, DFS, Dijkstra and topological sort (Claude's graph-algorithm tasks) all need one tested graph structure, and students should see
 that an adjacency list and an adjacency matrix describe the same graph.
 **Files you own:** new `src/structures/graph.js`, `tests/graph.test.js`, `src/core/graph-layout.js`,
 `tests/graph-layout.test.js`, `graph.html`, `src/pages/graph-page.js`; a new section at the end of `main.css`.
@@ -312,7 +312,7 @@ that an adjacency list and an adjacency matrix describe the same graph.
 1. `src/structures/graph.js` (pure, DOM-free), `class Graph({ directed = false, weighted = false })`. Vertex ids are whole
    numbers 0-11, at most 12 vertices; weights 1-99 and only when `weighted`; self-loops and parallel edges are rejected with
    readable errors. Operations: `addVertex(id)`, `removeVertex(id)` (removes every edge touching it), `addEdge(u, v, w?)`,
-   `removeEdge(u, v)`, `hasEdge`, `weight`, `neighbors(id)` (**always ascending**; C15 relies on it), `degree` /
+   `removeEdge(u, v)`, `hasEdge`, `weight`, `neighbors(id)` (**always ascending**; Claude's BFS/DFS relies on it), `degree` /
    `inDegree` / `outDegree`, `vertices()`, `edges()`, `toAdjacencyList()`, `toAdjacencyMatrix()` (`{ ids, matrix }`,
    `null` = no edge, never 0 or -1), `clear()`, `static from({ directed, weighted, vertices, edges })`. Changes return
    `{ ok, error?, steps }`; a step is `{ type, vertexIds, edge, message, snapshot }` with
@@ -405,5 +405,73 @@ the page script has no `.style` and no `innerHTML` with values. Report the nav e
 added, and the mutation result.
 
 ---
+## G12: Fenwick Tree (Binary Indexed Tree) module + page <a id="g12"></a>
+**Status: ready after you report G11.** Start from fresh `main` on branch `gemini/g12-fenwick`.
+**Why:** prefix sums with point updates in O(log n) are a classic interview and contest structure, and the `i & -i` trick is
+much easier to understand when students watch the indices jump.
+**Files you own:** new `src/structures/fenwick.js`, `tests/fenwick.test.js`, `fenwick-tree.html`, `src/pages/fenwick-page.js`;
+a new section titled "Fenwick Tree" added **at the end** of `main.css` (list every class you add).
+**Do not edit:** `shared.js`, `index.html`, `package.json`, `src/core/*`, any existing `src/structures/*` or `src/pages/*`,
+any existing `main.css` section.
+**Reference:** `src/structures/heap.js` (array-backed structure with steps), `heap.html` + `src/pages/heap-page.js` (array view,
+player, pseudocode panel), `trie.html` + `src/pages/trie-page.js` (live regions, keyboard, button markup).
+**Do:**
+1. `src/structures/fenwick.js` (pure, DOM-free). `class FenwickTree(n)` with 1-based internal array `tree[1..n]`, `n` a whole
+   number from 1 to 32; `static from(values)`; values and deltas are integers in -999..999 (readable error otherwise).
+   - Operations return `{ ok, value?, error?, steps }`: `update(i, delta)` (0-based public index), `prefixSum(i)` (sum of
+     `a[0..i]`), `rangeSum(l, r)` (two prefix sums, `l > r` is an error), `set(i, value)`, `build(values)` (show the O(n)
+     build: each node adds itself to its parent `j + (j & -j)`), `toArray()` (the underlying values `a[]`), `clear()`.
+   - Each step: `{ type, index, lowbit, indices, line, message, snapshot }` with `snapshot = { tree: [...], values: [...] }`
+     and `lowbit = j & -j`. Messages show the binary form, e.g. "j = 6 (0110), lowbit 2 (0010): next j = 6 + 2 = 8".
+     Types such as `visit`, `add`, `move-up`, `move-down`, `range-left`, `range-right`, `done`. No `-1` sentinels.
+     `line` indexes a `FENWICK_INFO` registry (`name`, `summary`, `complexity`, `pseudocode` per operation).
+   - `integrityError()`: for every j, `tree[j]` equals the sum of `values[j - lowbit(j) .. j - 1]`.
+2. `tests/fenwick.test.js`: 300 seeded mulberry32 sequences of update / set / prefixSum / rangeSum against a plain array
+   model, checking every answer, `toArray()` and `integrityError() === null` after every operation; hand-written index paths
+   for n = 8 (e.g. update at public index 2 visits 3, 4, 8; prefixSum at public index 6 visits 7, 6, 4); bounds, n = 1, n = 32,
+   bad inputs. **Mutation check yourself:** use `j & (j - 1)` where `j & -j` belongs, confirm a test fails, report it.
+3. `fenwick-tree.html` + `src/pages/fenwick-page.js`: values list + **Build**, index/delta inputs + **Update** and **Set**,
+   **Prefix sum**, l/r inputs + **Range sum**, **Random**, **Clear**. Show the values array and the tree array index-aligned
+   (1-based, with each index in binary), and draw the range each `tree[j]` covers as a bar under it; highlight the indices
+   visited, with a non-colour cue for every state and a legend. Running total counter, steps counter.
+   StepPlayer + `bindPlayerKeys(document, player)`; `DSA_UI.announce`; live regions in the HTML at load; errors inline with
+   `role="alert"`; scroll boxes use `.hp-scroll-region` with `tabindex="0"` and an accessible name; player buttons are one text
+   node or one `<span>` (`.btn` is inline-flex with no gap).
+**Done when:** `npm test` passes (only allowed failure: "fenwick-tree.html is missing from navCategories"); the page works at
+375px and desktop in both themes with no console errors and no horizontal page scroll; Play advances; update and query paths
+are visible on a real run; `grep -c 'style="' fenwick-tree.html` is 0 and no `.style` / `innerHTML` with values. Report the nav
+entry and card you want, every CSS class you added, and the mutation result.
+
+---
+## G13: Segment Tree module + page <a id="g13"></a>
+**Status: ready after you report G12.** Start from fresh `main` on branch `gemini/g13-segment-tree`.
+**Why:** segment trees answer range queries with updates in O(log n) and teach the full / partial / disjoint overlap idea used
+across many range algorithms.
+**Files you own:** new `src/structures/segment-tree.js`, `tests/segment-tree.test.js`, `segment-tree.html`,
+`src/pages/segment-tree-page.js`; a new section titled "Segment Tree" added **at the end** of `main.css`.
+**Do not edit:** the same list as G12.
+**Reference:** G12, `src/core/tree-layout.js` (`layoutCompleteTree` draws heap-shaped trees; reuse it, do not change it).
+**Do:**
+1. `src/structures/segment-tree.js` (pure, DOM-free). `class SegmentTree(values, { mode = "sum" })` with `mode` `"sum"` or
+   `"min"`, `n` from 1 to 16, integer values -999..999. Store nodes 0-based (children `2i + 1`, `2i + 2`) so
+   `layoutCompleteTree` can draw the tree; each node knows its range `[lo, hi]`.
+   - Operations return `{ ok, value?, error?, steps }`: `query(l, r)` (`l > r` or out of range is an error), `update(i, value)`,
+     `build(values)`, `setMode(mode)` (rebuilds), `toArray()`.
+   - Steps: `{ type, node, range, overlap, line, message, snapshot }`, `overlap` one of `"full"`, `"partial"`, `"disjoint"`
+     for query visits; types such as `visit`, `full`, `partial`, `disjoint`, `combine`, `update-leaf`, `recompute`, `done`.
+     `snapshot = { nodes: [{ index, lo, hi, value }], mode }`. No `-1` sentinels; `line` indexes `SEGMENT_TREE_INFO`.
+   - `integrityError()`: every leaf equals its value, every internal node equals the combine of its children.
+2. `tests/segment-tree.test.js`: 300 seeded sequences per mode of query / update against a plain array, checking every answer
+   and `integrityError() === null` after every operation; a hand-written query on n = 8 listing exactly which nodes are full,
+   partial and disjoint; n = 1, n = 16, bad inputs. **Mutation check yourself:** treat a partial overlap as full, confirm a
+   test fails, report it.
+3. `segment-tree.html` + `src/pages/segment-tree-page.js`: values + **Build**, mode select, l/r + **Query**, index/value +
+   **Update**, **Random**. SVG tree via `layoutCompleteTree`, each node labelled with its range and value; the array below;
+   overlap states each with a non-colour cue (e.g. full = solid double ring + "✓", partial = dashed + "½", disjoint = faded +
+   "✗") and a legend; counters for nodes visited and combines. Same player, keyboard, live-region, scroll-box and button rules
+   as G12.
+**Done when:** as G12, with segment-tree.html; a query visibly shows all three overlap kinds on a real run.
+
+---
 ## Queue after these (not ready yet)
-BFS / DFS (Claude, after G10), Kruskal's MST (needs G11), Dijkstra, Red-Black tree.
+Lesson drafts (needs Claude's C18 lesson format) and quiz banks (needs C19 quiz engine); Claude does BFS/DFS, Dijkstra, Kruskal/Prim, Red-Black tree.

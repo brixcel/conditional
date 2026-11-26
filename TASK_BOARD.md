@@ -9,21 +9,19 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
+| C17 | Player keys cleanup: BST on `bindPlayerKeys`, local scroll-box workarounds removed | Claude (visualization-engineer agent) | `claude/c17-keys-cleanup` | `src/pages/bst-page.js`, `trie-page.js`, `avl-page.js` |
+| C18 | Lesson format + validator | Claude (learning-content agent) | `claude/c18-lessons` | `content/lessons/*`, `src/learn/*`, `tests/lessons.test.js` |
+| C19 | Quiz engine + progress | Claude (quiz-challenges agent) | `claude/c19-quiz` | `content/quizzes/*`, `src/quiz/*`, `tests/quiz.test.js` |
 | G10 | Graph representation module + page | Gemini | `gemini/g10-graph` | see GEMINI_HANDOFF.md#g10 |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| none | | | | |
+| G11 | Disjoint Set Union module + page | Gemini | see spec | GEMINI_HANDOFF.md#g11 (after G10) |
+| G12 | Fenwick Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g12 (after G11) |
+| G13 | Segment Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g13 (after G12) |
 
-**Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
-overlaps the page badge at the top and covers content while scrolling. The Regular
-Queue page styles empty/freed slots with runtime styles (`EMPTY_SLOT_STYLE` in
-`src/pages/regular-queue-page.js`). After G3 merges, Claude moves that into a
-`main.css` class.
-
-**File conflicts to respect:** G3 is the only task that edits `main.css`. G1, G2 and G4 must reuse existing classes
-and list any CSS they need in their handoff report.
+**File conflicts to respect:** Gemini adds new files and appends one new section at the end of `main.css`; Claude edits shared files (`shared.js`, `index.html`, `src/core/*`) and merges one `main.css` append at a time.
 
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
