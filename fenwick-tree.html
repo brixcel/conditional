@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fenwick Tree (Binary Indexed Tree) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Tree Structure &bull; Fenwick Tree (BIT)</div>
+            <h1 class="page-title">Fenwick Tree (Binary Indexed Tree)</h1>
+            <p class="page-desc">
+                Given a 0-based logical array <code>a[0..n&minus;1]</code>, a Fenwick tree maintains a compact 1-based array
+                <code>tree[1..n]</code> (shifting index <code>i &rarr; j = i + 1</code>) where each cell stores the sum of a
+                power-of-two responsibility range <code>a[j &minus; lowbit(j) .. j &minus; 1]</code> determined by
+                <code>lowbit(j) = j &amp; &minus;j</code>. Step through <code>O(n)</code> bottom-up builds,
+                upward point updates (<code>j += lowbit(j)</code>), downward prefix queries (<code>j &minus;= lowbit(j)</code>),
+                and two-walk range sums <code>prefix(r) &minus; prefix(l &minus; 1)</code>.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="fenwickName">Fenwick Tree (Binary Indexed Tree)</h2>
+            <p class="concept-body" id="fenwickSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Build</div><div class="prop-value" id="cxBuild"></div></div>
+                <div class="prop-item"><div class="prop-label">Point Update</div><div class="prop-value" id="cxUpdate"></div></div>
+                <div class="prop-item"><div class="prop-label">Point Set</div><div class="prop-value" id="cxSet"></div></div>
+                <div class="prop-item"><div class="prop-label">Prefix Sum</div><div class="prop-value" id="cxPrefixSum"></div></div>
+                <div class="prop-item"><div class="prop-label">Range Sum</div><div class="prop-value" id="cxRangeSum"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Fenwick Tree Controls &amp; Operations</h2>
+            </div>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">1. Build Array (1&ndash;32 Integers, &minus;999 to 999)</div>
+                <div class="controls-row">
+                    <div class="field field-grow">
+                        <label class="field-label" for="buildInput">Values (1&ndash;32 integers in &minus;999..999, comma or space separated)</label>
+                        <input type="text" id="buildInput" autocomplete="off" spellcheck="false"
+                               value="3, 2, -1, 6, 5, 4, -3, 3">
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="pointForm" novalidate>
+                <div class="control-section-title">2. Point Update, Set &amp; Prefix Sum (0-Based Index)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="indexInput">Index i (<span id="indexRangeHint">0..7</span>)</label>
+                        <input type="text" id="indexInput" class="input-sm" inputmode="numeric"
+                               autocomplete="off" spellcheck="false" value="2">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="deltaInput">Delta / Value (&minus;999..999)</label>
+                        <input type="text" id="deltaInput" class="input-sm"
+                               autocomplete="off" spellcheck="false" value="5">
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="updateBtn">Update (+delta)</button>
+                    <button type="button" class="btn btn-secondary" id="setBtn">Set (=value)</button>
+                    <button type="button" class="btn btn-secondary" id="prefixBtn">Prefix sum (0..i)</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="rangeForm" novalidate>
+                <div class="control-section-title">3. Range Sum Query (Inclusive 0-Based Bounds)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="leftInput">Left l (<span id="leftRangeHint">0..7</span>)</label>
+                        <input type="text" id="leftInput" class="input-sm" inputmode="numeric"
+                               autocomplete="off" spellcheck="false" value="2">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="rightInput">Right r (<span id="rightRangeHint">0..7</span>)</label>
+                        <input type="text" id="rightInput" class="input-sm" inputmode="numeric"
+                               autocomplete="off" spellcheck="false" value="6">
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="rangeBtn">Range sum (l..r)</button>
+                </div>
+            </form>
+
+            <div id="fenwickError" class="alert-banner alert-live bst-live" role="alert"></div>
+            <div id="fenwickStatus" class="alert-banner alert-live bst-live"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header fw-card-header">
+                <h2 class="card-title">Binary Indexed Tree Execution &amp; Coverage</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span><span aria-hidden="true">&#x23EE;</span> Reset</span></button>
+                <button type="button" class="btn btn-secondary" id="stepBackBtn" title="Previous step (&larr;)"><span><span aria-hidden="true">&#x25C0;</span> Back</span></button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></span></button>
+                <button type="button" class="btn btn-secondary" id="stepFwdBtn" title="Next step (&rarr;)"><span>Step <span aria-hidden="true">&#x25B6;</span></span></button>
+                <div class="field field-inline">
+                    <label class="field-label" for="speedSelect">Speed</label>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="progress" class="visually-hidden">Execution step</label>
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0">
+
+            <div class="viz-stage fw-viz-stage">
+                <span class="viz-stage-label" id="arraysStageLabel">Index-Aligned Arrays: a[0..n&minus;1] &amp; tree[1..n]</span>
+                <div id="arraysStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="arraysStageLabel" tabindex="0">
+                    <table id="fenwickTable" class="fw-table">
+                        <caption class="visually-hidden" id="fenwickTableCaption">Index-aligned logical values and 1-based Fenwick tree cells</caption>
+                        <thead>
+                            <tr id="fenwickHeadRow">
+                                <th scope="col" class="fw-row-head">Index</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="fenwickValuesRow">
+                                <th scope="row" class="fw-row-head mono">a[i]</th>
+                            </tr>
+                            <tr id="fenwickTreeRow">
+                                <th scope="row" class="fw-row-head mono">tree[j]</th>
+                            </tr>
+                            <tr id="fenwickLowbitRow">
+                                <th scope="row" class="fw-row-head mono">lowbit (covers)</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="viz-stage fw-viz-stage">
+                <span class="viz-stage-label" id="barsStageLabel">Coverage Bars &amp; Binary Jump Diagram (j &plusmn; lowbit(j))</span>
+                <div id="barsStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="barsStageLabel" tabindex="0">
+                    <svg id="fenwickSvg" class="hp-svg bst-svg fw-svg" role="img"
+                         aria-labelledby="fenwickSvgTitle" aria-describedby="fenwickSvgDesc">
+                        <title id="fenwickSvgTitle">Fenwick Tree Coverage Bars</title>
+                        <desc id="fenwickSvgDesc">Interactive Binary Indexed Tree coverage diagram showing each tree cell responsibility range and binary lowbit jumps.</desc>
+                    </svg>
+                </div>
+
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw fw-sw-visit"></i> Visiting / Query (dashed, &bull;)</span>
+                    <span><i class="sw fw-sw-add"></i> Updated / Added (dotted, +)</span>
+                    <span><i class="sw fw-sw-up"></i> Jump Up (j + lowbit, &uarr;)</span>
+                    <span><i class="sw fw-sw-down"></i> Jump Down (j &minus; lowbit, &darr;)</span>
+                    <span><i class="sw fw-sw-right"></i> Range Right (+tree[j], double, +)</span>
+                    <span><i class="sw fw-sw-left"></i> Range Left (&minus;tree[j], dashed / dash-dot, &minus;)</span>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Build)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" role="list" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Fenwick Tree State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Running Total</span><strong id="statRunningTotal">&mdash;</strong></div>
+                        <div><span>Cells Accessed</span><strong id="statSteps">0</strong></div>
+                        <div><span>Index j (Binary)</span><strong id="statIndex">&mdash;</strong></div>
+                        <div><span>Lowbit (j &amp; &minus;j)</span><strong id="statLowbit">&mdash;</strong></div>
+                        <div><span>Size n</span><strong id="statSize">8 / 32</strong></div>
+                        <div><span>Integrity</span><strong id="statIntegrity">OK</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Fenwick Tree Complexity &amp; Binary Properties</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Fenwick tree complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Complexity</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input, control, or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Why 1-Based Indexing &amp; Two&rsquo;s Complement <code>j &amp; &minus;j</code> Work</h2>
+                    <p>In two&rsquo;s complement, negating a positive integer <code>j</code> flips every bit and adds <code>1</code>, leaving only the lowest set <code>1</code>-bit aligned with <code>j</code> (e.g. <code>6 = 0110<sub>2</sub></code>, <code>&minus;6 = &hellip;1010<sub>2</sub></code>, so <code>6 &amp; &minus;6 = 0010<sub>2</sub> = 2</code>). Because <code>0 &amp; &minus;0 = 0</code> would loop forever, Fenwick trees shift logical index <code>i</code> to <code>j = i + 1</code> so every valid cell satisfies <code>lowbit(j) &ge; 1</code>.</p>
+                </div>
+                <div class="check">
+                    <h2>Responsibility Ranges (<code>tree[j]</code> Sums <code>lowbit(j)</code> Elements Ending at <code>a[j &minus; 1]</code>)</h2>
+                    <p>Each cell <code>tree[j]</code> stores the sum of exactly <code>lowbit(j)</code> consecutive elements ending at <code>a[j &minus; 1]</code>: <code>a[j &minus; lowbit(j) .. j &minus; 1]</code>. Odd indices have <code>lowbit = 1</code> (single elements), powers of two like <code>tree[4]</code> and <code>tree[8]</code> cover full prefixes, and bars on the same power-of-two tier never overlap.</p>
+                </div>
+                <div class="check">
+                    <h2>Climbing Up (<code>j += lowbit</code>) vs Stepping Down (<code>j &minus;= lowbit</code>)</h2>
+                    <p>Point updates add <code>lowbit(j)</code> to carry past trailing <code>1</code>-bits into the next higher bit, visiting every parent cell whose responsibility range covers <code>a[i]</code> (e.g. for <code>i = 2</code>, <code>j = 3 &rarr; 4 &rarr; 8</code>). Prefix queries subtract <code>lowbit(j)</code> to strip the lowest set bit, partitioning <code>a[0..i]</code> into at most <code>&lfloor;log<sub>2</sub> n&rfloor; + 1</code> disjoint ranges (e.g. for <code>i = 6</code>, <code>j = 7 &rarr; 6 &rarr; 4</code>).</p>
+                </div>
+                <div class="check">
+                    <h2><code>O(n)</code> Build &amp; Range Sum <code>prefix(r) &minus; prefix(l &minus; 1)</code></h2>
+                    <p>Instead of calling <code>update</code> <code>n</code> times in <code>O(n log n)</code>, bottom-up <code>build</code> copies <code>a[0..n&minus;1]</code> into <code>tree[1..n]</code> and pushes each <code>tree[j]</code> once into its immediate parent <code>j + lowbit(j)</code> in <code>O(n)</code>. Because addition is invertible, any range sum <code>a[l..r]</code> takes two prefix walks: <code>prefix(r) &minus; prefix(l &minus; 1)</code> (when <code>l = 0</code>, the left walk starts at <code>j = 0</code> and is skipped).</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/fenwick-page.js"></script>
+</body>
+</html>
