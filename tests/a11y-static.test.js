@@ -76,8 +76,7 @@ for (const page of PAGES) {
         assert.deepEqual(problems, []);
     });
 
-    // avl-tree.html is report-only until its rewrite: #avlAlert is a [hidden] role="alert".
-    test(`${page}: live regions are rendered at load (not [hidden])`, { todo: page === "avl-tree.html" }, () => {
+    test(`${page}: live regions are rendered at load (not [hidden])`, () => {
         // A live region that is display:none when its text changes is often not announced.
         // Messages that start hidden go through DSA_UI.announce() (shared.js) instead.
         const bad = [...html.matchAll(/<[a-z]+\b[^>]*>/gi)]

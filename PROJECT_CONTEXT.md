@@ -21,10 +21,10 @@ Rizal System – Antipolo Campus students.
   toast helper into every page. It is the only place nav markup lives.
 - **Two generations of page code:**
   1. *Legacy pages* (Stack, Regular/Circular/Priority Queue, Singly/Doubly/
-     Circular Linked List, AVL Tree) use classic `<script>` files or inline
+     Circular Linked List) use classic `<script>` files or inline
      scripts with global state, and logic mixed with DOM updates.
   2. *Module pages* (currently `sorting.html`, `searching.html`, `singly-linked-list.html`, `doubly-linked-list.html`, `circular-linked-list.html`, `hash-table.html`, `heap.html`, `regular-queue.html`, `stack.html`,
-     `circular-queue.html`, `priority-queue.html`) use ES modules:
+     `circular-queue.html`, `priority-queue.html`, `bst.html`, `avl-tree.html`) use ES modules:
      `src/algorithms|structures/*.js` (pure logic, no DOM), `src/core/` (shared
      engine), and `src/pages/*-page.js` (DOM controller). New work uses this pattern.
 - **Tests:** `npm test` runs Node's built-in test runner on `tests/*.test.js`,
@@ -41,8 +41,7 @@ index.html, stack.html, ...      pages (legacy + module pages)
 sorting.html                     first module page (reference implementation)
 main.css                         all styles (tokens → components → pages → breakpoints)
 shared.js                        nav + toast (classic script, loaded by every page)
-avl-tree.js                      legacy page script (global state, DOM-coupled)
-src/structures/                  pure data structures: stack.js, queue.js (linear/circular/priority), heap.js (min/max), linked-list.js (singly) + doubly-linked-list.js + circular-linked-list.js (real nodes), hash-table.js (chaining + linear probing), result.js
+src/structures/                  pure data structures: avl.js (AVL tree, real nodes, traced rotations), bst.js, stack.js, queue.js (linear/circular/priority), heap.js (min/max), linked-list.js (singly) + doubly-linked-list.js + circular-linked-list.js (real nodes), hash-table.js (chaining + linear probing), result.js
 src/core/validate.js             parseInteger() shared input parsing
 src/core/step-player.js          playback engine (play/pause/step/back/speed)
 src/core/tree-layout.js          layoutCompleteTree(): node x/y for array-stored trees (G7)
@@ -88,22 +87,22 @@ Verified by reading the code, running tests, and loading the live site at deskto
 - The September P0 issues are fixed: no merge markers, shared nav on every page,
   Tailwind removed, Stack heading and hamburger overlap fixed on mobile, and dead
   `circQ.js`/`dLL.js` removed. The live site has no console errors on the pages checked.
-- AVL tree is a real AVL tree. `tests/avl-real.test.js` loads the actual
-  `avl-tree.js` and checks BST order, |BF| ≤ 1, stored heights and parent links
-  across 150 random insert/delete sequences. All pass.
+- AVL tree is a real AVL tree in `src/structures/avl.js` (C12). `tests/avl.test.js`
+  checks BST order, |BF| ≤ 1, stored heights and size after every op of 300 seeded
+  random insert/delete/search sequences, plus all four rotation cases on insert and delete.
 
 **Problems still present**
 | # | Issue | Where | Severity |
 |---|---|---|---|
-| 1 | 91 native `alert`/`prompt`/`confirm` calls in core flows (bad on mobile, inaccessible, inconsistent) | doubly-linked-list.html (38), circLL.js (29), avl-tree.js (14), singly-linked-list.js (8), stack.js (2) | High |
+| 1 | ~~91 native `alert`/`prompt`/`confirm` calls~~ Fixed in G1/G2; the page checks now fail on any dialog | all pages | Fixed |
 | 2 | ~~Legacy tests checked copies of classes~~ Fixed in C10: copy suites removed, their cases live in the real-module tests | tests/legacy-regression.cjs | Fixed |
 | 3 | ~~Singly Linked List is a JS array with cosmetic "next" pointers~~ Fixed in C6: real nodes in `src/structures/linked-list.js` | singly-linked-list.html | Fixed |
-| 4 | Logic and DOM are mixed in the remaining legacy pages, so they can't be unit-tested or reused (Regular Queue migrated, and pure Stack/Circular/Priority modules exist but aren't wired yet) | legacy scripts | Medium |
-| 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
-| 6 | Many inline `style=""` attributes remain in page markup | most pages | Low |
+| 4 | ~~Logic and DOM mixed in legacy pages~~ Fixed: every page is a module page (AVL last, in C12) | all pages | Fixed |
+| 5 | ~~Logic in inline `<script>` blocks~~ Fixed: moved to `src/pages/*-page.js` | those .html files | Fixed |
+| 6 | ~~Inline `style=""` attributes~~ Fixed in G5; the page checks fail on any `style="` | all pages | Fixed |
 | 7 | Dark theme + toggle done (G3, C1b). Still no step-by-step playback on legacy pages, no lessons/quizzes/progress | site-wide | Feature gap |
 | 8 | Only 8 structures and (now) 6 sorting algorithms are covered | site-wide | Feature gap |
-| 9 | AVL delete never sets a rotation message, so users don't see delete rotations explained | avl-tree.js `removeNode` | Low |
+| 9 | ~~AVL delete never explained its rotations~~ Fixed in C3; C12 moved AVL to a module page with traced unbalanced/rotation steps | avl-tree.html | Fixed |
 | 10 | Debug screenshots (`.playwright-mcp/`) were committed | repo root | Fixed: untracked and ignored |
 
 ## Testing

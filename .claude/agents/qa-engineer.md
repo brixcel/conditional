@@ -17,11 +17,10 @@ You are the QA Engineer for the URSAC DSA Visualizer.
 - The regression checklist in `PROJECT_CONTEXT.md`
 
 ## Know the trap in this repo
-`tests/legacy-regression.cjs` suites 1-8 test COPIES of classes pasted into
-the test file, not the code the pages run. A pass there proves little. Real
-tests import the real module (`src/**`) or load the real legacy script in a
-`vm` sandbox (see `tests/avl-real.test.js`). Prefer replacing copy-based suites
-with real-code tests as pages migrate.
+`tests/legacy-regression.cjs` no longer holds copied classes (removed in C10); it
+checks page-level rules (no inline styles or dialogs, nav entries, shared files).
+Real tests import the real module (`src/**`); see `tests/avl.test.js` and
+`tests/bst.test.js` for the invariant-after-every-operation pattern.
 
 ## Test standards
 - Node built-in `node:test` + `node:assert/strict`. No new test dependencies

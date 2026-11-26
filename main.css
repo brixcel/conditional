@@ -1140,19 +1140,6 @@ input:disabled, select:disabled {
     animation: fadeIn 0.3s ease;
 }
 
-/* AVL Canvas */
-.avl-canvas {
-    display: block;
-    margin: 16px auto;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    max-width: 100%;
-    height: auto;
-    touch-action: pan-y;
-}
-
 /* --------------------------------------------------------------------------
    9. State Monitor, Outputs & Logs
    -------------------------------------------------------------------------- */

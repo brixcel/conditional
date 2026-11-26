@@ -4,6 +4,20 @@ All notable changes to the URSAC DSA Visualizer. The newest changes come first.
 
 ## [Unreleased] - 2026-11-25 (Claude Code, while Gemini works on G1–G4)
 
+### Changed (2026-11-26, Claude: C12)
+- AVL Tree moved to a module page. Logic lives in `src/structures/avl.js` (real nodes with
+  stable ids and stored heights, capacity 1-31, unique integer keys, errors returned as values).
+  The page (`src/pages/avl-page.js`) replays the recorded steps with the shared StepPlayer:
+  the walk down, the new leaf, each height/balance update on the way back up, the tree in its
+  unbalanced state with the case named (LL, RR, LR, RL), then each rotation, with nodes gliding
+  to their new positions by id. Every node shows its height and balance factor.
+- New: rotation-case demos (all four cases, on insert and on delete), node-role highlight
+  (root, leaves, internal), search, min/max and build-from-list.
+- Removed: `avl-tree.js`, the canvas view, and the "Balance Tree" and disabled "Update Node"
+  controls (an AVL tree is always balanced; update is delete + insert).
+- `tests/avl.test.js` replaces `tests/avl-real.test.js`: 300 seeded sequences checked against a
+  sorted-set model after every operation, plus hand-checked shapes for every rotation case.
+
 ### Added (2026-11-25 22:22, Claude: C5)
 - Counting Sort and Radix Sort (LSD, base 10) on the Sorting page. Both make
   0 comparisons, write values through a stable right-to-left placement, and show the
