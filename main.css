@@ -2906,3 +2906,125 @@ input:disabled, select:disabled {
     stroke: var(--border-strong);
     stroke-dasharray: 4 3;
 }
+
+/* --------------------------------------------------------------------------
+   20. Linked List Player (C24)
+   Singly, doubly and circular list pages (src/core/list-renderer.js). Node boxes
+   reuse .node-box and the .ht-tone-* tones from section 13; tokens only, no
+   inline styles. Every state also has a text cue: walk pointers are named labels
+   (.ll-cursor), a changed pointer shows old -> new as <del>/<ins>, detached and
+   removed nodes are dashed and sit in a labelled row, a missing link is a dot.
+   -------------------------------------------------------------------------- */
+
+/* Boxes are reused between frames, so they must not replay the entrance animation;
+   identity moves are animated from JS (Element.animate) and skipped under reduced motion. */
+.ll-node,
+.ll-link {
+    animation: none;
+}
+
+.ll-cursors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.ll-cursor {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--primary-border);
+    background-color: var(--primary-subtle);
+    color: var(--primary-text);
+}
+
+.ll-field-changed {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ll-old {
+    color: var(--danger-text);
+    text-decoration: line-through;
+}
+
+.ll-new {
+    color: var(--success-text);
+    text-decoration: underline;
+}
+
+/* Doubly / circular gaps: next arrow on top, prev arrow underneath. */
+.ll-link-double {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+}
+
+.ll-link-row {
+    display: block;
+}
+
+.ll-link-none {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.ll-link-changed {
+    color: var(--danger-text);
+    outline: 2px dashed var(--bar-swap);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.ll-detached {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+}
+
+.ll-detached[hidden] {
+    display: none;
+}
+
+.ll-detached-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.ll-node-detached {
+    border-style: dashed;
+}
+
+.ll-node-removed {
+    opacity: 0.7;
+}
+
+.ll-changes {
+    margin: 10px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .ll-cursor { font-size: 0.65rem; }
+    .ll-detached { gap: 8px; padding: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ll-node,
+    .ll-link {
+        transition: none;
+    }
+}
