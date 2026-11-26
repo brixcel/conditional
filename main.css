@@ -3278,3 +3278,448 @@ input:disabled, select:disabled {
 .gr-legend.gr-hidden {
     display: none;
 }
+
+/* --------------------------------------------------------------------------
+   24. Disjoint Set Union (Union-Find) Visualizer (G11)
+   Reuses section 14 (.hp-*) and section 15 (.bst-*) classes; uses section 1 tokens only.
+   -------------------------------------------------------------------------- */
+.dsu-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+.dsu-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dsu-options-row {
+    align-items: center;
+    gap: 10px 16px;
+}
+
+.dsu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-min);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dsu-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    margin: 0;
+    flex: none;
+    accent-color: var(--primary-light);
+    cursor: pointer;
+}
+
+.dsu-mode-hint {
+    flex: 1 1 220px;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.dsu-viz-stage {
+    padding-top: 14px;
+}
+
+.dsu-viz-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.dsu-svg .dsu-edge {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-path .dsu-edge {
+    stroke: var(--bar-select);
+    stroke-width: 2.6;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-visit .dsu-edge {
+    stroke: var(--bar-compare);
+    stroke-width: 3.2;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-compress .dsu-edge {
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-group.dsu-edge-link .dsu-edge {
+    stroke: var(--bar-sorted);
+    stroke-width: 3.6;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-edge-old {
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 4;
+    stroke-linecap: butt;
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-edge-label {
+    fill: var(--success-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-path .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.6;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-visit .hp-node-circle {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--primary-text);
+    stroke-width: 2.8;
+}
+
+.dsu-svg .dsu-root-found-ring {
+    display: none;
+    fill: none;
+    stroke: var(--primary-text);
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .dsu-root-found-ring {
+    display: inline;
+}
+
+.dsu-svg .dsu-root-badge {
+    display: none;
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-root-found .dsu-root-badge {
+    display: inline;
+}
+
+.dsu-svg .dsu-node.dsu-node-compress .hp-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-node.dsu-node-link .hp-node-circle,
+.dsu-svg .dsu-node.dsu-node-rank-up .hp-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3.4;
+}
+
+.dsu-svg .dsu-node.dsu-node-rank-up .dsu-rank-label {
+    fill: var(--success-text);
+    font-weight: 800;
+}
+
+.dsu-svg .dsu-node.dsu-node-same-set .hp-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3;
+}
+
+.dsu-svg .dsu-node.dsu-node-diff-set .hp-node-circle {
+    fill: var(--danger-subtle);
+    stroke: var(--bar-swap);
+    stroke-width: 3;
+    stroke-dasharray: 6 2 2 2;
+    stroke-linecap: butt;
+}
+
+.dsu-svg .dsu-rank-label {
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-result-badge {
+    display: none;
+    fill: var(--success-text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.dsu-svg .dsu-node.dsu-node-same-set .dsu-result-badge {
+    display: inline;
+    fill: var(--success-text);
+}
+
+.dsu-svg .dsu-node.dsu-node-diff-set .dsu-result-badge {
+    display: inline;
+    fill: var(--danger-text);
+}
+
+.dsu-arrays-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    margin: 0 auto;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.dsu-arr-rowhead {
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.dsu-arr-idx {
+    min-width: 42px;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+}
+
+.dsu-arr-idx.dsu-idx-active {
+    color: var(--primary-text);
+    background-color: var(--primary-subtle);
+}
+
+.dsu-arr-cell {
+    min-width: 42px;
+    height: 36px;
+    padding: 4px 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dsu-arr-cell.dsu-cell-root {
+    border-color: var(--primary-text);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-path {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+}
+
+.dsu-arr-cell.dsu-cell-visit {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-root-found {
+    border-color: var(--primary-text);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--primary-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-compress {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-compare {
+    border-color: var(--bar-compare);
+    border-style: dotted;
+    background-color: var(--warning-subtle);
+    font-weight: 700;
+}
+
+.dsu-arr-cell.dsu-cell-link,
+.dsu-arr-cell.dsu-cell-rank-up {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-same-set {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    font-weight: 800;
+}
+
+.dsu-arr-cell.dsu-cell-diff-set {
+    border-color: var(--bar-swap);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--danger-subtle);
+    font-weight: 800;
+}
+
+.dsu-sw-path {
+    border-radius: 50%;
+    background-color: var(--warning-subtle);
+    border: 2.5px dashed var(--bar-compare);
+}
+
+.dsu-sw-root-found {
+    border-radius: 50%;
+    background-color: var(--primary-subtle);
+    border: 2px solid var(--primary-text);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3.5px var(--primary-text);
+}
+
+.dsu-sw-compress {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+
+.dsu-sw-link {
+    background-color: var(--success-subtle);
+    border: 3px solid var(--bar-sorted);
+}
+
+.dsu-sw-same {
+    background-color: var(--success-subtle);
+    border: 2px solid var(--bar-sorted);
+}
+.dsu-sw-same::after {
+    content: "\2713";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--success-text);
+}
+
+.dsu-sw-diff {
+    background-color: var(--danger-subtle);
+    border: 2px dashed var(--bar-swap);
+}
+.dsu-sw-diff::after {
+    content: "\2717";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--danger-text);
+}
+
+@media (max-width: 640px) {
+    .dsu-options-row {
+        align-items: stretch;
+        gap: 8px;
+    }
+    .dsu-toggle input[type="checkbox"] {
+        width: 18px !important;
+        flex: none;
+    }
+    .dsu-mode-hint {
+        flex: 0 0 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dsu-svg .dsu-edge,
+    .dsu-arr-cell {
+        transition: none;
+    }
+}
+
+.dsu-hidden,
+.dsu-edge-group.dsu-hidden,
+.dsu-edge-old.dsu-hidden,
+.dsu-edge-label.dsu-hidden,
+.dsu-node.dsu-hidden,
+.dsu-rank-label.dsu-hidden,
+.dsu-svg .dsu-edge-old.dsu-hidden,
+.dsu-svg .dsu-edge-label.dsu-hidden,
+.dsu-svg .dsu-rank-label.dsu-hidden {
+    display: none;
+}
