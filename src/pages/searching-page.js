@@ -1,4 +1,5 @@
 import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
 import {
     SEARCHING_ALGORITHMS,
     traceSearch,
@@ -178,16 +179,14 @@ els.next.addEventListener("click", () => { player.pause(); player.next(); });
 els.prev.addEventListener("click", () => player.prev());
 els.reset.addEventListener("click", () => player.reset());
 els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value)));
-els.progress.addEventListener("input", () => { player.pause(); player.goTo(Number(els.progress.value)); });
-
-document.addEventListener("keydown", (e) => {
-    const tag = e.target.tagName;
-    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
-    if (e.key === " ") { e.preventDefault(); player.toggle(); }
-    else if (e.key === "ArrowRight") { player.pause(); player.next(); }
-    else if (e.key === "ArrowLeft") player.prev();
-    else if (e.key === "Home") player.reset();
+els.progress.addEventListener("input", () => {
+    // Read the slider before pausing: pause() re-renders and can reset els.progress.value.
+    const target = Number(els.progress.value);
+    player.pause();
+    player.goTo(target);
 });
+
+bindPlayerKeys(document, player);
 
 $("cxTable").innerHTML = Object.values(SEARCHING_ALGORITHMS).map(a =>
     `<tr><th scope="row">${a.name}</th><td>${a.complexity.best}</td><td>${a.complexity.average}</td>` +

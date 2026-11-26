@@ -5,6 +5,7 @@
  * Uses CSS classes from main.css section 14 — zero inline style writes, zero user innerHTML.
  */
 import { StepPlayer } from "../core/step-player.js";
+import { bindPlayerKeys } from "../core/player-keys.js";
 import { parseInteger } from "../core/validate.js";
 import { layoutCompleteTree } from "../core/tree-layout.js";
 import { parseArrayInput, randomArray } from "../algorithms/sorting.js";
@@ -408,14 +409,7 @@ els.progress.addEventListener("input", () => {
     player.goTo(target);
 });
 
-document.addEventListener("keydown", (e) => {
-    const tag = e.target.tagName;
-    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
-    if (e.key === " ") { e.preventDefault(); player.toggle(); }
-    else if (e.key === "ArrowRight") { player.pause(); player.next(); }
-    else if (e.key === "ArrowLeft") player.prev();
-    else if (e.key === "Home") player.reset();
-});
+bindPlayerKeys(document, player);
 
 // Populate concept card and complexity table from HEAP_INFO using DOM nodes (no innerHTML).
 $("heapSummary").textContent = HEAP_INFO.summary;
