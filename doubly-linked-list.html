@@ -118,6 +118,33 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- Step Player -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Step-by-Step Execution</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="playerResetBtn" aria-label="Reset to first step" title="First step (Home)" disabled>&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Back one step" title="Previous step (&larr;)" disabled>&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)" disabled>&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Step forward" title="Next step (&rarr;)" disabled>Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step" disabled>
+
             <!-- Visualization Stage -->
             <div class="viz-stage">
                 <span class="viz-stage-label">Bidirectional Memory Nodes (Prev &harr; Next)</span>
@@ -126,6 +153,31 @@
                         <span class="text-muted text-italic m-auto">List is empty</span>
                     </div>
                 </div>
+                <div id="llDetached" class="ll-detached" role="group" aria-label="Nodes outside the chain" hidden></div>
+                <p id="llChanges" class="ll-changes mono" hidden></p>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-compare"></i> Visited or compared (curr / prev / walk label)</span>
+                    <span><i class="sw sw-swap"></i> Pointer re-pointed (old address struck out)</span>
+                    <span><i class="sw sw-sorted"></i> New node, not linked yet</span>
+                    <span><i class="sw sw-select"></i> Taken by sort</span>
+                </div>
+                <p class="text-muted">Labels above a node name the walk pointers. Between two nodes the top arrow is <span class="mono">next</span> and the bottom arrow is <span class="mono">prev</span>. A changed pointer reads <span class="mono">Prev: old &rarr; new</span>, and the line under the chain lists every pointer written in the step.</p>
+            </div>
+
+            <div class="state-monitor">
+                <div>Head: <strong id="llHeadVal" class="text-accent mono">NULL</strong></div>
+                <div>Tail: <strong id="llTailVal" class="text-accent mono">NULL</strong></div>
+                <div>Nodes: <strong id="llSizeVal" class="mono">0 / 0</strong></div>
+                <div>Visits: <strong id="llVisitsVal" class="mono">0</strong></div>
+                <div>Comparisons: <strong id="llComparesVal" class="mono">0</strong></div>
+                <div>Pointer writes: <strong id="llWritesVal" class="mono">0</strong></div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite">Allocate a list, then run an operation to watch each prev / next change.</p>
+
+            <div class="algo-detail">
+                <div class="control-section-title" id="codeHeading">Pseudocode</div>
+                <ol class="pseudocode" id="pseudocode"></ol>
             </div>
         </div>
 
