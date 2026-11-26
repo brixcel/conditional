@@ -72,3 +72,95 @@ export function layoutCompleteTree(n, { levelGap = DEFAULT_TREE_LAYOUT.levelGap,
 
     return { nodes, edges, width, height };
 }
+
+/**
+ * Compute coordinates for a linked binary tree snapshot `{ nodes, rootId }`
+ * (e.g., from `BinarySearchTree.prototype.snapshot()`) using in-order horizontal
+ * placement:
+ *   x = inorderIndex * minGap + minGap / 2
+ *   y = depth * levelGap
+ *
+ * Geometry guarantees:
+ * - Every reachable node has a unique horizontal slot; any two nodes differ in x
+ *   by at least `minGap`.
+ * - Every left child has `x < parent.x` and every right child has `x > parent.x`.
+ * - Every node at depth `d` sits at `y = d * levelGap`.
+ * - `width = nodes.length * minGap` and `height = maxDepth * levelGap` (0 for empty
+ *   or single-node trees).
+ * - Malformed cycles or shared-child references are guarded cleanly and never loop.
+ *
+ * @param {{ nodes: Array<{ id: number | string, value?: number, left: number | string | null, right: number | string | null }>, rootId: number | string | null } | null | undefined} snapshot
+ * @param {{ levelGap?: number, minGap?: number }} [options]
+ * @returns {{
+ *   nodes: Array<{ id: number | string, depth: number, x: number, y: number }>,
+ *   edges: Array<{ from: number | string, to: number | string }>,
+ *   width: number,
+ *   height: number
+ * }}
+ */
+export function layoutBinaryTree(
+    snapshot,
+    { levelGap = DEFAULT_TREE_LAYOUT.levelGap, minGap = DEFAULT_TREE_LAYOUT.minGap } = {},
+) {
+    assertPositiveNumber(levelGap, "levelGap");
+    assertPositiveNumber(minGap, "minGap");
+
+    if (snapshot === null || snapshot === undefined) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+    if (typeof snapshot !== "object" || !Array.isArray(snapshot.nodes)) {
+        throw new TypeError("snapshot must be an object with a nodes array");
+    }
+    if (snapshot.rootId === null || snapshot.rootId === undefined || snapshot.nodes.length === 0) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+
+    const byId = new Map();
+    for (const node of snapshot.nodes) {
+        if (node && node.id !== null && node.id !== undefined) {
+            byId.set(node.id, node);
+        }
+    }
+
+    if (!byId.has(snapshot.rootId)) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+
+    const visited = new Set();
+    const nodes = [];
+    const edges = [];
+    let inorderIndex = 0;
+    let maxDepth = 0;
+
+    function walk(id, depth) {
+        if (id === null || id === undefined || visited.has(id)) return;
+        const node = byId.get(id);
+        if (!node) return;
+        visited.add(id);
+        if (depth > maxDepth) maxDepth = depth;
+
+        if (node.left !== null && node.left !== undefined && byId.has(node.left) && !visited.has(node.left)) {
+            edges.push({ from: id, to: node.left });
+            walk(node.left, depth + 1);
+        }
+
+        const x = inorderIndex * minGap + minGap / 2;
+        const y = depth * levelGap;
+        inorderIndex++;
+        nodes.push({ id, depth, x, y });
+
+        if (node.right !== null && node.right !== undefined && byId.has(node.right) && !visited.has(node.right)) {
+            edges.push({ from: id, to: node.right });
+            walk(node.right, depth + 1);
+        }
+    }
+
+    walk(snapshot.rootId, 0);
+
+    return {
+        nodes,
+        edges,
+        width: nodes.length * minGap,
+        height: nodes.length === 0 ? 0 : maxDepth * levelGap,
+    };
+}
