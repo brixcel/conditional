@@ -28,11 +28,12 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
-| C6 | Singly Linked List on real nodes (`src/structures/linked-list.js`) + module page; old `singly-linked-list.js` removed. Finished 2026-11-26 10:39 | Claude | `claude/c6-singly-linked-list` | the user (merge to `main`) |
+| none | | | | |
 
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C6 | Singly Linked List on real nodes (`src/structures/linked-list.js`) + module page; old `singly-linked-list.js` removed | Claude | 2026-11-26 10:44 (merged to `main`) |
 | HEAP | Binary min/max heap logic + tests (`src/structures/heap.js`, no page yet) | Claude | 2026-11-26 10:34 |
 | C1c | Searching nav entry + homepage card (module count now "8 Structures · 8 Sorts · 3 Searches") | Claude | 2026-11-26 10:28 (merged to `main` 2026-11-26 10:34) |
 | G4 | Searching module (linear / binary / interpolation) + page, parser reused from `sorting.js` | Gemini (reviewed by Claude) | 2026-11-26 10:27 (merged to `main` 2026-11-26 10:34) |
