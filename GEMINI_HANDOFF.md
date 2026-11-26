@@ -240,6 +240,9 @@ mutation, `integrityError()`), `heap.html` + `src/pages/heap-page.js` (SVG tree,
    pseudocode panel, counters and theme/a11y rules as the heap page. Show the search path highlighted on the way down; for
    two-child delete, show the successor being found and copied. Show the traversal output growing as nodes are visited.
    Values -99..999, max 31 nodes; errors inline with `role="alert"`.
+**Note (added after C10):** `tests/legacy-regression.cjs` now checks that every page is listed in the nav in `shared.js`.
+You may not edit `shared.js`, so on your branch exactly one legacy check fails: `bst.html` not in navCategories. That is
+expected; say so in your report and Claude adds the nav entry at merge. Every other check must pass.
 **Done when:** `npm test` passes with your new tests; the page works at 375px and desktop in both themes with no console
 errors and no horizontal page scroll; Play advances; every delete case and every traversal shown on a real tree;
 `grep -c 'style="' bst.html` is 0 and the page script has no `.style` / `innerHTML` with values. Report the nav entry and

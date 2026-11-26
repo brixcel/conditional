@@ -51,7 +51,7 @@ src/pages/sorting-page.js        DOM controller for sorting.html
 src/algorithms/searching.js      linear/binary/interpolation search with traced steps (G4)
 src/pages/searching-page.js      DOM controller for searching.html
 tests/*.test.js                  real-code tests (node:test)
-tests/legacy-regression.cjs      old suite. Suites 1-8 test COPIES, not real code
+tests/legacy-regression.cjs      site-wide page checks (every page: no style="", no dialogs, main.css + shared.js, listed in nav)
 .claude/agents/*.md              nine specialist agent definitions
 docs/archive/                    previous audit + plan (Sept 2026), historical only
 ```
@@ -96,7 +96,7 @@ Verified by reading the code, running tests, and loading the live site at deskto
 | # | Issue | Where | Severity |
 |---|---|---|---|
 | 1 | 91 native `alert`/`prompt`/`confirm` calls in core flows (bad on mobile, inaccessible, inconsistent) | doubly-linked-list.html (38), circLL.js (29), avl-tree.js (14), singly-linked-list.js (8), stack.js (2) | High |
-| 2 | Legacy tests checked copies of classes, so passes proved little | tests/legacy-regression.cjs suites 1-8 | High (now flagged, real tests added for AVL) |
+| 2 | ~~Legacy tests checked copies of classes~~ Fixed in C10: copy suites removed, their cases live in the real-module tests | tests/legacy-regression.cjs | Fixed |
 | 3 | ~~Singly Linked List is a JS array with cosmetic "next" pointers~~ Fixed in C6: real nodes in `src/structures/linked-list.js` | singly-linked-list.html | Fixed |
 | 4 | Logic and DOM are mixed in the remaining legacy pages, so they can't be unit-tested or reused (Regular Queue migrated, and pure Stack/Circular/Priority modules exist but aren't wired yet) | legacy scripts | Medium |
 | 5 | Circular Queue, Doubly Linked List and Priority Queue logic live in inline `<script>` blocks | those .html files | Medium |
