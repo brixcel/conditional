@@ -16,7 +16,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
 | G11 | Disjoint Set Union module + page | Gemini | see spec | GEMINI_HANDOFF.md#g11 (after G10) |
-| G12 | Fenwick Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g12 (after G11) |
 | G13 | Segment Tree module + page | Gemini | see spec | GEMINI_HANDOFF.md#g13 (after G12) |
 
 **File conflicts to respect:** Gemini adds new files and appends one new section at the end of `main.css`; Claude edits shared files (`shared.js`, `index.html`, `src/core/*`) and merges one `main.css` append at a time.
@@ -24,6 +23,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G12 | Fenwick Tree (Binary Indexed Tree) module + page | Gemini | `gemini/g12-fenwick` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
