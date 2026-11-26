@@ -1792,6 +1792,7 @@ input:disabled, select:disabled {
                  .pq-pipeline, .pq-endpoint-label
    - Layout:     .scroll-box-clean (borderless scroll container inside .viz-stage),
                  .m-auto, .mt-sm
+   - Hash table: .ht-tone-select/-compare/-sorted/-swap, .ht-tombstone
    -------------------------------------------------------------------------- */
 .input-sm { width: 140px; max-width: 100%; }
 .input-md { width: 200px; max-width: 100%; }
@@ -1861,6 +1862,14 @@ input:disabled, select:disabled {
     background: transparent;
     border: none;
 }
+
+/* Hash table page: active bucket/slot highlight + DELETED tombstone.
+   Declared after .node-box and .car-empty so they win at equal specificity. */
+.ht-tone-select  { border-color: var(--bar-select);  background-color: var(--primary-subtle); color: var(--text-primary); }
+.ht-tone-compare { border-color: var(--bar-compare); background-color: var(--warning-subtle); color: var(--text-primary); }
+.ht-tone-sorted  { border-color: var(--bar-sorted);  background-color: var(--success-subtle); color: var(--text-primary); }
+.ht-tone-swap    { border-color: var(--bar-swap);    background-color: var(--danger-subtle);  color: var(--text-primary); }
+.ht-tombstone    { border-color: var(--warning-border); background-color: var(--warning-subtle); color: var(--warning-text); }
 
 @media (max-width: 640px) {
     .bars { height: 190px; }

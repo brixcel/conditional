@@ -32,6 +32,48 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G6: Hash Table module + page (unassigned; was pushed as `gemini/g5-hash-table`)
+- Author: Gemini (Antigravity), finished 2026-11-26 10:28. Full report: `docs/reports/G6-hash-table.md`.
+- Files: `src/structures/hash-table.js`, `src/pages/hash-table-page.js`, `hash-table.html`, `tests/hash-table.test.js` (all new).
+- Gemini's own note: no browser check was done (unattended run).
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 10:53 (Philippine time)
+- Reviewed commit: `d9b0a24`
+- Verdict: **MERGE, with fixes made by Claude** (all small, listed below; none needed a round trip)
+- Logic (read in full): chaining and linear probing are real. Checked by reading: true modulo for negative keys; linear-probing
+  delete leaves a tombstone; search and delete skip tombstones and stop at EMPTY; insert keeps probing past a tombstone to rule
+  out a duplicate key before reusing the first tombstone; full-table overflow vs. existing-key update; rehash drops tombstones and
+  refuses to shrink a linear table below its size. Messages describe the state before each change.
+- Tests: 12 tests, 200 random sequences × 60 ops per strategy against a reference `Map`. **Mutation check**: broke the module 4 ways
+  (search stops at a tombstone; delete leaves EMPTY; insert stops at the first tombstone → duplicate keys; `Math.abs` instead of true
+  modulo). The suite caught all 4.
+- Tests on the merged tree (with G5 and the StepPlayer fix):
+    # tests 157
+    # pass 157
+    # fail 0
+    SUMMARY: 24 / 24 assertions passed (100%)
+- Browser (Claude; Gemini had not run one): 375 and 1280 px, light and dark, both strategies. Insert, collision, update, delete
+  (tombstone), search past a tombstone, invalid key, missing key, rehash 7 → 11, demo data. 0 dialogs, 0 overflow, 0 inline styles.
+  A `<b>x</b>` value renders as text (no HTML injection); `innerHTML` only receives constants.
+- Found and fixed by Claude:
+  1. **Play / auto-play threw "Illegal invocation"** on every operation. Root cause was in `src/core/step-player.js` (Claude's code,
+     not G6): it also broke Play on the live Sorting and Searching pages. Fixed on its own branch `claude/fix-stepplayer-play`
+     (with a regression test that fails on the old code) and merged into this branch.
+  2. Runtime `TONE_STYLES` / tombstone `.style` writes → `.ht-tone-select/-compare/-sorted/-swap` and `.ht-tombstone` in `main.css`
+     section 13 (same rule G5 applied to Regular Queue). 0 `.style` writes left in the page.
+  3. At 375 px the active slot could be off-screen in the sideways-scrolling slot row while the message described it. Added
+     `revealActive()`, which scrolls only that row (never the page) to centre the highlighted slot/node.
+  4. Nav entry (new "Hashing" group) and homepage card added; module count is now "9 Structures · 8 Sorts · 3 Searches".
+- Non-blocking, for later:
+  1. `clear()` records its step with `operation: "insert"` (works because it uses line 1); a dedicated "clear" would be cleaner.
+  2. Rehash resets the "total collisions" counter without saying so in the message.
+  3. Process: this task was not assigned. Next time take only the task under "Gemini: do next", and use a new ID.
+- Blocking issues: none (after the fixes above).
+- Merged in: branch `claude/g6-hash-table-merge` (stacked on `claude/g5-styles-merge` + `claude/fix-stepplayer-play`); the user fast-forwards `main` to it.
+
+---
+
 ### G5: Remove remaining inline styles
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-26 10:38 (Philippine time)

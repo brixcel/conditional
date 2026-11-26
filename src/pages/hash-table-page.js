@@ -49,13 +49,12 @@ const els = {
     statCollisions: $("statCollisions"),
 };
 
-// Runtime style tokens (only CSS custom properties from main.css — zero hard-coded colors,
-// so light & dark themes stay high-contrast without editing main.css).
-const TONE_STYLES = {
-    select:  { borderColor: "var(--bar-select)",  backgroundColor: "var(--primary-subtle)", color: "var(--text-primary)" },
-    compare: { borderColor: "var(--bar-compare)", backgroundColor: "var(--warning-subtle)", color: "var(--text-primary)" },
-    sorted:  { borderColor: "var(--bar-sorted)",  backgroundColor: "var(--success-subtle)", color: "var(--text-primary)" },
-    swap:    { borderColor: "var(--bar-swap)",    backgroundColor: "var(--danger-subtle)",  color: "var(--text-primary)" },
+// Highlight classes for the active bucket/slot (defined in main.css section 13, theme-aware).
+const TONE_CLASSES = {
+    select: "ht-tone-select",
+    compare: "ht-tone-compare",
+    sorted: "ht-tone-sorted",
+    swap: "ht-tone-swap",
 };
 
 const OP_LABELS = {
@@ -137,9 +136,7 @@ function createEntryNode(entry, tone) {
         node.append(valEl);
     }
 
-    if (tone && TONE_STYLES[tone]) {
-        Object.assign(node.style, TONE_STYLES[tone]);
-    }
+    if (tone && TONE_CLASSES[tone]) node.classList.add(TONE_CLASSES[tone]);
     return node;
 }
 
@@ -166,9 +163,7 @@ function renderChainingStage(step) {
         const isBucketActive = activeSet.has(i);
         const isHome = step.homeIndex === i;
 
-        if (isBucketActive && tone && TONE_STYLES[tone]) {
-            tr.style.backgroundColor = TONE_STYLES[tone].backgroundColor;
-        }
+        if (isBucketActive && tone && TONE_CLASSES[tone]) tr.classList.add(TONE_CLASSES[tone]);
 
         const th = document.createElement("th");
         th.scope = "row";
@@ -215,6 +210,25 @@ function renderChainingStage(step) {
 
     tbl.append(tbody);
     els.stage.replaceChildren(tbl);
+    revealActive();
+}
+
+/**
+ * Keep the highlighted slot/node visible on narrow screens: scroll the nearest
+ * horizontally scrolling container (never the page) so it sits in the middle.
+ */
+function revealActive() {
+    const active = els.stage.querySelector('[class*="ht-tone-"]');
+    if (!active) return;
+    for (let el = active.parentElement; el && el !== els.stage.parentElement; el = el.parentElement) {
+        if (el.scrollWidth <= el.clientWidth) continue;
+        const a = active.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        if (a.left < box.left || a.right > box.right) {
+            el.scrollLeft += (a.left + a.width / 2) - (box.left + box.width / 2);
+        }
+        return;
+    }
 }
 
 function renderLinearStage(step) {
@@ -256,7 +270,7 @@ function renderLinearStage(step) {
             }
             box.setAttribute("aria-label", `Slot ${i}: key ${slot.key}${slot.value !== null ? `, value ${slot.value}` : ""}`);
         } else if (slot.state === "deleted") {
-            box.className = "node-box car-empty";
+            box.className = "node-box car-empty ht-tombstone";
             const delEl = document.createElement("span");
             delEl.className = "mono";
             delEl.textContent = "DELETED";
@@ -264,9 +278,6 @@ function renderLinearStage(step) {
             subEl.className = "slot-label";
             subEl.textContent = "tombstone";
             box.append(delEl, subEl);
-            box.style.borderColor = "var(--warning-border)";
-            box.style.backgroundColor = "var(--warning-subtle)";
-            box.style.color = "var(--warning-text)";
             box.setAttribute("aria-label", `Slot ${i}: deleted tombstone`);
         } else {
             box.className = "node-box car-empty";
@@ -277,15 +288,14 @@ function renderLinearStage(step) {
             box.setAttribute("aria-label", `Slot ${i}: empty`);
         }
 
-        if (isActive && tone && TONE_STYLES[tone]) {
-            Object.assign(box.style, TONE_STYLES[tone]);
-        }
+        if (isActive && tone && TONE_CLASSES[tone]) box.classList.add(TONE_CLASSES[tone]);
 
         wrap.append(lbl, box);
         strip.append(wrap);
     });
 
     els.stage.replaceChildren(strip);
+    revealActive();
 }
 
 function render(step, index, p) {

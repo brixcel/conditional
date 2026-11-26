@@ -23,7 +23,7 @@ Rizal System – Antipolo Campus students.
   1. *Legacy pages* (Stack, Regular/Circular/Priority Queue, Singly/Doubly/
      Circular Linked List, AVL Tree) use classic `<script>` files or inline
      scripts with global state, and logic mixed with DOM updates.
-  2. *Module pages* (currently `sorting.html`, `searching.html`, `singly-linked-list.html`, `regular-queue.html`, `stack.html`,
+  2. *Module pages* (currently `sorting.html`, `searching.html`, `singly-linked-list.html`, `hash-table.html`, `regular-queue.html`, `stack.html`,
      `circular-queue.html`, `priority-queue.html`) use ES modules:
      `src/algorithms|structures/*.js` (pure logic, no DOM), `src/core/` (shared
      engine), and `src/pages/*-page.js` (DOM controller). New work uses this pattern.
@@ -43,7 +43,7 @@ main.css                         all styles (tokens → components → pages →
 shared.js                        nav + toast (classic script, loaded by every page)
 circLL.js,
 avl-tree.js                      legacy page scripts (global state, DOM-coupled)
-src/structures/                  pure data structures: stack.js, queue.js (linear/circular/priority), heap.js (min/max), linked-list.js (singly, real nodes), result.js
+src/structures/                  pure data structures: stack.js, queue.js (linear/circular/priority), heap.js (min/max), linked-list.js (singly, real nodes), hash-table.js (chaining + linear probing), result.js
 src/core/validate.js             parseInteger() shared input parsing
 src/core/step-player.js          playback engine (play/pause/step/back/speed)
 src/algorithms/sorting.js        bubble/selection/insertion/merge/quick/heap with traced steps

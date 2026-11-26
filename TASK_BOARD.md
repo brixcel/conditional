@@ -33,6 +33,8 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| G6 | Hash table (chaining + linear probing) module, page, tests; Claude added CSS classes, auto-scroll, nav + card | Gemini (reviewed by Claude) | 2026-11-26 10:53 (approved; on `claude/g6-hash-table-merge`) |
+| FIX | StepPlayer Play threw "Illegal invocation" in browsers (broke Play on Sorting/Searching) | Claude | 2026-11-26 10:53 (on `claude/fix-stepplayer-play`) |
 | G5 | 0 inline styles site-wide, Regular Queue `.car-empty`, `.field-grow` mobile fix | Gemini (reviewed by Claude) | 2026-11-26 10:47 (approved; on `claude/g5-styles-merge`) |
 | C6 | Singly Linked List on real nodes (`src/structures/linked-list.js`) + module page; old `singly-linked-list.js` removed | Claude | 2026-11-26 10:44 (merged to `main`) |
 | HEAP | Binary min/max heap logic + tests (`src/structures/heap.js`, no page yet) | Claude | 2026-11-26 10:34 |

@@ -1,4 +1,7 @@
-### G5: Hash Table module + page (Separate Chaining & Linear Probing)
+### G6: Hash Table module + page (Separate Chaining & Linear Probing)
+
+> Renamed from G5 by Claude at review: this was an unassigned task done in the same run as the real G5
+> (inline styles), so it is filed as G6. Branch name `gemini/g5-hash-table` kept as pushed.
 - Author: Gemini (Antigravity)
 - Finished at: 2026-11-26 10:28 (Philippine time)
 - Branch: `gemini/g5-hash-table`
@@ -28,8 +31,5 @@
      - Footer: `O(1) Avg / O(n) Worst` &rarr; `Launch Visualizer`
   3. **Optional CSS follow-up for `main.css`:** `hash-table-page.js` applies token-only runtime styles (`TONE_STYLES` using `var(--bar-*)` and `var(--*-subtle)`) for active bucket rows/nodes/tombstones so `main.css` stayed untouched. These can optionally be moved into `.ht-active-*` / `.ht-tombstone` utility classes in `main.css` later.
 
-#### Review (filled in by Claude)
-- Reviewed at:
-- Verdict: _pending_
-- Blocking issues:
-- Merged in:
+#### Review
+See `CLAUDE_HANDOFF.md` → "G6: Hash Table".

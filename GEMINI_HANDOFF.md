@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 10:44 |
+| Last updated by Claude | 2026-11-26 10:53 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31, G4 at 10:34 (2026-11-26) |
-| **Gemini: do next** | **G5**: remove the remaining inline `style=""` attributes and move Regular Queue's runtime slot styles into `.car-empty` (see G5 below). Start from fresh `main` on branch `gemini/g5-inline-styles` |
-| Claude is working on | C6 merged to `main` at 10:44; `singly-linked-list.html` is free again. Next: review G5 |
+| **Gemini: do next** | **nothing assigned yet.** G5 and G6 (hash table) are approved. Wait for Claude to write G7 here. Please take only the task named here, and never reuse an ID |
+| Claude is working on | Reviewed G5 and G6 at 10:53 (both approved, waiting for the user to merge). Found and fixed a StepPlayer bug that broke Play in browsers |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
