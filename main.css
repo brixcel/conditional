@@ -2906,3 +2906,214 @@ input:disabled, select:disabled {
     stroke: var(--border-strong);
     stroke-dasharray: 4 3;
 }
+
+/* --------------------------------------------------------------------------
+   21. Graph Traversal (C23)
+   BFS / DFS replay on graph.html. Builds on section 17 (.gr-*) classes; tokens only.
+   Every state has a non-colour cue: visited = thick solid ring + "#k" badge,
+   frontier = dashed ring + "queued"/"on stack" badge, current = extra outer ring
+   (graph) or double border (list/matrix), tree edge = thick solid line,
+   edge being checked = dashed line.
+   -------------------------------------------------------------------------- */
+.gr-node.gr-trav-visited .gr-node-circle {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 3.6;
+    stroke-dasharray: none;
+}
+
+.gr-node.gr-trav-frontier .gr-node-circle {
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+}
+
+.gr-node.gr-trav-current .gr-node-circle {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 4;
+}
+
+.gr-trav-halo {
+    fill: none;
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+}
+
+.gr-trav-badge {
+    fill: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.gr-edge.gr-trav-tree {
+    stroke: var(--bar-sorted);
+    stroke-width: 4.2;
+    stroke-dasharray: none;
+}
+
+.gr-edge.gr-trav-check {
+    stroke: var(--bar-compare);
+    stroke-width: 3.2;
+    stroke-dasharray: 7 4;
+}
+
+.gr-edge.gr-trav-tree.gr-trav-active {
+    stroke-width: 5.6;
+}
+
+.gr-adj-vertex.gr-trav-visited {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background: var(--success-subtle);
+}
+
+.gr-adj-vertex.gr-trav-frontier {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background: var(--primary-subtle);
+}
+
+.gr-adj-vertex.gr-trav-current {
+    border-color: var(--bar-compare);
+    border-style: double;
+    border-width: 4px;
+}
+
+.gr-adj-row.gr-trav-row-current {
+    border-color: var(--bar-compare);
+    border-style: double;
+    border-width: 3px;
+}
+
+.gr-adj-chip.gr-trav-chip-tree {
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    background: var(--success-subtle);
+    font-weight: 700;
+}
+
+.gr-adj-chip.gr-trav-chip-check {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    border-width: 2px;
+}
+
+.gr-matrix th.gr-trav-visited-hdr {
+    background: var(--success-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-sorted);
+    border-width: 2px;
+}
+
+.gr-matrix th.gr-trav-frontier-hdr {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    border-width: 2px;
+}
+
+.gr-matrix th.gr-trav-current-hdr {
+    border-color: var(--bar-compare);
+    border-style: double;
+    border-width: 4px;
+    color: var(--text-primary);
+}
+
+.gr-matrix td.gr-trav-cell-tree {
+    background: var(--success-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-sorted);
+    border-width: 3px;
+    font-weight: 700;
+}
+
+.gr-matrix td.gr-trav-cell-check {
+    background: var(--primary-subtle);
+    color: var(--text-primary);
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    border-width: 2px;
+    font-weight: 700;
+}
+
+.gr-sw-trav-current {
+    background-color: var(--primary-subtle);
+    border: 4px double var(--bar-compare);
+}
+
+.gr-sw-trav-frontier {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+
+.gr-sw-trav-visited {
+    background-color: var(--success-subtle);
+    border: 3px solid var(--bar-sorted);
+}
+
+.gr-sw-trav-tree {
+    height: 5px;
+    border-radius: 0;
+    background-color: var(--bar-sorted);
+}
+
+.gr-sw-trav-check {
+    height: 0;
+    border-radius: 0;
+    border-top: 3px dashed var(--bar-compare);
+}
+
+.gr-trav-panel {
+    margin: 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gr-trav-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    min-width: 0;
+}
+
+.gr-trav-row-label {
+    flex: 0 0 auto;
+    min-width: 11em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.gr-trav-chips {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+/* The front of the queue / top of the stack gets a thicker underline as well as a border. */
+.gr-adj-chip.gr-trav-chip-first {
+    border-color: var(--bar-compare);
+    border-width: 2px;
+    border-bottom-width: 4px;
+}
+
+@media (max-width: 640px) {
+    .gr-trav-row-label {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+}
+
+.gr-trav-panel.gr-hidden,
+.gr-trav-row.gr-hidden,
+.gr-legend.gr-hidden {
+    display: none;
+}
