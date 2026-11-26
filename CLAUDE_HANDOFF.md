@@ -73,6 +73,13 @@ reviews each report before merging. The newest entries go at the top.
      - `.gr-matrix`, `.gr-matrix-corner`, `.gr-matrix-edge`, `.gr-matrix-diag`, `.gr-matrix-hdr-add`, `.gr-matrix-hdr-endpoint`, `.gr-matrix-hdr-remove`, `.gr-matrix-cell-add`, `.gr-matrix-cell-remove`
      - `.gr-hidden` (kept last with `.gr-svg`/`.gr-adj-list`/`.gr-matrix`/`.gr-adj-row`/`.gr-adj-chip`/`.gr-adj-empty-item` modifiers), plus `@media (max-width: 640px)` and `@media (prefers-reduced-motion: reduce)` rules.
 
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 21:21
+- Verdict: approved with fixes (qa-engineer: independent 32,854-op check in all four modes against a Map model, 0 failures; all four mutations caught)
+- Blocking issues: `graph-page.js` had its own `.hp-scroll-region` keydown handler, which `tests/player-keys-static.test.js` forbids (the shared `player-keys.js` guard covers it); player buttons rendered "⏮Reset" (icon and label must be one text node or one `<span>`). Fixed by Claude's visualization-engineer agent, plus: `Graph.from(g.snapshot())` failed for unweighted graphs (snapshot edges carry weight 1), `integrityError` compared the list with a matrix built from the same list, and an `!important` in section 17. Your branch started from an old `main`; `main.css` was merged by keeping `main` and appending your section whole. Please start each task from fresh `main`.
+- Merged in: `claude/g10-graph-merge` (with Graphs nav category + card)
+
 ---
 
 ### G9: Trie (Prefix Tree) module + page
