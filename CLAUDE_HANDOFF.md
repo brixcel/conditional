@@ -32,6 +32,51 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G12: Fenwick Tree (Binary Indexed Tree) module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 22:38 (Philippine time)
+- Branch: `gemini/g12-fenwick`
+- Commit(s): `bcda8c6`
+- Files changed: `src/structures/fenwick.js`, `tests/fenwick.test.js`, `fenwick-tree.html`, `src/pages/fenwick-page.js`, `main.css` (new section 17 only, lines 2386–3037, `+652 / -0` lines; sections 1–16 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/fenwick.js` (`FenwickTree`, `FENWICK_LIMITS`, `FENWICK_INFO`, `lowbit`, `formatBinary`) backed by 0-based `values[0..n-1]` (`a`) and 1-based `tree[0..n]` (`tree[0] === 0`), supporting `n` in `1..32`, bounded integers `-999..999`, `O(n)` bottom-up `build`/`from`, `O(log n)` `update(i, delta)`, `set(i, value)`, `prefixSum(i)`, `rangeSum(l, r)` (`prefixSum(r) - prefixSum(l - 1)`), `clear`, `toArray`, `treeArray`, `snapshot`, and `integrityError()`. Normalizes `-0` to `0`, uses `null` (zero `-1` sentinels) for inactive fields, guards 32-bit `lowbit(j)` overflow (`> 0x7fffffff`), parenthesizes negative `leftSum` in range messages, and emits `index === j` with matching `lowbit === lowbit(j)` on every indexed step.
+  - Created `tests/fenwick.test.js` (11 tests): 300 seeded mulberry32 operation sequences (hitting `n = 1`, `n = 32`, and random sizes) verified after every op against a plain array model + `integrityError() === null` + step contract (`step.lowbit === lowbit(step.index)`, valid `step.type` enum, 1-based `step.line`), hand-written `n = 8` paths (`build([1..8])`, `update(2, 5) -> [3, 4, 8]`, `prefixSum(6) -> [7, 6, 4]`, `rangeSum(2, 6)`, multi-step left walk & overlapping `rangeSum(5, 6)`, negative `leftSum` formatting), `n = 1` / `n = 32` boundaries, `set` `delta = 0` no-op (`line: 1`) and post-overflow `set`, invalid inputs leaving state untouched, `-0` normalization, defensive copies (including caller input non-mutation), and `integrityError()` corruption detection.
+  - **Mutation check (`lowbit`):** Temporarily replaced `j & -j` with `j & (j - 1)` in `lowbit(j)`. Running `node --test tests/fenwick.test.js` failed **9 of 11** tests (`AssertionError: lowbit(1): 0 !== 1`, `Invalid lowbit(1) = 0`, etc.); restored `j & -j` and re-verified all 509 Node tests pass.
+  - Created `fenwick-tree.html`, `src/pages/fenwick-page.js`, and token-only `main.css` section 17 (`0` `style=` in `fenwick-tree.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/fenwick-page.js`, `0` hardcoded colors in section 17). Stage 1 shows an index-aligned `a[0..n-1]` / `tree[1..n]` / `lowbit (covers)` table; Stage 2 renders a pooled SVG coverage-bar tier diagram (`lb = 1, 2, 4, 8, 16, 32`) with binary jump arcs (`+lb ↑` / `−lb ↓`), non-colour WCAG 1.4.1 borders + badges (`•`, `+`, `↑`, `↓`, `−`, `±`), synced pseudocode, state monitor (`Running Total`, `Cells Accessed`, `Index j (Binary)`, `Lowbit (j & -j)`, `Size n`, `Integrity`), complexity table, and 4 concept cards. Uses `StepPlayer`, `bindPlayerKeys`, `DSA_UI.announce`, `rescueFocus`, single-span player buttons, and quiet autoplay with `aria-live="polite"` re-arming.
+  - Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents; fixed all Critical/Major/Minor findings (including `build()` `index`/`lowbit` alignment, WCAG 1.4.11 border/stroke contrast using `--text-light` & `--border-focus`, `range-left` dashed distinction from `range-right` double, `aria-live` re-arming, overlapping right/left `±` badge, and `a[i]` terminology consistency) before commit.
+- npm test output (paste the real lines):
+    # tests 509
+    # suites 0
+    # pass 509
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+      [FAIL] Every HTML page except index.html is listed in navCategories
+     SUMMARY: 72 / 73 assertions passed (99%)
+  *(Note: the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected check for `fenwick-tree.html` missing from `shared.js` `navCategories` until Claude adds the nav entry on merge. All 5 `fenwick-tree.html` checks in `tests/a11y-static.test.js` and all 4 `fenwick-tree.html` page checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `fenwick-tree.html` on `http://127.0.0.1:5512/fenwick-tree.html` at both `1280×800` desktop and `375×812` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (0 console entries, 0 uncaught errors/rejections, 0 native dialogs). Zero horizontal page scroll (`scrollWidth - clientWidth === 0`) at `1280px` and `375px` in both themes even at `n = 32` (`#arraysStage` and `#barsStage` scroll internally). Verified **Play** advances automatically (`Step 1 / 9` → `Step 3 / 9` → `Step 9 / 9`, button displays `"⏸ Pause"`, `aria-live="polite"` re-arms on completion); verified `build` steps display matching `Index j` & `Lowbit (j & -j)` (`1 (0001)` + `1 (0001)`, `2 (0010)` + `2 (0010)`) with jump arcs (`+1 ↑`, `+2 ↑`); verified `update(2, 5)` visits `[3, 4, 8]` with upward arc, `prefixSum(6)` sums `21` with downward arc, `rangeSum(5, 6)` displays right `+`, left `−`, and overlapping `±` badges (`["±","−","+","+"]`), `set`, `Random`, `Clear`, and inline `role="alert"` + `aria-invalid="true"` errors for `l > r` and delta `> 999`.
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `package.json`, `src/core/*`, or `main.css` sections 1–16.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures`):**
+     - `SVG_ICONS.fenwick`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="8" height="4" rx="1"/><rect x="13" y="10" width="8" height="4" rx="1"/><rect x="3" y="16" width="3.5" height="4" rx="1"/><rect x="8" y="16" width="3.5" height="4" rx="1"/><rect x="13" y="16" width="3.5" height="4" rx="1"/><rect x="17.5" y="16" width="3.5" height="4" rx="1"/></svg>`
+     - Item: `{ label: "Fenwick Tree (BIT)", href: "fenwick-tree.html", iconKey: "fenwick" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `fenwick-tree.html`
+     - Title: `Fenwick Tree (BIT)`
+     - Description: `Explore power-of-two responsibility ranges, lowbit (j & -j) binary jumps, O(n) bottom-up build, point updates, and O(log n) prefix & range sum queries.`
+     - Footer: `O(log n) Update & Query · O(n) Build` &rarr; `Launch Visualizer`
+  3. **CSS classes added to `main.css` section 17 (lines 2386–3037, token-only, `+652 / -0`):**
+     - `.fw-add`, `.fw-arc-dot`, `.fw-arc-down`, `.fw-arc-group`, `.fw-arc-head`, `.fw-arc-label`, `.fw-arc-path`, `.fw-arc-up`, `.fw-bar-badge`, `.fw-bar-group`, `.fw-bar-inner-rect`, `.fw-bar-rect`, `.fw-bar-text`, `.fw-card-header`, `.fw-cell`, `.fw-cell-badge`, `.fw-cell-val`, `.fw-col-guide`, `.fw-col-head`, `.fw-covered`, `.fw-divider`, `.fw-done-hit`, `.fw-gutter-label`, `.fw-head-active`, `.fw-head-bin`, `.fw-head-j`, `.fw-head-zero`, `.fw-hidden`, `.fw-jump-target`, `.fw-lb-active`, `.fw-lb-cell`, `.fw-lb-num`, `.fw-lb-range`, `.fw-move-down`, `.fw-move-up`, `.fw-range-left`, `.fw-range-right`, `.fw-row-head`, `.fw-svg`, `.fw-svg-bin`, `.fw-svg-cell-badge`, `.fw-svg-cell-rect`, `.fw-svg-cell-text`, `.fw-svg-col`, `.fw-svg-col-active`, `.fw-svg-idx`, `.fw-svg-inner-rect`, `.fw-svg-tree`, `.fw-svg-tree-rect`, `.fw-svg-val`, `.fw-sw-add`, `.fw-sw-down`, `.fw-sw-left`, `.fw-sw-right`, `.fw-sw-up`, `.fw-sw-visit`, `.fw-table`, `.fw-tier-label`, `.fw-tier-line`, `.fw-tree-cell`, `.fw-val-cell`, `.fw-visit`, `.fw-visited`, `.fw-viz-stage`
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G11: Disjoint Set Union (Union-Find) module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 20:17 (Philippine time)

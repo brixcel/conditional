@@ -3723,3 +3723,655 @@ input:disabled, select:disabled {
 .dsu-svg .dsu-rank-label.dsu-hidden {
     display: none;
 }
+
+/* --------------------------------------------------------------------------
+   25. Fenwick Tree (Binary Indexed Tree) Visualizer (G12)
+   Uses section 1 design tokens only; zero hardcoded colours.
+   -------------------------------------------------------------------------- */
+.fw-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.fw-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.fw-viz-stage {
+    padding: 16px;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+}
+
+.fw-viz-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.fw-viz-stage .scroll-box {
+    padding: 8px 4px;
+    min-height: 0;
+    max-width: 100%;
+}
+
+/* Stage 1: Index-aligned values[] & tree[1..n] table */
+.fw-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    margin: 0 auto;
+    font-size: 0.85rem;
+}
+
+.fw-row-head {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.fw-col-head {
+    min-width: 60px;
+    padding: 4px 6px;
+    text-align: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    vertical-align: middle;
+}
+
+.fw-col-head.fw-head-active {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+}
+
+.fw-head-j {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fw-head-bin {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.fw-head-zero {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.fw-cell {
+    position: relative;
+    min-width: 60px;
+    padding: 7px 6px;
+    text-align: center;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.fw-val-cell {
+    border-color: var(--border);
+}
+
+.fw-tree-cell {
+    font-weight: 700;
+    border-color: var(--primary-border);
+}
+
+.fw-lb-cell {
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-subtle);
+}
+
+.fw-lb-cell.fw-lb-active {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+}
+
+.fw-lb-num {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.fw-lb-range {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.fw-cell-val {
+    display: inline-block;
+}
+
+.fw-cell-badge {
+    position: absolute;
+    top: 1px;
+    right: 3px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* Table cell state cues (WCAG 1.4.1 non-colour border styles + badges) */
+.fw-cell.fw-visit {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-visit .fw-cell-badge { color: var(--warning-text); }
+
+.fw-cell.fw-add {
+    border-color: var(--bar-select);
+    border-style: dotted;
+    border-width: 2.5px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-add .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-move-up {
+    border-color: var(--bar-select);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    color: var(--primary-text);
+}
+.fw-cell.fw-move-up .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-move-down {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    background-color: var(--warning-subtle);
+    color: var(--warning-text);
+}
+.fw-cell.fw-move-down .fw-cell-badge { color: var(--warning-text); }
+
+.fw-cell.fw-range-right {
+    border-color: var(--bar-sorted);
+    border-style: double;
+    border-width: 3px;
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-range-right .fw-cell-badge { color: var(--success-text); }
+
+.fw-cell.fw-range-left {
+    border-color: var(--bar-swap);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--danger-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-range-left .fw-cell-badge { color: var(--danger-text); }
+
+.fw-cell.fw-done-hit {
+    border-color: var(--bar-sorted);
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-done-hit .fw-cell-badge { color: var(--success-text); }
+
+.fw-cell.fw-visited {
+    border-color: var(--border-focus);
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+.fw-cell.fw-visited .fw-cell-badge { color: var(--primary-text); }
+
+.fw-cell.fw-covered {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.fw-cell.fw-jump-target {
+    outline: 2px dashed var(--border-focus);
+    outline-offset: -3px;
+}
+
+/* Stage 2: SVG Coverage Bars & Binary Jump Diagram */
+.fw-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.fw-col-guide {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    stroke-linecap: butt;
+}
+
+.fw-divider {
+    stroke: var(--border-strong);
+    stroke-width: 1;
+}
+
+.fw-tier-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+    stroke-linecap: butt;
+}
+
+.fw-gutter-label {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: end;
+    dominant-baseline: central;
+}
+
+.fw-tier-label {
+    font-size: 10px;
+}
+
+.fw-svg-idx {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-bin {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-col-active .fw-svg-idx,
+.fw-svg-col-active .fw-svg-bin {
+    fill: var(--primary-text);
+    font-weight: 700;
+}
+
+.fw-svg-cell-rect {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.5;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.fw-svg-tree-rect {
+    stroke: var(--border-focus);
+    stroke-width: 2;
+}
+
+.fw-svg-inner-rect,
+.fw-bar-inner-rect {
+    display: none;
+    fill: none;
+    stroke-width: 1.5;
+    pointer-events: none;
+}
+
+.fw-svg-cell-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-svg-cell-badge {
+    fill: var(--primary-text);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-bar-rect {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.75;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.fw-bar-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fw-bar-badge {
+    fill: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    text-anchor: end;
+    dominant-baseline: central;
+}
+
+/* SVG state cues (stroke-linecap: butt on all dashed/dotted strokes) */
+.fw-svg-val.fw-covered .fw-svg-cell-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2;
+    stroke-dasharray: 4 2;
+    stroke-linecap: butt;
+}
+
+.fw-svg-val.fw-visit .fw-svg-cell-rect,
+.fw-svg-tree.fw-visit .fw-svg-cell-rect,
+.fw-bar-group.fw-visit .fw-bar-rect {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-visit .fw-svg-cell-badge,
+.fw-bar-group.fw-visit .fw-bar-badge {
+    fill: var(--warning-text);
+}
+
+.fw-svg-val.fw-add .fw-svg-cell-rect,
+.fw-svg-tree.fw-add .fw-svg-cell-rect,
+.fw-bar-group.fw-add .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-add .fw-svg-cell-badge,
+.fw-bar-group.fw-add .fw-bar-badge {
+    fill: var(--primary-text);
+}
+
+.fw-svg-tree.fw-move-up .fw-svg-cell-rect,
+.fw-bar-group.fw-move-up .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-move-up .fw-svg-cell-badge,
+.fw-bar-group.fw-move-up .fw-bar-badge {
+    fill: var(--primary-text);
+}
+
+.fw-svg-tree.fw-move-down .fw-svg-cell-rect,
+.fw-bar-group.fw-move-down .fw-bar-rect {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-move-down .fw-svg-cell-badge,
+.fw-bar-group.fw-move-down .fw-bar-badge {
+    fill: var(--warning-text);
+}
+
+.fw-svg-tree.fw-range-right .fw-svg-cell-rect,
+.fw-bar-group.fw-range-right .fw-bar-rect {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+}
+.fw-svg-tree.fw-range-right .fw-svg-inner-rect,
+.fw-bar-group.fw-range-right .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--bar-sorted);
+}
+.fw-svg-tree.fw-range-right .fw-svg-cell-badge,
+.fw-bar-group.fw-range-right .fw-bar-badge {
+    fill: var(--success-text);
+}
+
+.fw-svg-tree.fw-range-left .fw-svg-cell-rect,
+.fw-bar-group.fw-range-left .fw-bar-rect {
+    fill: var(--danger-subtle);
+    stroke: var(--bar-swap);
+    stroke-width: 2.5;
+    stroke-dasharray: 6 2 2 2;
+    stroke-linecap: butt;
+}
+.fw-svg-tree.fw-range-left .fw-svg-inner-rect,
+.fw-bar-group.fw-range-left .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--bar-swap);
+}
+.fw-svg-tree.fw-range-left .fw-svg-cell-badge,
+.fw-bar-group.fw-range-left .fw-bar-badge {
+    fill: var(--danger-text);
+}
+
+.fw-svg-tree.fw-done-hit .fw-svg-cell-rect,
+.fw-bar-group.fw-done-hit .fw-bar-rect {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+}
+.fw-svg-tree.fw-done-hit .fw-svg-cell-badge,
+.fw-bar-group.fw-done-hit .fw-bar-badge {
+    fill: var(--success-text);
+}
+
+.fw-svg-tree.fw-visited .fw-svg-cell-rect,
+.fw-bar-group.fw-visited .fw-bar-rect {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2;
+}
+
+.fw-svg-tree.fw-jump-target .fw-svg-inner-rect,
+.fw-bar-group.fw-jump-target .fw-bar-inner-rect {
+    display: inline;
+    stroke: var(--border-focus);
+    stroke-dasharray: 3 2;
+    stroke-linecap: butt;
+}
+
+/* Jump arcs */
+.fw-arc-path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 6 3;
+    stroke-linecap: butt;
+}
+
+.fw-arc-head {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.fw-arc-dot {
+    stroke: var(--bg-stage);
+    stroke-width: 1.5;
+}
+
+.fw-arc-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+}
+
+.fw-arc-up .fw-arc-path,
+.fw-arc-up .fw-arc-head {
+    stroke: var(--bar-select);
+}
+.fw-arc-up .fw-arc-dot {
+    fill: var(--bar-select);
+}
+.fw-arc-up .fw-arc-label {
+    fill: var(--primary-text);
+}
+
+.fw-arc-down .fw-arc-path,
+.fw-arc-down .fw-arc-head {
+    stroke: var(--bar-compare);
+}
+.fw-arc-down .fw-arc-dot {
+    fill: var(--bar-compare);
+}
+.fw-arc-down .fw-arc-label {
+    fill: var(--warning-text);
+}
+
+/* Legend swatches (WCAG 1.4.1 non-colour cues matching stage states) */
+.fw-sw-visit {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+}
+.fw-sw-visit::after {
+    content: "\2022";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--warning-text);
+}
+
+.fw-sw-add {
+    background-color: var(--primary-subtle);
+    border: 2.5px dotted var(--bar-select);
+}
+.fw-sw-add::after {
+    content: "+";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--primary-text);
+}
+
+.fw-sw-up {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--bar-select);
+}
+.fw-sw-up::after {
+    content: "\2191";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--primary-text);
+}
+
+.fw-sw-down {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+}
+.fw-sw-down::after {
+    content: "\2193";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--warning-text);
+}
+
+.fw-sw-right {
+    background-color: var(--success-subtle);
+    border: 3px double var(--bar-sorted);
+}
+.fw-sw-right::after {
+    content: "+";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--success-text);
+}
+
+.fw-sw-left {
+    background-color: var(--danger-subtle);
+    border: 2.5px dashed var(--bar-swap);
+}
+.fw-sw-left::after {
+    content: "\2212";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--danger-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-cell,
+    .fw-svg-cell-rect,
+    .fw-bar-rect {
+        transition: none;
+    }
+}
+
+.fw-hidden,
+.fw-col-head.fw-hidden,
+.fw-cell.fw-hidden,
+.fw-col-guide.fw-hidden,
+.fw-tier-line.fw-hidden,
+.fw-tier-label.fw-hidden,
+.fw-svg-col.fw-hidden,
+.fw-bar-group.fw-hidden,
+.fw-arc-group.fw-hidden {
+    display: none;
+}
