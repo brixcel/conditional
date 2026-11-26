@@ -924,24 +924,24 @@ export class Trie {
                 break;
             }
 
-            const parentPrefix = nodePrefix.slice(0, -1);
-            const pruneMessage =
-                `Prune unused node #${node.id} (edge '${char}' from node #${parent.id}): ` +
-                `no remaining children and not a word end.`;
+            // Record the prune frame BEFORE mutating, so the snapshot still
+            // contains the node about to be removed. The removal itself shows
+            // up in the next step's snapshot (another prune or a done step).
+            steps.push(
+                this.#step("prune", "delete", {
+                    nodeIds: [node.id],
+                    pathIds: remainingPath,
+                    line: 6,
+                    prefix: nodePrefix,
+                    message:
+                        `Remove node '${char}' (#${node.id}, edge from node #${parent.id}): ` +
+                        `it has no children and no word ends here.`,
+                }),
+            );
             parent.children.delete(char);
             this._nodeCount--;
             prunedCount++;
             prunedNodes.push({ id: node.id, char });
-
-            steps.push(
-                this.#step("prune", "delete", {
-                    nodeIds: [parent.id],
-                    pathIds: pathIds.slice(0, i + 1),
-                    line: 6,
-                    prefix: parentPrefix,
-                    message: pruneMessage,
-                }),
-            );
         }
 
         if (!stoppedEarly) {

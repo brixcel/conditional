@@ -400,6 +400,52 @@ test("Trie delete: disjoint word -> full-prune all the way back to root", () => 
     assert.match(res.steps.at(-1).message, /reached root/i);
 });
 
+test("Trie delete: each prune step shows the node BEFORE removal; the next step shows it gone", () => {
+    const hasNode = (snap, id) => snap.nodes.some((n) => n.id === id);
+    const scenarios = [
+        { words: ["cat", "dog"], del: "dog", pruned: 3 }, // full prune
+        { words: ["car", "cart", "cat"], del: "cat", pruned: 1 }, // partial prune at branch
+        { words: ["cat", "cats"], del: "cats", pruned: 1 }, // partial prune at word end
+        { words: ["cat", "cats"], del: "cat", pruned: 0 }, // unmark-only
+    ];
+    for (const { words, del, pruned } of scenarios) {
+        const trie = new Trie();
+        for (const w of words) trie.insert(w);
+        const res = trie.delete(del);
+        assertValidSteps(res, `prune frames ${del}`);
+        assert.equal(res.ok, true);
+
+        const pruneIdx = res.steps.map((s, i) => (s.type === "prune" ? i : -1)).filter((i) => i >= 0);
+        assert.equal(pruneIdx.length, pruned, `${del}: one prune step per pruned node`);
+        assert.deepEqual(
+            pruneIdx.map((i) => res.steps[i].nodeIds[0]),
+            res.value.prunedNodes.map((n) => n.id),
+            `${del}: prune steps target the pruned nodes in order`,
+        );
+
+        for (const i of pruneIdx) {
+            const step = res.steps[i];
+            assert.equal(step.nodeIds.length, 1, `${del} step ${i}: one target node`);
+            const id = step.nodeIds[0];
+            const target = step.snapshot.nodes.find((n) => n.id === id);
+            assert.ok(target, `${del} step ${i}: pruned node #${id} still in its own snapshot`);
+            assert.equal(target.children.length, 0, `${del} step ${i}: target is a leaf`);
+            assert.equal(target.isEnd, false, `${del} step ${i}: target is not a word end`);
+            assert.ok(step.pathIds.includes(id), `${del} step ${i}: path reaches the target`);
+            assert.match(step.message, new RegExp(`#${id}\\b`), `${del} step ${i}: message names the node`);
+            assert.match(step.message, new RegExp(`'${target.char}'`), `${del} step ${i}: message names the char`);
+
+            const next = res.steps[i + 1];
+            assert.ok(next, `${del} step ${i}: a following step exists to show the removal`);
+            assert.equal(hasNode(next.snapshot, id), false, `${del} step ${i + 1}: node #${id} gone`);
+            assert.equal(next.snapshot.nodeCount, step.snapshot.nodeCount - 1, `${del} step ${i + 1}: one fewer node`);
+        }
+
+        // Final frame matches the live structure.
+        assert.deepEqual(res.steps.at(-1).snapshot, trie.snapshot());
+    }
+});
+
 test("Trie delete: empty trie, absent word, and prefix-only word fail cleanly", () => {
     const trie = new Trie();
     const emptyRes = trie.delete("cat");
