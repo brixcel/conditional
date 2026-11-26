@@ -25,8 +25,8 @@ let queue = null;
 function show(text, type = "info") {
     els.status.textContent = text;
     els.status.className = `alert-banner alert-live alert-${type}`;
-    els.status.setAttribute("role", type === "error" ? "alert" : "status");
     els.status.hidden = !text;
+    window.DSA_UI?.announce?.(text, type === "error" ? "assertive" : "polite");
     els.output.textContent = text;
 }
 

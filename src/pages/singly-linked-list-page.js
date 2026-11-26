@@ -30,10 +30,9 @@ let list = null;
 function notify(message, type = "info") {
     const isError = type === "error";
     els.message.className = `alert-banner alert-live alert-${type}`;
-    els.message.setAttribute("role", isError ? "alert" : "status");
-    els.message.setAttribute("aria-live", isError ? "assertive" : "polite");
     els.message.textContent = message;
     els.message.hidden = !message;
+    window.DSA_UI?.announce?.(message, isError ? "assertive" : "polite");
 }
 
 const error = (message, focusEl) => { notify(message, "error"); focusEl?.focus(); };

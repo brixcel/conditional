@@ -306,7 +306,57 @@
         });
     }
 
+    // ---- Screen-reader announcer ---------------------------------------------
+    // One polite and one assertive live region, created as soon as this script runs
+    // (it is loaded at the end of <body>, before the page modules). A live region
+    // must already be in the accessibility tree when its text changes; the visible
+    // banners are [hidden] until their first message, so they were often not read.
+    // Pages call DSA_UI.announce(); the banners stay purely visual.
+    const liveRegions = {};
+    let announceTimer = null;
+
+    function liveRegion(politeness) {
+        const existing = liveRegions[politeness];
+        if (existing && existing.isConnected) return existing;
+        const el = document.createElement("div");
+        el.className = "visually-hidden";
+        el.setAttribute("role", politeness === "assertive" ? "alert" : "status");
+        el.setAttribute("aria-live", politeness);
+        el.setAttribute("aria-atomic", "true");
+        el.setAttribute("data-announcer", politeness);
+        document.body.appendChild(el);
+        liveRegions[politeness] = el;
+        return el;
+    }
+
+    function initAnnouncer() {
+        liveRegion("polite");
+        liveRegion("assertive");
+    }
+
+    /**
+     * Read `message` to screen readers. `politeness` is "polite" (default: results,
+     * info) or "assertive" (errors). An empty message cancels a pending one.
+     */
+    function announce(message, politeness) {
+        if (!document.body) return;
+        const kind = politeness === "assertive" ? "assertive" : "polite";
+        const target = liveRegion(kind);
+        const other = liveRegion(kind === "assertive" ? "polite" : "assertive");
+        clearTimeout(announceTimer);
+        target.textContent = "";
+        other.textContent = "";
+        if (!message) return;
+        // Write on a later tick so the same message twice in a row is still read.
+        announceTimer = setTimeout(function () { target.textContent = String(message); }, 60);
+    }
+
+    if (document.body) initAnnouncer();
+    else document.addEventListener("DOMContentLoaded", initAnnouncer);
+
     window.DSA_UI = {
+        announce: announce,
+
         showToast: function (message, type = "info", duration = 3500) {
             let toastContainer = document.getElementById("toastContainer");
             if (!toastContainer) {

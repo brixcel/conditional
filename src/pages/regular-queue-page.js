@@ -26,6 +26,7 @@ function show(message, type = "info") {
     els.message.textContent = message;
     els.message.className = `alert-banner alert-live alert-${type}`;
     els.message.hidden = false;
+    window.DSA_UI?.announce?.(message, type === "error" ? "assertive" : "polite");
 }
 
 function label(text, strong) {

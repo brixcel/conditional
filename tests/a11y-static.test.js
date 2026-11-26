@@ -76,6 +76,22 @@ for (const page of PAGES) {
         assert.deepEqual(problems, []);
     });
 
+    // avl-tree.html is report-only until its rewrite: #avlAlert is a [hidden] role="alert".
+    test(`${page}: live regions are rendered at load (not [hidden])`, { todo: page === "avl-tree.html" }, () => {
+        // A live region that is display:none when its text changes is often not announced.
+        // Messages that start hidden go through DSA_UI.announce() (shared.js) instead.
+        const bad = [...html.matchAll(/<[a-z]+\b[^>]*>/gi)]
+            .map((m) => m[0])
+            .filter((tag) => (hasAttr(tag, "aria-live") && attr(tag, "aria-live") !== "off")
+                || /^(alert|status|log)$/.test(attr(tag, "role") || ""))
+            .filter((tag) => hasAttr(tag, "hidden"));
+        assert.deepEqual(bad, []);
+        if (/id="stepMessage"/.test(html)) {
+            assert.match(html, /<[a-z]+[^>]*id="stepMessage"[^>]*aria-live="polite"|<[a-z]+[^>]*aria-live="polite"[^>]*id="stepMessage"/,
+                "#stepMessage should start as a polite live region");
+        }
+    });
+
     test(`${page}: no clickable divs or spans`, () => {
         const bad = [...html.matchAll(/<(div|span)\b[^>]*\sonclick=/gi)].map((m) => m[0]);
         assert.deepEqual(bad, []);

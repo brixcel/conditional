@@ -72,16 +72,39 @@ const LINE_MAP = {
 let heap = new BinaryHeap("min", HEAP_CAPACITY);
 let currentOp = "build";
 let currentCodeKey = "";
+let announceReady = false; // no banner announcements during page setup
 
 const player = new StepPlayer({ onStep: render, baseDelay: 750 });
+
+// Screen readers: #stepMessage is a polite live region, but it only speaks for steps the
+// user asked for (player buttons, keys, slider) and for the last step of an autoplay run
+// (insert/search/… announce their result through the banner, then autoplay). During autoplay it is aria-live="off", so a reader is not flooded with a
+// new sentence every step (several per second at 4x). Page load stays silent.
+let userStep = false;
+let liveReady = false;
+const byUser = (fn) => (...args) => {
+    userStep = true;
+    try { return fn(...args); } finally { userStep = false; }
+};
+function setStepMessage(text, p) {
+    els.stepMessage.setAttribute("aria-live", liveReady && (userStep || p.atEnd) ? "polite" : "off");
+    if (els.stepMessage.textContent !== text) els.stepMessage.textContent = text;
+}
+// Keyboard shortcuts go through the same wrappers so they count as user steps.
+const userControls = {
+    toggle: byUser(() => player.toggle()),
+    pause: byUser(() => player.pause()),
+    next: byUser(() => player.next()),
+    prev: byUser(() => player.prev()),
+    reset: byUser(() => player.reset()),
+};
 
 function notify(msg, type = "info", invalidField = null) {
     const isError = type === "error";
     els.message.className = `alert-banner alert-live alert-${type}`;
-    els.message.setAttribute("role", isError ? "alert" : "status");
-    els.message.setAttribute("aria-live", isError ? "assertive" : "polite");
     els.message.textContent = msg || "";
     els.message.hidden = !msg;
+    if (announceReady) window.DSA_UI?.announce?.(msg, isError ? "assertive" : "polite");
 
     els.valueInput.setAttribute("aria-invalid", invalidField === "value" ? "true" : "false");
     els.buildInput.setAttribute("aria-invalid", invalidField === "build" ? "true" : "false");
@@ -261,7 +284,7 @@ function render(step, index, p) {
     renderTree(step);
     renderArray(step);
 
-    els.stepMessage.textContent = step.message;
+    setStepMessage(step.message, p);
     els.statRoot.textContent = snap.items.length > 0 ? String(snap.items[0]) : "— (empty)";
     els.statSize.textContent = `${snap.size} / ${snap.capacity}`;
     els.statComparisons.textContent = String(step.comparisons);
@@ -274,9 +297,13 @@ function render(step, index, p) {
 
     els.playBtn.textContent = p.isPlaying ? "⏸ Pause" : (p.atEnd ? "↻ Replay" : "▶ Play");
     els.playBtn.setAttribute("aria-label", p.isPlaying ? "Pause" : (p.atEnd ? "Replay" : "Play"));
+    els.progress.setAttribute("aria-valuetext", `Step ${index + 1} of ${p.length}`);
+    const focused = document.activeElement;
     els.prevBtn.disabled = p.atStart;
     els.resetBtn.disabled = p.atStart;
     els.nextBtn.disabled = p.atEnd;
+    // A focused Back/Reset/Step button that just became disabled would drop focus to <body>.
+    if (focused && focused.disabled) els.playBtn.focus();
 }
 
 function loadSteps(op, steps, { autoPlay = true } = {}) {
@@ -398,18 +425,18 @@ els.buildForm.addEventListener("submit", handleBuild);
 els.randomBtn.addEventListener("click", handleRandomBuild);
 els.kind.addEventListener("change", handleKindChange);
 
-els.playBtn.addEventListener("click", () => player.toggle());
-els.nextBtn.addEventListener("click", () => { player.pause(); player.next(); });
-els.prevBtn.addEventListener("click", () => player.prev());
-els.resetBtn.addEventListener("click", () => player.reset());
+els.playBtn.addEventListener("click", userControls.toggle);
+els.nextBtn.addEventListener("click", () => { userControls.pause(); userControls.next(); });
+els.prevBtn.addEventListener("click", userControls.prev);
+els.resetBtn.addEventListener("click", userControls.reset);
 els.speed.addEventListener("change", () => player.setSpeed(Number(els.speed.value)));
-els.progress.addEventListener("input", () => {
+els.progress.addEventListener("input", byUser(() => {
     const target = Number(els.progress.value);
     player.pause();
     player.goTo(target);
-});
+}));
 
-bindPlayerKeys(document, player);
+bindPlayerKeys(document, userControls);
 
 // Populate concept card and complexity table from HEAP_INFO using DOM nodes (no innerHTML).
 $("heapSummary").textContent = HEAP_INFO.summary;
@@ -444,3 +471,5 @@ tbody.replaceChildren(...CX_ROWS.map(([op, cx, note]) => {
 handleBuild(null, { autoPlay: false });
 player.goTo(player.length - 1);
 clearNotify();
+announceReady = true;
+liveReady = true;
