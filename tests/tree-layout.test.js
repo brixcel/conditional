@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { layoutCompleteTree, layoutBinaryTree } from "../src/core/tree-layout.js";
+import { layoutCompleteTree, layoutBinaryTree, layoutGeneralTree } from "../src/core/tree-layout.js";
 import { BinarySearchTree } from "../src/structures/bst.js";
+import { Trie } from "../src/structures/trie.js";
 
 const SIZES = [0, 1, 2, 3, 7, 31, 63];
 
@@ -221,4 +222,204 @@ test("layoutBinaryTree: rejects invalid options and malformed snapshot types", (
     assert.throws(() => layoutBinaryTree(snap, { minGap: Infinity }), RangeError);
     assert.throws(() => layoutBinaryTree("not-an-object"), TypeError);
     assert.throws(() => layoutBinaryTree({ rootId: 1 }), TypeError);
+});
+
+/* ---------------- layoutGeneralTree ---------------- */
+
+function assertGeneralLayoutInvariants(snapshot, { levelGap = 72, minGap = 48 } = {}, label = "") {
+    const layout = layoutGeneralTree(snapshot, { levelGap, minGap });
+    const bySnapId = new Map(snapshot.nodes.map((n) => [n.id, n]));
+    const byLayoutId = new Map(layout.nodes.map((n) => [n.id, n]));
+
+    assert.equal(layout.nodes.length, snapshot.nodes.length, `${label}: node count`);
+
+    if (layout.nodes.length === 0) {
+        assert.deepEqual(layout, { nodes: [], edges: [], width: 0, height: 0 });
+        return layout;
+    }
+
+    // Group nodes by depth; check y === depth * levelGap and x inside (0, width).
+    let maxDepth = 0;
+    const byDepth = new Map();
+    for (const node of layout.nodes) {
+        assert.equal(node.y, node.depth * levelGap, `${label}: y of node ${node.id}`);
+        assert.ok(node.x > 0 && node.x < layout.width, `${label}: x=${node.x} inside (0, ${layout.width})`);
+        if (node.depth > maxDepth) maxDepth = node.depth;
+        if (!byDepth.has(node.depth)) byDepth.set(node.depth, []);
+        byDepth.get(node.depth).push(node);
+    }
+    assert.equal(layout.height, maxDepth * levelGap, `${label}: exact height`);
+
+    // Count leaves and check exact width = leafCount * minGap.
+    const leafNodes = [];
+    for (const snapNode of snapshot.nodes) {
+        if (!snapNode.children || snapNode.children.length === 0) {
+            leafNodes.push(byLayoutId.get(snapNode.id));
+        }
+    }
+    assert.equal(layout.width, leafNodes.length * minGap, `${label}: exact width = leafCount * minGap`);
+
+    // Leaves are placed strictly minGap apart left-to-right.
+    const leafXs = leafNodes.map((n) => n.x).sort((a, b) => a - b);
+    for (let i = 1; i < leafXs.length; i++) {
+        assert.equal(leafXs[i] - leafXs[i - 1], minGap, `${label}: adjacent leaves must be minGap apart`);
+    }
+
+    // No two nodes on ANY level overlap (dx >= minGap).
+    for (const [depth, row] of byDepth.entries()) {
+        const sortedRow = row.slice().sort((a, b) => a.x - b.x);
+        for (let i = 1; i < sortedRow.length; i++) {
+            const dx = sortedRow[i].x - sortedRow[i - 1].x;
+            assert.ok(dx >= minGap, `${label} depth=${depth}: gap ${dx} < minGap ${minGap}`);
+        }
+    }
+
+    // Parent centering, child order preserved left-to-right, and exact edges.
+    const expectedEdges = [];
+    for (const snapNode of snapshot.nodes) {
+        const parent = byLayoutId.get(snapNode.id);
+        assert.ok(parent, `${label}: missing layout node ${snapNode.id}`);
+        const kids = snapNode.children ?? [];
+        if (kids.length > 0) {
+            const kidLayouts = kids.map((cid) => byLayoutId.get(cid));
+            for (let i = 0; i < kidLayouts.length; i++) {
+                const child = kidLayouts[i];
+                assert.ok(child, `${label}: missing child ${kids[i]}`);
+                assert.equal(child.depth, parent.depth + 1, `${label}: child depth`);
+                expectedEdges.push({ from: snapNode.id, to: kids[i] });
+                if (i > 0) {
+                    assert.ok(
+                        kidLayouts[i].x - kidLayouts[i - 1].x >= minGap,
+                        `${label}: children of ${snapNode.id} must stay in snapshot order with gap >= minGap`,
+                    );
+                }
+            }
+            const first = kidLayouts[0];
+            const last = kidLayouts[kidLayouts.length - 1];
+            assert.equal(
+                parent.x,
+                (first.x + last.x) / 2,
+                `${label}: parent ${parent.id} must sit at exact midpoint of first and last child`,
+            );
+            if (kidLayouts.length >= 2) {
+                assert.ok(
+                    first.x < parent.x && parent.x < last.x,
+                    `${label}: parent ${parent.id} must be strictly between outer children`,
+                );
+            } else {
+                assert.equal(parent.x, first.x, `${label}: single-child parent shares child x`);
+            }
+        }
+    }
+
+    assert.equal(layout.edges.length, expectedEdges.length, `${label}: edge count`);
+    const edgeKey = (e) => `${e.from}->${e.to}`;
+    assert.deepEqual(
+        layout.edges.map(edgeKey).sort(),
+        expectedEdges.map(edgeKey).sort(),
+        `${label}: edges match parent->child ids`,
+    );
+
+    const rootLayout = byLayoutId.get(snapshot.rootId);
+    assert.ok(bySnapId.has(snapshot.rootId));
+    assert.equal(rootLayout.depth, 0, `${label}: root depth`);
+    assert.equal(rootLayout.y, 0, `${label}: root y`);
+
+    return layout;
+}
+
+test("layoutGeneralTree: empty and null snapshots return empty geometry", () => {
+    const empty = { nodes: [], edges: [], width: 0, height: 0 };
+    assert.deepEqual(layoutGeneralTree({ nodes: [], rootId: null }), empty);
+    assert.deepEqual(layoutGeneralTree(null), empty);
+    assert.deepEqual(layoutGeneralTree(undefined), empty);
+    assert.deepEqual(layoutGeneralTree({ nodes: [{ id: 1, children: [] }], rootId: null }), empty);
+    assert.deepEqual(layoutGeneralTree({ nodes: [{ id: 1, children: [] }], rootId: 999 }), empty);
+});
+
+test("layoutGeneralTree: single node geometry", () => {
+    const snap = { nodes: [{ id: 1, char: "", isEnd: false, children: [] }], rootId: 1 };
+    const layout = assertGeneralLayoutInvariants(snap, { levelGap: 80, minGap: 50 }, "single");
+    assert.deepEqual(layout, {
+        nodes: [{ id: 1, depth: 0, x: 25, y: 0 }],
+        edges: [],
+        width: 50,
+        height: 0,
+    });
+});
+
+test("layoutGeneralTree: wide 5-ary tree preserves child order and centres parents", () => {
+    // Root with 5 children; middle child has 4 leaves, rightmost has a 2-level chain.
+    const snap = {
+        rootId: 1,
+        nodes: [
+            { id: 1, children: [2, 3, 4, 5, 6] },
+            { id: 2, children: [] },
+            { id: 3, children: [7, 8] },
+            { id: 4, children: [9, 10, 11, 12] },
+            { id: 5, children: [] },
+            { id: 6, children: [13] },
+            { id: 7, children: [] },
+            { id: 8, children: [] },
+            { id: 9, children: [] },
+            { id: 10, children: [] },
+            { id: 11, children: [] },
+            { id: 12, children: [] },
+            { id: 13, children: [14] },
+            { id: 14, children: [] },
+        ],
+    };
+    const layout = assertGeneralLayoutInvariants(snap, { levelGap: 70, minGap: 44 }, "wide-5-ary");
+    assert.equal(layout.height, 210);
+    assert.equal(layout.width, 9 * 44);
+});
+
+test("layoutGeneralTree: unbalanced multi-level Trie snapshots (insert and after delete)", () => {
+    const trie = new Trie();
+    // Empty trie still has 1 root node.
+    assertGeneralLayoutInvariants(trie.snapshot(), { levelGap: 72, minGap: 48 }, "empty-trie-root");
+
+    const words = ["a", "ab", "abc", "car", "card", "care", "cat", "cats", "do", "dog", "dot", "zebra"];
+    for (const w of words) {
+        assert.equal(trie.insert(w).ok, true);
+    }
+    assertGeneralLayoutInvariants(trie.snapshot(), { levelGap: 72, minGap: 48 }, "full-trie");
+
+    // Delete words covering unmark-only, partial-prune, and full-prune.
+    trie.delete("car");
+    trie.delete("cats");
+    trie.delete("zebra");
+    assertGeneralLayoutInvariants(trie.snapshot(), { levelGap: 64, minGap: 40 }, "trie-after-deletes");
+});
+
+test("layoutGeneralTree: guards against cycles and shared children cleanly", () => {
+    const cyclic = {
+        rootId: 1,
+        nodes: [
+            { id: 1, children: [2, 3] },
+            { id: 2, children: [1, 4] },
+            { id: 3, children: [4, 3] },
+            { id: 4, children: [] },
+        ],
+    };
+    const layout = layoutGeneralTree(cyclic, { levelGap: 70, minGap: 50 });
+    assert.equal(layout.nodes.length, 4);
+    assert.equal(layout.edges.length, 3);
+    assert.deepEqual(layout.edges, [
+        { from: 1, to: 2 },
+        { from: 2, to: 4 },
+        { from: 1, to: 3 },
+    ]);
+    assert.equal(layout.width, 100);
+    assert.equal(layout.height, 140);
+});
+
+test("layoutGeneralTree: rejects invalid options and malformed snapshot types", () => {
+    const snap = { nodes: [{ id: 1, children: [] }], rootId: 1 };
+    assert.throws(() => layoutGeneralTree(snap, { levelGap: 0 }), RangeError);
+    assert.throws(() => layoutGeneralTree(snap, { minGap: -5 }), RangeError);
+    assert.throws(() => layoutGeneralTree(snap, { levelGap: NaN }), RangeError);
+    assert.throws(() => layoutGeneralTree(snap, { minGap: Infinity }), RangeError);
+    assert.throws(() => layoutGeneralTree("not-an-object"), TypeError);
+    assert.throws(() => layoutGeneralTree({ rootId: 1 }), TypeError);
 });

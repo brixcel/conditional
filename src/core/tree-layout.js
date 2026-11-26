@@ -164,3 +164,106 @@ export function layoutBinaryTree(
         height: nodes.length === 0 ? 0 : maxDepth * levelGap,
     };
 }
+
+/**
+ * Compute coordinates for a general multi-way tree snapshot `{ nodes, rootId }`
+ * where each node carries `children: Array<id>` in the desired left-to-right
+ * display order (e.g., alphabetical child order from `Trie.prototype.snapshot()`).
+ *
+ * Placement algorithm:
+ * - Preserves each node's `children` array order left-to-right.
+ * - Places leaves sequentially at `leafIndex * minGap + minGap / 2`.
+ * - Centres every parent horizontally over its first and last valid child:
+ *   `x = (firstChild.x + lastChild.x) / 2`.
+ * - Sets `y = depth * levelGap` for every node.
+ *
+ * Geometry guarantees:
+ * - Adjacent leaves are `minGap` apart horizontally.
+ * - Because every subtree owns a disjoint, contiguous interval of leaf slots and
+ *   each parent's `x` lies inside its subtree's leaf interval, no two nodes on ANY
+ *   level overlap (`dx >= minGap` strictly for every pair on the same depth).
+ * - Every parent with >= 2 children has `firstChild.x < parent.x < lastChild.x`
+ *   and `parent.x === (firstChild.x + lastChild.x) / 2` (and `parent.x === child.x`
+ *   for a single child).
+ * - `width = leafCount * minGap` and `height = maxDepth * levelGap`.
+ * - Malformed cycles or shared-child references are guarded cleanly and never loop.
+ *
+ * @param {{ nodes: Array<{ id: number | string, children?: Array<number | string> }>, rootId: number | string | null } | null | undefined} snapshot
+ * @param {{ levelGap?: number, minGap?: number }} [options]
+ * @returns {{
+ *   nodes: Array<{ id: number | string, depth: number, x: number, y: number }>,
+ *   edges: Array<{ from: number | string, to: number | string }>,
+ *   width: number,
+ *   height: number
+ * }}
+ */
+export function layoutGeneralTree(
+    snapshot,
+    { levelGap = DEFAULT_TREE_LAYOUT.levelGap, minGap = DEFAULT_TREE_LAYOUT.minGap } = {},
+) {
+    assertPositiveNumber(levelGap, "levelGap");
+    assertPositiveNumber(minGap, "minGap");
+
+    if (snapshot === null || snapshot === undefined) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+    if (typeof snapshot !== "object" || !Array.isArray(snapshot.nodes)) {
+        throw new TypeError("snapshot must be an object with a nodes array");
+    }
+    if (snapshot.rootId === null || snapshot.rootId === undefined || snapshot.nodes.length === 0) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+
+    const byId = new Map();
+    for (const node of snapshot.nodes) {
+        if (node && node.id !== null && node.id !== undefined) {
+            byId.set(node.id, node);
+        }
+    }
+
+    if (!byId.has(snapshot.rootId)) {
+        return { nodes: [], edges: [], width: 0, height: 0 };
+    }
+
+    const visited = new Set();
+    const nodes = [];
+    const edges = [];
+    let leafIndex = 0;
+    let maxDepth = 0;
+
+    function walk(id, depth) {
+        visited.add(id);
+        if (depth > maxDepth) maxDepth = depth;
+        const entry = { id, depth, x: 0, y: depth * levelGap };
+        nodes.push(entry);
+
+        const snapNode = byId.get(id);
+        const rawChildren = Array.isArray(snapNode.children) ? snapNode.children : [];
+        const childXs = [];
+
+        for (const childId of rawChildren) {
+            if (childId === null || childId === undefined || !byId.has(childId) || visited.has(childId)) {
+                continue;
+            }
+            edges.push({ from: id, to: childId });
+            childXs.push(walk(childId, depth + 1));
+        }
+
+        if (childXs.length === 0) {
+            entry.x = leafIndex * minGap + minGap / 2;
+            leafIndex++;
+        } else {
+            entry.x = (childXs[0] + childXs[childXs.length - 1]) / 2;
+        }
+        return entry.x;
+    }
+
+    walk(snapshot.rootId, 0);
+
+    return {
+        nodes,
+        edges,
+        width: leafIndex * minGap,
+        height: nodes.length === 0 ? 0 : maxDepth * levelGap,
+    };
+}
