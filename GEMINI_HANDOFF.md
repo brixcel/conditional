@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 17:43 |
+| Last updated by Claude | 2026-11-26 18:57 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1, G2, G3 (2026-11-25); G4, G5, G6, G7 (2026-11-26); **G8 merged to `main` at 17:43** |
-| **Gemini: do next** | **G9**: Trie module + page (spec below). G8 is on `main`, so **start now** from fresh `main` on branch `gemini/g9-trie`. `main` now has `src/core/player-keys.js` (use `bindPlayerKeys`) and `DSA_UI.announce`. After G9 is reported, take **G10** (Graph) on `gemini/g10-graph`. Take only the task named here |
-| Claude is working on | Merged to `main` at 17:43: G8, C9 keyboard keys, C10 test cleanup, C11 accessibility, C13 heap-backed Priority Queue, C14 colour-independent bar legend, Play-label fix. Now finishing C12 (AVL tree as a module, `avl-tree.html` + `src/pages/avl-page.js`; don't touch those) |
+| **Gemini: do next** | **G10**: Graph representation module + page (spec below), on branch `gemini/g10-graph` from fresh `main`. If you already started G10, carry on. G9 was approved with small fixes by Claude (button spacing, prune frames recorded before removal); see the G9 review in `CLAUDE_HANDOFF.md`. After G10 is reported, take **G11** (Disjoint Set Union). Take only the task named here |
+| Claude is working on | G9 approved at 18:57 on `claude/g9-trie-merge` (with nav entry + card), waiting for the user to merge. Also waiting: C12 AVL module, C15 quadratic probing, C16 player keys ignore scroll boxes. Next: BFS/DFS on top of G10 |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -338,5 +338,72 @@ that an adjacency list and an adjacency matrix describe the same graph.
 removes its edges from all three views. Report the nav entry and card you want and every CSS class you added.
 
 ---
+## G11: Disjoint Set Union (union-find) module + page <a id="g11"></a>
+**Status: ready after you report G10.** Start from fresh `main` on branch `gemini/g11-dsu`. Before you start, check that
+`main` has `layoutGeneralTree` in `src/core/tree-layout.js` (it arrives with G9). If it is missing, stop and say so in your
+report. Do not copy that function.
+**Why:** union-find is the standard way to teach "are these two connected?", and Kruskal's minimum spanning tree will import
+this module. Students should see why union by rank and path compression keep the trees flat.
+**Files you own:** new `src/structures/dsu.js`, `tests/dsu.test.js`, `dsu.html`, `src/pages/dsu-page.js`; a new section
+titled "Disjoint Set Union", added **at the end** of `main.css` (list every class you add).
+**Do not edit:** `shared.js`, `index.html`, `package.json`, `src/core/*` (including `tree-layout.js`, `graph-layout.js`,
+`player-keys.js`), `src/structures/graph.js`, `graph.html`, `src/pages/graph-page.js`, any other `src/pages/*`, or any
+existing `main.css` section.
+**Reference:** `src/structures/trie.js` (steps, `integrityError()`, `*_INFO` registry), `trie.html` +
+`src/pages/trie-page.js` (general-tree SVG, player, live regions, keyboard).
+**Do:**
+1. `src/structures/dsu.js` (pure, DOM-free). `class DisjointSet(n, { byRank = true, compress = true })` has elements
+   `0..n-1`, with `n` a whole number from 1 to 16. Reject anything else with a readable error.
+   - Operations return `{ ok, value?, error?, steps }`: `find(x)`, `union(a, b)` (`value` is the new root, or
+     `{ ok: true, value: false }` with a message if a and b are already in the same set), `connected(a, b)`, `reset(n?)`.
+     Also expose `setCount`, `sets()` (each set sorted, sets ordered by their smallest element), `parentArray()` and
+     `rankArray()`.
+   - Union by rank: the lower-rank root goes under the higher one. On a tie, the smaller root id becomes the parent and its
+     rank goes up by 1. With `byRank: false`, `a`'s root always goes under `b`'s root, so students can see tall trees form.
+   - Path compression: after `find` reaches the root, every node on the path points straight at the root. With
+     `compress: false`, nothing is re-pointed.
+   - Each step is `{ type, ids, pathIds, edge, line, message, snapshot }` with
+     `snapshot = { parent: [...], rank: [...], roots: [ids ascending] }`. Use types such as `visit`, `root-found`,
+     `compress`, `compare-rank`, `link`, `rank-up`, `same-set` and `done`. No `-1` sentinels: a root is
+     `parent[x] === x`. `line` is the 1-based line in `DSU_INFO` (`name`, `summary`, `pseudocode` for find and union,
+     `complexity`: O(α(n)) amortised with both options on, O(log n) with rank only, O(n) worst case with neither).
+   - `integrityError()` returns null when all of these hold: every parent is in range; every element reaches a root within
+     `n` hops (no cycles); `setCount` equals the number of roots; and, when `byRank`, a parent's rank is greater than its
+     child's rank and a root of rank r has at least 2^r elements.
+2. `tests/dsu.test.js`: 300 seeded mulberry32 sequences for each of the four option combinations, checked against a simple
+   model (a label array where `union` relabels every element of one set). After **every** operation check `connected` for
+   all pairs, `sets()`, `setCount`, that `find` returns the same root for every member of a set, and
+   `integrityError() === null`. Also check that after a compressing `find(x)` every node that was on the path points
+   straight at the root. Edge cases: `union(x, x)`, union of two elements already in one set, n = 1, n = 16,
+   out-of-range / negative / non-integer / string ids, and a chain built with `byRank: false` that `find` then compresses.
+   **Mutation check yourself:** make `union` set `parent[a] = rootB` instead of `parent[rootA] = rootB`, confirm a test
+   fails, and put the result in your report.
+3. `dsu.html` + `src/pages/dsu-page.js`:
+   - Controls: Size input + **Make sets**; A / B inputs + **Union**, **Find** (uses A) and **Connected?**; **Union by
+     rank** and **Path compression** checkboxes (changing one resets to n singleton sets, and the page says so);
+     **Random unions** and **Reset**.
+   - Forest view (SVG): build `{ nodes, rootId }` for each root from the parent array and call `layoutGeneralTree` on each
+     one. Place the trees left to right with a gap (offsetting is done in the page script). Each node shows its id; each
+     root shows its rank.
+   - Below the forest, a `parent[]` row and a `rank[]` row, index-aligned, inside one `.hp-scroll-region` with
+     `tabindex="0"` and an accessible name. Wrap the SVG in `.hp-scroll-region` too (player keys ignore those boxes, so
+     arrow keys scroll them).
+   - Every highlight state has a non-colour cue as well as colour, plus a legend: path being followed (dashed outline and
+     "visiting" in the node's `<title>`), root found (double ring and "R"), re-pointed edge (dashed line, old edge faded
+     for one step), new link edge (thicker line and "linked"), same set ("✓"), different sets ("✗").
+   - Counters: finds, parent hops, pointers compressed, links, sets.
+   - StepPlayer and `bindPlayerKeys(document, player)` from `src/core/player-keys.js`; final frames through
+     `DSA_UI.announce(...)`; status and error live regions in the HTML at load, empty when unused; errors inline with
+     `role="alert"`; pseudocode panel follows `line`.
+   - Player buttons: one text node (`▶ Play`) or the icon and label inside one `<span>`, because `.btn` is inline-flex
+     with no gap.
+**Done when:** `npm test` passes with your new tests (the only allowed failure is "dsu.html is missing from
+navCategories"; Claude adds the nav entry and homepage card). The page works at 375px and desktop in both themes with no
+console errors and no horizontal page scroll; Play advances; on a real run you show a tall chain with both options off, the
+same unions staying flat with both on, and a `find` that visibly compresses a path. `grep -c 'style="' dsu.html` is 0 and
+the page script has no `.style` and no `innerHTML` with values. Report the nav entry and card you want, every CSS class you
+added, and the mutation result.
+
+---
 ## Queue after these (not ready yet)
-BFS / DFS (Claude, C15, after G10), Dijkstra, Red-Black tree.
+BFS / DFS (Claude, after G10), Kruskal's MST (needs G11), Dijkstra, Red-Black tree.

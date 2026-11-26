@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trie (Prefix Tree) - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Tree Structure &bull; Trie (Prefix Tree)</div>
+            <h1 class="page-title">Trie (Prefix Tree) Visualization</h1>
+            <p class="page-desc">
+                A multi-way prefix tree where every downward edge carries one lowercase letter (<code>a&ndash;z</code>),
+                the root represents the empty prefix <code>&empty;</code>, and <strong>word-end markers</strong>
+                (<code>isEnd</code>) distinguish stored words from shared prefixes. Step through character-by-character
+                insertions, exact word searches, prefix checks, alphabetical autocomplete, and bottom-up pruning on delete.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="trieName">Trie (Prefix Tree)</h2>
+            <p class="concept-body" id="trieSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Insert</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Search</div><div class="prop-value" id="cxSearch"></div></div>
+                <div class="prop-item"><div class="prop-label">Starts With</div><div class="prop-value" id="cxStartsWith"></div></div>
+                <div class="prop-item"><div class="prop-label">Autocomplete</div><div class="prop-value" id="cxAutocomplete"></div></div>
+                <div class="prop-item"><div class="prop-label">Delete</div><div class="prop-value" id="cxDelete"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Trie Controls &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Single-Word &amp; Prefix Operations (Max 20 Words / 120 Nodes)</div>
+                <form id="wordForm" novalidate>
+                    <div class="controls-row">
+                        <div class="field">
+                            <label class="field-label" for="wordInput">Word or Prefix (1&ndash;12 letters, a&ndash;z)</label>
+                            <input type="text" id="wordInput" class="input-md" maxlength="24"
+                                   autocomplete="off" spellcheck="false" placeholder="e.g. cart or ca">
+                        </div>
+                    </div>
+                    <div class="controls-row mt-sm">
+                        <button type="submit" class="btn" id="insertBtn">Insert</button>
+                        <button type="button" class="btn btn-secondary" id="searchBtn">Search</button>
+                        <button type="button" class="btn btn-secondary" id="startsWithBtn">Starts with</button>
+                        <button type="button" class="btn btn-secondary" id="autocompleteBtn">Autocomplete</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="control-section" id="buildForm" novalidate>
+                <div class="control-section-title">2. Build Trie from Word List (Unique Lowercase Words)</div>
+                <div class="controls-row">
+                    <div class="field field-grow">
+                        <label class="field-label" for="buildInput">Word List (1&ndash;20 unique words, letters a&ndash;z, comma or space separated)</label>
+                        <input type="text" id="buildInput" autocomplete="off" spellcheck="false"
+                               value="cat, car, card, care, dog, door, bat">
+                    </div>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="submit" class="btn" id="buildBtn">Build</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random words</button>
+                </div>
+            </form>
+
+            <div id="trieError" class="alert-banner alert-live bst-live" role="alert"></div>
+            <div id="trieStatus" class="alert-banner alert-live bst-live"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header tr-card-header">
+                <h2 class="card-title">Prefix Tree Execution &amp; Autocomplete</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span><span aria-hidden="true">&#x23EE;</span> Reset</span></button>
+                <button type="button" class="btn btn-secondary" id="stepBackBtn" title="Previous step (&larr;)"><span><span aria-hidden="true">&#x25C0;</span> Back</span></button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></span></button>
+                <button type="button" class="btn btn-secondary" id="stepFwdBtn" title="Next step (&rarr;)"><span>Step <span aria-hidden="true">&#x25B6;</span></span></button>
+                <div class="field field-inline">
+                    <label class="field-label" for="speedSelect">Speed</label>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="progress" class="visually-hidden">Execution step</label>
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0">
+
+            <div class="tr-prefix-bar" role="group" aria-labelledby="prefixStripLabel">
+                <span class="tr-prefix-heading" id="prefixStripLabel">Current Prefix</span>
+                <ol id="prefixTiles" class="tr-prefix-tiles" role="list" aria-label="Prefix characters"></ol>
+                <span class="tr-prefix-readout mono" id="prefixReadout">&empty; (root)</span>
+            </div>
+
+            <div class="viz-stage tr-viz-stage">
+                <span class="viz-stage-label" id="treeStageLabel">Trie View (Letters on Edges, Double Ring &amp; &#x2605; = Word End)</span>
+                <div id="treeStage" class="scroll-box scroll-box-clean hp-scroll-region"
+                     role="region" aria-labelledby="treeStageLabel" tabindex="0">
+                    <svg id="trieSvg" class="hp-svg bst-svg tr-svg" role="img"
+                         aria-labelledby="trieSvgTitle" aria-describedby="trieSvgDesc">
+                        <title id="trieSvgTitle">Trie Prefix Tree</title>
+                        <desc id="trieSvgDesc">Interactive prefix tree visualization.</desc>
+                    </svg>
+                </div>
+
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw tr-sw-root"></i> Root (&empty;)</span>
+                    <span><i class="sw tr-sw-path"></i> Current Path (dashed)</span>
+                    <span><i class="sw sw-compare"></i> Active / Compare (dashed)</span>
+                    <span><i class="sw sw-select"></i> Created Node (dotted)</span>
+                    <span><i class="sw tr-sw-end"></i> Word End (double ring + &#x2605;)</span>
+                    <span><i class="sw sw-sorted"></i> Word Marked / Found / Collected</span>
+                    <span><i class="sw sw-swap"></i> Pruned / Unmarked / Miss (dash-dot)</span>
+                </div>
+            </div>
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="wordsStageLabel">Stored Words (0 / 20)</span>
+                <ol id="wordsStage" class="queue-display hp-array-list hp-scroll-region"
+                    role="list" aria-labelledby="wordsStageLabel" tabindex="0"></ol>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Insert)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Trie State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Words</span><strong id="statWords">0 / 20</strong></div>
+                        <div><span>Nodes</span><strong id="statNodes">1 / 120</strong></div>
+                        <div><span>Current Prefix</span><strong id="statPrefix">&empty; (root)</strong></div>
+                        <div><span>Operation</span><strong id="statOperation">Insert</strong></div>
+                        <div><span>Integrity</span><strong id="statIntegrity">OK</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Trie Complexity &amp; Prefix-Tree Properties</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Trie complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Complexity</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input, control, or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Shared Prefixes &amp; Edge Letters</h2>
+                    <p>Each downward edge carries one character (<code>a&ndash;z</code>), with sibling edges ordered alphabetically, and the root stands for the empty prefix <code>&empty;</code>. Words with a common beginning&mdash;such as <code>&ldquo;car&rdquo;</code>, <code>&ldquo;card&rdquo;</code>, and <code>&ldquo;care&rdquo;</code>&mdash;share the path <code>c &rarr; a &rarr; r</code> instead of duplicating those letters.</p>
+                </div>
+                <div class="check">
+                    <h2>Why <code>isEnd</code> Markers Matter (<code>&ldquo;car&rdquo;</code> vs <code>&ldquo;card&rdquo;</code>)</h2>
+                    <p>Reaching a node only proves that its path is a prefix of some stored word. A word-end marker (<code>isEnd === true</code>, shown as a double ring with <code>&#x2605;</code>) tells <code>search(&ldquo;car&rdquo;)</code> that <code>&ldquo;car&rdquo;</code> itself was inserted, while <code>search(&ldquo;ca&rdquo;)</code> returns not found even though <code>startsWith(&ldquo;ca&rdquo;)</code> succeeds.</p>
+                </div>
+                <div class="check">
+                    <h2>Bottom-Up Pruning Stop Rules</h2>
+                    <p>Deletion clears <code>isEnd</code> and then walks upward, pruning unused nodes. It stops immediately at a node with remaining children or another word&rsquo;s <code>isEnd</code>, producing three outcomes: <strong>unmark-only</strong> (e.g. delete <code>&ldquo;car&rdquo;</code>), <strong>partial-prune</strong> (e.g. delete <code>&ldquo;card&rdquo;</code> or <code>&ldquo;door&rdquo;</code>), or <strong>full-prune</strong> all the way to root (e.g. delete <code>&ldquo;bat&rdquo;</code>).</p>
+                </div>
+                <div class="check">
+                    <h2>Why Lookup Is O(L) Independent of Dictionary Size N</h2>
+                    <p>At each node, stepping to the next character edge takes <code>O(1)</code> time over the fixed 26-letter alphabet. Therefore, <code>insert</code>, <code>search</code>, <code>startsWith</code>, and <code>delete</code> each take <code>O(L)</code> time for word or prefix length <code>L</code> (at most <code>L</code> downward edges, plus up to <code>L</code> upward pruning steps on delete), whether the trie stores 10 words or 1,000,000 words.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/trie-page.js"></script>
+</body>
+</html>

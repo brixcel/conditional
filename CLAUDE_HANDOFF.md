@@ -32,6 +32,57 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G9: Trie (Prefix Tree) module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 18:21 (Philippine time)
+- Branch: `gemini/g9-trie`
+- Commit(s): `582aefa`
+- Files changed: `src/structures/trie.js`, `tests/trie.test.js`, `src/core/tree-layout.js` (added `layoutGeneralTree` only; existing exports untouched), `tests/tree-layout.test.js` (added 6 tests), `trie.html`, `src/pages/trie-page.js`, `main.css` (new section 16 only; sections 1–15 untouched)
+- Summary:
+  - Created pure, DOM-free `src/structures/trie.js` (`TrieNode`, `Trie`, `TRIE_INFO`, `WORD_LIMITS`, `validateWord`, `parseWordListInput`) with real linked node objects `{ id, char, children: Map<string, TrieNode>, isEnd }`, stable monotonically increasing positive integer ids (never reused after pruning or `clear()`), lowercase `a–z` (1–12 chars) validation, limits `1..20` words and `1..120` nodes (with atomic node-limit pre-check on `insert`), and zero `-1` sentinels. Implements `insert`, `search`, `startsWith`, `wordsWithPrefix` (alphabetical DFS with growing `matches`), `delete` (bottom-up pruning with explicit stop reasons for `isEnd`, remaining branches, both, or root, returning `outcome: "unmark-only" | "partial-prune" | "full-prune"`), `clear`, `toArray`, `snapshot`, and `integrityError()`.
+  - Added `layoutGeneralTree(snapshot, { levelGap, minGap })` to `src/core/tree-layout.js` preserving snapshot child order, placing leaves `minGap` apart, centring parents over their first and last child, guarding cycles/shared children, and guaranteeing no overlap on any level, plus 6 tests in `tests/tree-layout.test.js`.
+  - Added `tests/trie.test.js` (15 tests): 300 seeded mulberry32 sequences (`a`–`d`, lengths 1–5) checked after every operation against a `Set<string>` model (including exact `nodeCount`, `search`, `startsWith`, `wordsWithPrefix`, `integrityError() === null`, valid 1-based `step.line`, valid snapshot node/path IDs, and `prefix` matching `pathIds`), plus all 3 delete outcomes (including combined `isEnd` + remaining children stop narration), validation (`""`, `",,,"`, digits, symbols, non-ASCII, `>12` chars), `maxWords`/`maxNodes` atomic overflow and `minNodes=1` boundary, `clear()`, and `integrityError()` corruption checks.
+  - **Delete mutation check:** Temporarily disabled the `if (node.isEnd)` pruning guard in `Trie.prototype.delete()` so deleting a longer word pruned past a shorter stored word's end node. Running `node --test tests/trie.test.js` failed **2 of 15** tests immediately (the 300-sequence model test at `round=0 op=17` via `integrityError()` returning `"word-end node count (1) does not equal size (3)"`, and `Trie delete: longer word sharing prefix with shorter word -> partial-prune stops at isEnd node` returning `"full-prune"` instead of `"partial-prune"`). Restored the guard and re-verified all 15 tests pass.
+  - Created `trie.html`, `src/pages/trie-page.js`, and token-only `main.css` section 16 (`0` `style=""` in `trie.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/trie-page.js`, `0` hardcoded hex colors in section 16). Uses **`bindPlayerKeys(document, playerControls)`** from `src/core/player-keys.js` (with scroll-region propagation guard so keyboard users can pan `.hp-scroll-region` containers) and **`window.DSA_UI.announce(...)`** (plus `rescueFocus`) from `shared.js` alongside always-rendered `.alert-banner.bst-live` banners. Renders pooled inline SVG with edge letters + `--bg-stage` halos, double-ring + `★` + `<title>` word-end markers, `pathIds` highlighting, pooled letter-by-letter Current Prefix strip, pooled `<ol role="list">` Autocomplete Matches / Stored Words stage, synced pseudocode, complexity table, and 4 concept cards. Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents with all Critical/Major/Minor findings fixed prior to commit.
+- npm test output (paste the real lines):
+    # tests 342
+    # pass 341
+    # fail 0
+    # todo 1
+    [FAIL] Every HTML page except index.html is listed in navCategories
+    SUMMARY: 68 / 69 assertions passed (99%)
+  *(Note: the single `todo` in `node --test` is the pre-existing `avl-tree.html` live-region TODO, and the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected C10 nav check for `trie.html` awaiting Claude's `shared.js` nav entry on merge. All 5 `trie.html` checks in `tests/a11y-static.test.js` and all 4 `trie.html` page checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `trie.html` on `http://localhost:5509/trie.html` at both `1280px` desktop and `375px` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (0 console entries, 0 uncaught errors/rejections, 0 native dialogs). Verified `scrollOverflowX === 0` at both `1280px` and `375px` in both themes with zero overlap between `.tr-prefix-bar`, `#treeStageLabel`, and `#treeStage` (`labelBottom: 2377 < stageTop: 2382` at `375px`). Verified **Play** advances the step counter (`Step 1 / 5` → `Step 3 / 5`, button shows `Pause`); verified prefix-tile pooling clears stale tiles on Reset (`["c","a","r","t"]` → `["c"]`) and full-prune (`["∅"]`); verified `search("ca")` explains prefix-only miss while `startsWith("ca")` succeeds; verified `wordsWithPrefix("ca")` grows matches live (`[]` → `["car","card"]` → `["car","card","care","cart","cat"]`); verified all three delete outcomes (`unmark-only` on `"car"`, `partial-prune` on `"card"`, `full-prune` on `"bat"`); verified invalid inputs (`",,,"` build list and `"cat123"`) trigger inline `role="alert"` + `aria-invalid="true"` without mutating the trie; verified `Random words`, `Clear` (disables Play/scrubber), and dark-theme word-end ring stroke (`rgb(16, 185, 129)` / `--bar-sorted`).
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `src/core/player-keys.js`, `src/core/step-player.js`, `avl-tree.html`, or `main.css` sections 1–15.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (under `Tree Structures`, alongside AVL Tree, Binary Heap, and BST):**
+     - `SVG_ICONS.trie`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="4" cy="20" r="2"/><circle cx="10" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><line x1="10.8" y1="5.6" x2="7.2" y2="10.4"/><line x1="13.2" y1="5.6" x2="16.8" y2="10.4"/><line x1="5.5" y1="14" x2="4.5" y2="18"/><line x1="7" y1="13.8" x2="9.1" y2="18.2"/><line x1="18" y1="14" x2="18" y2="18"/></svg>`
+     - Item: `{ label: "Trie (Prefix Tree)", href: "trie.html", iconKey: "trie" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `trie.html`
+     - Title: `Trie (Prefix Tree)`
+     - Description: `Visualize letter-labeled prefix paths, word-end markers, alphabetical autocomplete DFS, and bottom-up pruning across all three delete outcomes.`
+     - Footer: `O(L) Ops · O(L + K) Autocomplete` &rarr; `Launch Visualizer`
+  3. **Classes added to `main.css` section 16 (lines 2146–2397, token-only):**
+     - `.tr-card-header` (with `.step-counter`), `.tr-viz-stage` (with `.viz-stage-label`)
+     - `.tr-svg` scoped selectors: `.tr-edge-label`, `.tr-edge-group.bst-path`/`.hp-compare`/`.hp-select`/`.hp-settled`/`.hp-swap` (`.tr-edge` & `.tr-edge-label`), `.hp-node.hp-select`/`.hp-swap` (`.hp-node-circle` dash patterns)
+     - `.tr-node-end`, `.tr-node-end-ring`, `.tr-end-marker`
+     - `.tr-prefix-bar`, `.tr-prefix-heading`, `.tr-prefix-tiles`, `.tr-prefix-tile`, `.tr-tile-root`, `.tr-prefix-readout`
+     - `.tr-word-pill`
+     - `.tr-sw-root`, `.tr-sw-path`, `.tr-sw-end`
+     - `.tr-hidden` (with `.tr-prefix-tile.tr-hidden`)
+     - `@media (prefers-reduced-motion: reduce)` rule for `.tr-svg .tr-edge-label` and `.tr-prefix-tile`
+  4. **Small shared note (`src/core/player-keys.js`):** `shouldHandlePlayerKey` currently intercepts `ArrowLeft`/`ArrowRight`/`Space`/`Home` when focus is on a `tabindex="0"` scrollable container (`.hp-scroll-region`). We handled it locally in `trie-page.js` via `stopPropagation()` on `.hp-scroll-region` without editing `player-keys.js`; adding a `.hp-scroll-region` / open-drawer guard in `player-keys.js` later would benefit other pages too.
+
+
+#### Review (filled in by Claude)
+- Reviewed at: 2026-11-26 18:57
+- Verdict: approved with fixes (qa-engineer: independent 48,000-op check against a Set model and 12,000 random layouts, 0 failures; all four mutations caught; no conflicts with Claude's pending branches)
+- Blocking issues: none. Fixed by Claude's visualization-engineer agent: player buttons rendered "▶Play" with no space (`.btn` is inline-flex with no gap, so separate icon and label children lose the space; wrap them in one `<span>` or use one text node); `prune` steps were recorded after the node was removed, so the page could not show the node about to go (now recorded before, with a test). Your `.hp-scroll-region` key guard in `trie-page.js` is fine; it becomes unnecessary once `claude/c16-scroll-keys` is on `main`.
+- Merged in: `claude/g9-trie-merge` (with nav entry + card), waiting for the user
+
+---
+
 ### G8: Binary Search Tree module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 11:43 (Philippine time)

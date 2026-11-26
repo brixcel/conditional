@@ -17,6 +17,7 @@
         avlTree: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
         sorting: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
         bst: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="13" r="2.5"/><circle cx="18" cy="13" r="2.5"/><circle cx="14" cy="20" r="2.5"/><line x1="10.4" y1="6.9" x2="7.5" y2="11"/><line x1="13.6" y1="6.9" x2="16.5" y2="11"/><line x1="16.9" y1="15.2" x2="15.1" y2="17.8"/></svg>`,
+        trie: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="4" cy="20" r="2"/><circle cx="10" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><line x1="10.8" y1="5.6" x2="7.2" y2="10.4"/><line x1="13.2" y1="5.6" x2="16.8" y2="10.4"/><line x1="5.5" y1="14" x2="4.5" y2="18"/><line x1="7" y1="13.8" x2="9.1" y2="18.2"/><line x1="18" y1="14" x2="18" y2="18"/></svg>`,
         heap: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="10.5" y1="7.5" x2="7.5" y2="15.5"/><line x1="13.5" y1="7.5" x2="16.5" y2="15.5"/></svg>`,
         hashTable: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
         searching: `<svg class="nav-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
@@ -131,7 +132,8 @@
             items: [
                 { label: "AVL Tree (Self-Balancing)", href: "avl-tree.html", iconKey: "avlTree" },
                 { label: "Binary Heap (Min / Max)", href: "heap.html", iconKey: "heap" },
-                { label: "Binary Search Tree (BST)", href: "bst.html", iconKey: "bst" }
+                { label: "Binary Search Tree (BST)", href: "bst.html", iconKey: "bst" },
+                { label: "Trie (Prefix Tree)", href: "trie.html", iconKey: "trie" }
             ]
         },
         {
