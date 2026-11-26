@@ -54,9 +54,8 @@ function render(step, index, p) {
         bar.className = "bar";
         if (sorted.has(i)) bar.classList.add("is-sorted");
         if (highlight.has(i)) bar.classList.add(`is-${step.type}`);
-        // Fade bars outside the subarray a recursive sort is working on.
-        // Runtime style (not markup) so no new CSS is needed while main.css is owned by task G3.
-        bar.style.opacity = i < lo || i > hi ? "0.3" : "";
+        // Fade bars outside the subarray a recursive sort is working on (.is-outside in main.css).
+        bar.classList.toggle("is-outside", i < lo || i > hi);
     });
 
     // role="img" hides the bars, so the chart's name carries the values; colour-coded

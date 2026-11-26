@@ -97,3 +97,39 @@ for (const page of PAGES) {
         assert.deepEqual(bad, []);
     });
 }
+
+// WCAG 1.4.1 Use of Color (C14): bar states on the algorithm players must not rely on
+// hue alone. Every legend entry carries a swatch, and main.css gives that swatch a
+// non-colour cue (pattern, glyph or opacity) shared with the bar state it describes.
+const CSS = readFileSync(join(ROOT, "main.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+const cssRulesFor = (cls) => [...CSS.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .filter((m) => m[1].split(",").some((sel) => new RegExp(`\.${cls}(?![\w-])`).test(sel)))
+    .map((m) => m[2]);
+const NON_COLOUR_CUE = /background-image\s*:|content\s*:|opacity\s*:|border-style\s*:|outline-style\s*:/;
+
+for (const page of ["sorting.html", "searching.html"]) {
+    test(`${page}: every bar legend item has a non-colour cue`, () => {
+        const html = stripComments(read(page));
+        const legend = html.match(/<div class="bar-legend"[^>]*>([\s\S]*?)<\/div>/);
+        assert.ok(legend, "missing .bar-legend");
+        const items = [...legend[1].matchAll(/<span>([\s\S]*?)<\/span>/g)].map((m) => m[1]);
+        assert.ok(items.length >= 3, `expected at least 3 legend items, found ${items.length}`);
+        const problems = [];
+        for (const item of items) {
+            const label = visibleText(item);
+            const sw = item.match(/<i class="sw (sw-[a-z-]+)"/);
+            if (!sw) { problems.push(`"${label}": no swatch marker`); continue; }
+            if (!label) problems.push(`${sw[1]}: no text label`);
+            if (!cssRulesFor(sw[1]).some((body) => NON_COLOUR_CUE.test(body))) {
+                problems.push(`"${label}": .${sw[1]} has no pattern, glyph or opacity cue in main.css`);
+            }
+        }
+        assert.deepEqual(problems, []);
+    });
+}
+
+test("main.css: every coloured bar state also has a non-colour cue", () => {
+    const states = new Set([...CSS.matchAll(/\.bar\.is-([a-z-]+)/g)].map((m) => m[1]));
+    const missing = [...states].filter((s) => !cssRulesFor(`is-${s}`).some((body) => NON_COLOUR_CUE.test(body)));
+    assert.deepEqual(missing, [], `bar states without a pattern/glyph/opacity cue: ${missing.join(", ")}`);
+});
