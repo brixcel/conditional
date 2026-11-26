@@ -32,7 +32,7 @@
                 </div>
                 <div class="prop-item">
                     <div class="prop-label">Priority Mechanism</div>
-                    <div class="prop-value">Precedence Insertion</div>
+                    <div class="prop-value">Binary Max-Heap + Arrival Counter</div>
                 </div>
                 <div class="prop-item">
                     <div class="prop-label">Primary Operation</div>
@@ -97,6 +97,25 @@
                 </div>
             </div>
 
+            <!-- Heap Array Stage: the real storage, replayed step by step -->
+            <div class="viz-stage">
+                <span class="viz-stage-label">Binary Heap Array (index 0 = front)</span>
+                <div id="heapDisplay" class="queue-display" role="group" aria-label="Heap array, index 0 first"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-select"></i> Placed / Removed</span>
+                    <span><i class="sw sw-compare"></i> Comparing</span>
+                    <span><i class="sw sw-swap"></i> Swapping</span>
+                    <span><i class="sw sw-sorted"></i> Settled</span>
+                </div>
+                <div class="controls-row mt-sm">
+                    <button type="button" id="heapPrevBtn" class="btn btn-secondary" aria-label="Back one heap step">&#x25C0; Back</button>
+                    <button type="button" id="heapNextBtn" class="btn btn-secondary" aria-label="Forward one heap step">Step &#x25B6;</button>
+                    <span id="heapStepCount" class="text-muted mono"></span>
+                </div>
+                <p class="step-message mt-sm" id="heapStepMessage" aria-live="polite">Enqueue or dequeue to see the sift-up and sift-down steps.</p>
+                <p class="text-muted">A binary heap is not stable, so each item gets an arrival number (#) and equal priorities are ordered by it, which keeps them first-in, first-out.</p>
+            </div>
+
             <!-- Output Message Banner -->
             <div class="output-box" id="output">Set max size and perform operations to inspect priority queue state</div>
         </div>
@@ -115,7 +134,7 @@
                 </div>
                 <div class="check">
                     <h2>Heap vs Array Implementation</h2>
-                    <p>While implemented here as an ordered array, production systems typically utilize Binary Heaps to achieve O(log n) enqueue.</p>
+                    <p>This queue is stored as a binary max-heap, so enqueue (sift-up) and dequeue (sift-down) are O(log n). A sorted array would make enqueue O(n). The service order above is the order dequeue will return.</p>
                 </div>
                 <div class="check">
                     <h2>Common Applications</h2>
