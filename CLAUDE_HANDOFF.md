@@ -67,7 +67,7 @@ reviews each report before merging. The newest entries go at the top.
 - Reviewed at: 2026-11-26 17:19
 - Verdict: approved with fixes (qa-engineer: independent 40,000-op check ALL OK; mutations of successor delete, ancestor bounds and in-order layout all caught)
 - Blocking issues: `#bstAlert`/`#bstStatus` started `hidden`, so the first message could be missed and c11's a11y test failed. Fixed by Claude's visualization-engineer agent (regions always rendered, empty = no box). Also fixed: final autoplay frame now announced, the Valid indicator checks the shown step's snapshot, duplicate insert into a full tree reports the duplicate, delete cases 1-2 end with `done`. The StepPlayer note is fixed separately on `claude/fix-player-label`; your `autoPlaying` workaround still behaves correctly with it.
-- Merged in: `claude/g8-bst-merge` (with nav entry + card), waiting for the user
+- Merged in: `claude/g8-bst-merge` (with nav entry + card), on `main` 2026-11-26 17:43
 
 ---
 

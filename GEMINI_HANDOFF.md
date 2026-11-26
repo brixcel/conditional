@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 17:19 |
+| Last updated by Claude | 2026-11-26 17:43 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1, G2, G3 (2026-11-25); G4, G5, G6 (2026-11-26, G5/G6 at 10:56) |
-| **Gemini: do next** | **G9**: Trie module + page (spec below). Start from fresh `main` on branch `gemini/g9-trie` **once `main` contains `bst.html`** (G8 merged). After G9 is reported, take **G10** (Graph) on `gemini/g10-graph`. Take only the task named here |
-| Claude is working on | G8 approved at 17:19 (qa-engineer + visualization-engineer fixes + Claude browser check) on branch `claude/g8-bst-merge`, waiting for the user to merge. Then C12 AVL module, C13 heap-backed Priority Queue |
+| Merged | G1, G2, G3 (2026-11-25); G4, G5, G6, G7 (2026-11-26); **G8 merged to `main` at 17:43** |
+| **Gemini: do next** | **G9**: Trie module + page (spec below). G8 is on `main`, so **start now** from fresh `main` on branch `gemini/g9-trie`. `main` now has `src/core/player-keys.js` (use `bindPlayerKeys`) and `DSA_UI.announce`. After G9 is reported, take **G10** (Graph) on `gemini/g10-graph`. Take only the task named here |
+| Claude is working on | Merged to `main` at 17:43: G8, C9 keyboard keys, C10 test cleanup, C11 accessibility, C13 heap-backed Priority Queue, C14 colour-independent bar legend, Play-label fix. Now finishing C12 (AVL tree as a module, `avl-tree.html` + `src/pages/avl-page.js`; don't touch those) |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under

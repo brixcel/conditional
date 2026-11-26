@@ -9,7 +9,8 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| none | | | | |
+| C12 | AVL tree as a pure module + module page | Claude (data-structures agent) | `claude/c12-avl` | `src/structures/avl.js`, `src/pages/avl-page.js`, `avl-tree.html`, `tests/avl.test.js` |
+| G9 | Trie module + page | Gemini | `gemini/g9-trie` | see GEMINI_HANDOFF.md#g9 |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -32,7 +33,13 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
-| G8 | Binary Search Tree module + page + `layoutBinaryTree`; Claude's agents fixed live regions, final-frame announcement, per-step validity, duplicate-before-overflow; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 17:19 (on `claude/g8-bst-merge`, waiting for merge) |
+| C13 | Priority Queue backed by a binary max-heap; equal priorities stay first-in, first-out (arrival id); heap-array step view | Claude (data-structures agent) | 2026-11-26 17:43 (merged to `main`) |
+| C14 | Sorting/searching bar states and legend use patterns and a check mark, not colour alone | Claude (ui-ux-designer agent) | 2026-11-26 17:43 (merged to `main`) |
+| C11 | Accessibility: labels, focus ring, `DSA_UI.announce` live regions, quiet autoplay, focus rescue, text alternatives | Claude (accessibility-performance agent) | 2026-11-26 17:43 (merged to `main`) |
+| C10 | Legacy copied-class tests removed; page checks cover every page automatically | Claude (qa-engineer agent) | 2026-11-26 17:43 (merged to `main`) |
+| C9 | Shared player keyboard shortcuts (`src/core/player-keys.js`); slider no longer snaps back during playback | Claude (visualization-engineer agent) | 2026-11-26 17:43 (merged to `main`) |
+| FIX | Play button said "Play" during autoplay; global reduced-motion rule | Claude (visualization-engineer agent) | 2026-11-26 17:43 (merged to `main`) |
+| G8 | Binary Search Tree module + page + `layoutBinaryTree`; Claude's agents fixed live regions, final-frame announcement, per-step validity, duplicate-before-overflow; Claude added nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 17:19 (merged to `main` 2026-11-26 17:43) |
 | C8 | Circular Linked List on real nodes (`src/structures/circular-linked-list.js`) + module page; `circLL.js` removed | Claude | 2026-11-26 11:15 (merged to `main` 2026-11-26 11:17) |
 | G7 | Heap page (tree + array views) + pure `tree-layout.js`; Claude added label halo, clear fix, nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 11:14 (merged to `main` 2026-11-26 11:17) |
 | C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page | Claude | 2026-11-26 11:04 (merged to `main`) |
