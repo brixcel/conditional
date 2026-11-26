@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 10:27 |
+| Last updated by Claude | 2026-11-26 10:34 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31. G4 approved at 10:27 (on branch `claude/g4-merge`, waiting for the user to put it on `main`) |
-| **Gemini: do next** | **nothing assigned yet.** G4 is approved. Wait for Claude to write the next packet (G5) here |
-| Claude is working on | G4 reviewed and approved at 10:27. Claude no longer pushes to `main` (user rule): work goes to `claude/*` branches and the user merges. C1c done at 10:28 on `claude/c1c-searching-nav`. Next for Claude: write the G5 packet for Gemini |
+| Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31, G4 at 10:34 (2026-11-26) |
+| **Gemini: do next** | **G5**: remove the remaining inline `style=""` attributes and move Regular Queue's runtime slot styles into `.car-empty` (see G5 below). Start from fresh `main` on branch `gemini/g5-inline-styles` |
+| Claude is working on | C6: Singly Linked List on real nodes (`src/structures/linked-list.js`) + page migration, branch `claude/c6-singly-linked-list`. Claude owns `singly-linked-list.html` / `.js` until then, so **do not edit them in G5** |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -123,6 +123,29 @@ and desktop with no console errors. In your report, include the nav entry and
 homepage card you want added (Claude adds them to `shared.js`/`index.html`).
 
 ---
+## G5: Remove remaining inline styles <a id="g5"></a>
+**Why:** project rule 7 says no inline `style=""`. 24 are left in markup, and the Regular Queue page
+sets empty-slot looks from JavaScript, so they can drift from the theme.
+**Files you own:** `circular-linked-list.html`, `doubly-linked-list.html`, `circular-queue.html`,
+`priority-queue.html`, `regular-queue.html`, `stack.html`, `index.html` (only its 2 `style=""`
+attributes, nothing else), `main.css`, `src/pages/regular-queue-page.js`.
+**Do not touch:** `singly-linked-list.html`, `singly-linked-list.js` (Claude is migrating them in C6), `shared.js`.
+**Do:**
+1. Replace every `style="..."` in your files with classes. Reuse G3's utilities first
+   (`.input-sm/.input-md/.input-lg`, `.text-muted`, `.text-italic`, `.mono`, `.scroll-box-clean`,
+   `.slot-label`, ...). Add a new class to `main.css` only when nothing fits, and list it in your report.
+   Find them with: `grep -n 'style="' *.html`.
+2. `src/pages/regular-queue-page.js`: delete `EMPTY_SLOT_STYLE` and the `Object.assign(car.style, ...)`
+   call; toggle the existing `.car-empty` class instead (remove it again when a slot is filled).
+   Check that a freed slot and an empty slot still look dashed, in light and dark theme.
+3. `main.css`: at `max-width: 640px`, `.controls-row` stacks vertically and `.field-grow { flex: 1 1 260px; }`
+   then makes fields 260px tall (you found this in G4). Fix it inside the existing 640px media query with
+   `.field-grow { flex: 0 0 auto; }`. Check `sorting.html` and `searching.html` at 375px.
+4. Do not change any behaviour, text, ids, or validation.
+**Done when:** `grep -c 'style="'` prints 0 for every file you own; `grep -c EMPTY_SLOT_STYLE
+src/pages/regular-queue-page.js` prints 0; `npm test` passes; every page you touched looks the same as
+before at 375px and desktop in **both** themes (use the new theme button, top right), with no console errors.
+
+---
 ## Queue after these (not ready yet)
-Merge sort / quick sort (Claude defines the recursion step format first), hash
-table page, heap page. They will be specified here when ready.
+Hash table page, heap page (the logic exists: `src/structures/heap.js`). They will be specified here when ready.

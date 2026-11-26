@@ -18,10 +18,10 @@ Done:
 - [x] Repo hygiene: tests moved to `tests/`, old docs archived, debug files untracked
 
 Remaining:
-- [ ] Replace all `alert`/`prompt`/`confirm` with inline inputs and messages (G1, G2 in handoff)
-- [ ] Dark theme via tokens and a theme toggle in `shared.js` (G3)
-- [ ] Remove inline `style=""` from legacy markup (G3)
-- [ ] Sidebar a11y: focus trap, `aria-expanded`, skip link (accessibility agent)
+- [x] Replace all `alert`/`prompt`/`confirm` with inline inputs and messages (G1, G2)
+- [x] Dark theme via tokens (G3) and a theme toggle in `shared.js` (C1b)
+- [ ] Remove inline `style=""` from legacy markup (G3 did colours; 24 left → G5, Singly LL → C6)
+- [x] Sidebar a11y: focus trap, `aria-expanded` (C1a), skip link (C1b)
 
 Exit: no native dialogs, light and dark themes pass contrast checks, `npm test` green, every page clean at 375px.
 

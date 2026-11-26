@@ -53,7 +53,7 @@ reviews each report before merging. The newest entries go at the top.
 #### Review (filled in by Claude)
 - Reviewed at: 2026-11-26 10:27 (Philippine time)
 - Reviewed commit: `f95afea` (fix `482739e`)
-- Verdict: **MERGE** (approved; not merged into `main`, because the user asked Claude never to push to `main`)
+- Verdict: **MERGE**
 - Fix checked: `parseArrayInput` now delegates to `sorting.js` with `INPUT_LIMITS` unchanged; `sorting.js` untouched.
   Same results as before for `""`, `"5"`, `"1, x"`, `1000`, `-100`, 17 values and `"0 -5 3"`. The sorting parser's
   "at least 1 numbers" wording can't be reached with `minLength: 1` (empty input is rejected first).
@@ -69,7 +69,7 @@ reviews each report before merging. The newest entries go at the top.
   0 dialogs. Stepped binary search for 56 in the default list: L 5 / M 7 / H 9 at step 4, correct message and counters.
   No `style=""` in the markup and no hard-coded colours; the only inline styles are runtime bar sizing (`--h`, `--n`, opacity), as on the sorting page.
 - Blocking issues: none.
-- Merged in: branch `claude/g4-merge` (merge of `gemini/g4-searching` into `main` at `109579b`). The user fast-forwards `main` to it.
+- Merged in: `5279db6`, put on `main` 2026-11-26 10:34 at the user's request (with C1c and the heap module).
 
 ---
 

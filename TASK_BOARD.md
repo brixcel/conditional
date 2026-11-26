@@ -9,12 +9,12 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## In progress
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
-| none | | | | |
+| C6 | Singly Linked List on real nodes + page migration. Claimed 2026-11-26 10:34 | Claude | `claude/c6-singly-linked-list` | `src/structures/linked-list.js` (new), `tests/linked-list.test.js` (new), `singly-linked-list.html`, `singly-linked-list.js` |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| none | | | | |
+| G5 | Remove remaining inline styles + Regular Queue `.car-empty` + `.field-grow` mobile fix | Gemini | 6 legacy pages, `index.html` (style attrs only), `main.css`, `src/pages/regular-queue-page.js` | GEMINI_HANDOFF.md#g5 |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
@@ -33,8 +33,9 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
-| C1c | Searching nav entry + homepage card (module count now "8 Structures · 8 Sorts · 3 Searches") | Claude | 2026-11-26 10:28 (on `claude/c1c-searching-nav`, stacked on `claude/g4-merge`) |
-| G4 | Searching module (linear / binary / interpolation) + page, parser reused from `sorting.js` | Gemini (reviewed by Claude) | 2026-11-26 10:27 (approved; on `claude/g4-merge`) |
+| HEAP | Binary min/max heap logic + tests (`src/structures/heap.js`, no page yet) | Claude | 2026-11-26 10:34 |
+| C1c | Searching nav entry + homepage card (module count now "8 Structures · 8 Sorts · 3 Searches") | Claude | 2026-11-26 10:28 (merged to `main` 2026-11-26 10:34) |
+| G4 | Searching module (linear / binary / interpolation) + page, parser reused from `sorting.js` | Gemini (reviewed by Claude) | 2026-11-26 10:27 (merged to `main` 2026-11-26 10:34) |
 | C1b | Theme toggle (remembers choice, follows OS until one is made, `aria-pressed`) + skip link on every page via `shared.js`; legacy AVL/Singly LL no longer disable the toggle | Claude | 2026-11-26 02:31 |
 | G3 | Dark theme tokens (OS dark + `data-theme`), 0 hard-coded colours outside tokens, utility classes, phone Modules-button overlap fixed | Gemini (reviewed by Claude) | 2026-11-25 23:31 |
 | F1 | Audit + PROJECT_CONTEXT | Claude | 2026-11-25 |
