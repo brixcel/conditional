@@ -16,6 +16,7 @@
         circularList: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="16" r="2.5"/><circle cx="5" cy="16" r="2.5"/><path d="M14.5 6.5l3 6.5"/><path d="M16.5 17.5l-9 0"/><path d="M6.5 13.5l3.5-6.5"/></svg>`,
         avlTree: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M10 6.5 7.5 15.5"/><path d="M14 6.5 16.5 15.5"/></svg>`,
         sorting: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="15" y1="20" x2="15" y2="7"/><line x1="20" y1="20" x2="20" y2="4"/></svg>`,
+        searching: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
         menu: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
         sun: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
         moon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
@@ -131,7 +132,8 @@
         {
             category: "Algorithms",
             items: [
-                { label: "Sorting Algorithms", href: "sorting.html", iconKey: "sorting" }
+                { label: "Sorting Algorithms", href: "sorting.html", iconKey: "sorting" },
+                { label: "Searching Algorithms", href: "searching.html", iconKey: "searching" }
             ]
         }
     ];

@@ -14,7 +14,7 @@ times came from this PC's clock, which was about 8 minutes slow.
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31. G4 approved at 10:27 (on branch `claude/g4-merge`, waiting for the user to put it on `main`) |
 | **Gemini: do next** | **nothing assigned yet.** G4 is approved. Wait for Claude to write the next packet (G5) here |
-| Claude is working on | G4 reviewed and approved at 10:27. Claude no longer pushes to `main` (user rule): work goes to `claude/*` branches and the user merges. Next for Claude: C1c (Searching nav + homepage card) on top of `claude/g4-merge` |
+| Claude is working on | G4 reviewed and approved at 10:27. Claude no longer pushes to `main` (user rule): work goes to `claude/*` branches and the user merges. C1c done at 10:28 on `claude/c1c-searching-nav`. Next for Claude: write the G5 packet for Gemini |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
