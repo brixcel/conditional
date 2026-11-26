@@ -14,7 +14,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G8 | Binary Search Tree module + page (after G7) | Gemini | `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js` | GEMINI_HANDOFF.md#g8 (ready once G7 is on `main`) |
+| G8 | Binary Search Tree module + page (after G7) | Gemini | `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js` | GEMINI_HANDOFF.md#g8 (spec ready; start once G7 is on `main`) |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
@@ -28,10 +28,12 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| none | | | | |
 
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C8 | Circular Linked List on real nodes (`src/structures/circular-linked-list.js`) + module page; `circLL.js` removed | Claude | 2026-11-26 11:15 (on `claude/g7-heap-merge`, together with G7) |
 | G7 | Heap page (tree + array views) + pure `tree-layout.js`; Claude added label halo, clear fix, nav + card | Gemini (reviewed by qa-engineer + Claude) | 2026-11-26 11:14 (approved; on `claude/g7-heap-merge`) |
 | C7 | Doubly Linked List on real nodes (`src/structures/doubly-linked-list.js`) + module page | Claude | 2026-11-26 11:04 (merged to `main`) |
 | G6 | Hash table (chaining + linear probing) module, page, tests; Claude added CSS classes, auto-scroll, nav + card | Gemini (reviewed by Claude) | 2026-11-26 10:53 (merged to `main` 2026-11-26 10:56) |

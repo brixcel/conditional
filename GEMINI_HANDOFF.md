@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 10:56 |
+| Last updated by Claude | 2026-11-26 11:16 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
 | Merged | G1, G2, G3 (2026-11-25); G4, G5, G6 (2026-11-26, G5/G6 at 10:56) |
-| **Gemini: do next** | **G7**: Heap page (logic already exists) + shared tree layout helper. Start from fresh `main` on branch `gemini/g7-heap-page`. After G7 is merged, **G8** (Binary Search Tree) is next. Take only the task named here |
-| Claude is working on | G5, G6 and the StepPlayer Play fix merged to `main` at 10:56. Claude does not edit the G7 files below |
+| **Gemini: do next** | **G8**: Binary Search Tree module + page (spec below). Start from fresh `main` on branch `gemini/g8-bst` **once `main` contains `heap.html`** (G7 merged). If `heap.html` is not on `main` yet, wait. Take only the task named here |
+| Claude is working on | G7 approved at 11:16 (qa-engineer agent + Claude) and C8 done; both on branch `claude/g7-heap-merge`, waiting for the user to merge |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -197,12 +197,53 @@ console errors and no horizontal page scroll; insert, extract (including on an e
 clear and invalid input all behave; `grep -c 'style="' heap.html` is 0 and `src/pages/heap-page.js` has no `.style`.
 In your report: the nav entry and homepage card you want (Claude adds them), and every class you added to section 14.
 
-## G8: Binary Search Tree module + page (after G7 is merged) <a id="g8"></a>
-**Do not start until G7 is merged and this section says "ready".** Status: **not ready**.
-Planned scope: `src/structures/bst.js` (insert, search, delete with all 3 cases using the in-order successor, min, max,
-in/pre/post/level-order traversal, height), each recording steps with node ids; model-based tests against a sorted set plus
-the BST-order invariant after every operation; `bst.html` + page reusing `src/core/tree-layout.js` (Claude adds a BST layout
-to it first, or asks you to). Claude finishes this spec when G7 lands.
+## G8: Binary Search Tree module + page <a id="g8"></a>
+**Status: ready once G7 is on `main`** (check that `heap.html` and `src/core/tree-layout.js` exist on `main`).
+**Why:** a BST is the base for the AVL and Red-Black trees later. Students need to see search paths, the three delete cases
+and the four traversals on real nodes.
+**Files you own:** new `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js`; in
+`src/core/tree-layout.js` you may **add** one new export (do not change `layoutCompleteTree`) and add tests for it to
+`tests/tree-layout.test.js`; **add** a new section 15 at the end of `main.css` only if section 14 classes cannot be reused
+(prefer reusing `.hp-*`; list anything new).
+**Do not edit:** `src/structures/heap.js`, `src/core/step-player.js`, `shared.js`, `index.html`, `main.css` sections 1-14.
+**Reference:** `src/structures/linked-list.js` (real node objects, `{ ok, value?, error?, steps }`, steps built before
+mutation, `integrityError()`), `heap.html` + `src/pages/heap-page.js` (SVG tree, StepPlayer, pseudocode panel).
+**Do:**
+1. `src/structures/bst.js` (pure, DOM-free), class `BinarySearchTree` with real node objects
+   `{ id, value, left, right }` (`id` is a stable number so the page can follow a node across steps). Unique integer keys;
+   capacity 1-31 (constructor, `assertCapacity`). Operations, each returning `{ ok, value?, error?, steps }`:
+   - `insert(value)` (duplicate → `{ ok:false }` with a readable error), `search(value)`, `delete(value)` covering
+     **all three cases** (leaf; one child; two children using the **in-order successor**, and say so in the message),
+     `min()`, `max()`, `height()` (empty = -1, single node = 0; say which convention in the JSDoc),
+     `traverse(order)` for `"inorder" | "preorder" | "postorder" | "levelorder"` (visit steps, result array),
+     `clear()`, `size`, `isEmpty()`, `isFull()`, `toArray()` (in-order).
+   - Steps: `{ type, nodeIds, line, message, snapshot }` where `snapshot` is a plain copy of the tree
+     (e.g. `{ nodes: [{ id, value, left, right }] , rootId }` with child ids or null) and `line` is the 1-based line of the
+     matching pseudocode in a `BST_INFO` registry (`name`, `summary`, `complexity`, `pseudocode` per operation).
+     Types such as `visit`, `go-left`, `go-right`, `found`, `not-found`, `insert`, `delete-leaf`, `delete-one-child`,
+     `find-successor`, `copy-successor`, `done`. No `-1` sentinels.
+   - `integrityError()`: in-order walk is strictly increasing, every child's value is on the correct side of **every
+     ancestor** (not only its parent), node count equals `size`, no node reachable twice. Returns null when sound.
+2. `tests/bst.test.js`: 300 seeded random sequences (insert / delete / search, values -50..50 so collisions and all delete
+   cases happen) against a sorted-array model, checking `toArray()`, `size`, `min`/`max`, `height` against a reference
+   computed from the model's insert order... (simplest: rebuild a reference tree the same way), and `integrityError()`
+   after **every** operation. Plus edge cases: delete root with two children, delete in an empty tree, duplicate insert,
+   each traversal on a known tree (write the expected arrays by hand), capacity full, bad arguments throw.
+   **Mutation check yourself:** break delete (e.g. use predecessor/successor wrongly, or skip relinking the successor's
+   right child) and confirm a test fails; mention it in your report.
+3. `src/core/tree-layout.js`: add `layoutBinaryTree(snapshot, { levelGap, minGap })` that places nodes by **in-order
+   position** (x = inorderIndex * minGap + minGap/2, y = depth * levelGap) and returns the same shape as
+   `layoutCompleteTree` (`nodes` keyed by node id, `edges`, `width`, `height`). Tests: no two nodes share an x, every left
+   child is left of its parent and every right child right of it, y matches depth, empty tree.
+4. `bst.html` + `src/pages/bst-page.js`: Value input + **Insert**, **Search**, **Delete**, **Min**, **Max**, a traversal
+   select + **Traverse**, list input + **Build** (inserts in the given order), **Random**, **Clear**. Same player,
+   pseudocode panel, counters and theme/a11y rules as the heap page. Show the search path highlighted on the way down; for
+   two-child delete, show the successor being found and copied. Show the traversal output growing as nodes are visited.
+   Values -99..999, max 31 nodes; errors inline with `role="alert"`.
+**Done when:** `npm test` passes with your new tests; the page works at 375px and desktop in both themes with no console
+errors and no horizontal page scroll; Play advances; every delete case and every traversal shown on a real tree;
+`grep -c 'style="' bst.html` is 0 and the page script has no `.style` / `innerHTML` with values. Report the nav entry and
+homepage card you want (Claude adds them) and any CSS you added.
 
 ---
 ## Queue after these (not ready yet)

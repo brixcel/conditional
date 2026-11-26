@@ -52,12 +52,12 @@
                 <div class="control-section-title">1. List Capacity</div>
                 <div class="controls-row">
                     <label class="field">
-                        <span class="field-label">Maximum Size (positive integer)</span>
-                        <input type="number" id="maxSizeInput" placeholder="e.g. 8" min="1" step="1" aria-describedby="cllMessage">
+                        <span class="field-label">Maximum Size (1–20)</span>
+                        <input type="number" id="maxSizeInput" placeholder="e.g. 8" min="1" max="20" step="1" aria-describedby="cllMessage">
                     </label>
                 </div>
                 <div class="controls-row">
-                    <button type="button" id="setMaxSizeButton" class="btn" onclick="setMaxSize()">Set Max Size</button>
+                    <button type="button" id="setMaxSizeButton" class="btn">Set Max Size</button>
                 </div>
                 <div id="sizeReminder" class="alert-banner alert-live alert-warning" role="status" aria-live="polite">Please allocate the maximum list capacity to begin.</div>
                 <div id="cllMessage" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
@@ -90,29 +90,29 @@
             <div class="control-section" id="cllOpsModify">
                 <div class="control-section-title">3. Insertions &amp; Deletions</div>
                 <div class="controls-row">
-                    <button type="button" id="appendButton" class="btn" onclick="append()" data-tooltip="Add element at tail" disabled>Append</button>
-                    <button type="button" id="prependButton" class="btn" onclick="prepend()" data-tooltip="Add element at head" disabled>Prepend</button>
-                    <button type="button" id="insertAtIndexButton" class="btn" onclick="insertAtIndex()" data-tooltip="Insert element at specified index" disabled>Insert at Index</button>
-                    <button type="button" id="deleteHeadButton" class="btn btn-danger" onclick="deleteHead()" data-tooltip="Remove head node" disabled>Delete Head</button>
-                    <button type="button" id="deleteTailButton" class="btn btn-danger" onclick="deleteTail()" data-tooltip="Remove tail node" disabled>Delete Tail</button>
-                    <button type="button" id="deleteByIndexButton" class="btn btn-danger" onclick="deleteByIndex()" data-tooltip="Remove node at index" disabled>Delete by Index</button>
-                    <button type="button" id="clearListButton" class="btn btn-danger" onclick="clearList()" data-tooltip="Clear entire list" disabled>Clear List</button>
+                    <button type="button" id="appendButton" class="btn" data-tooltip="Add element at tail" disabled>Append</button>
+                    <button type="button" id="prependButton" class="btn" data-tooltip="Add element at head" disabled>Prepend</button>
+                    <button type="button" id="insertAtIndexButton" class="btn" data-tooltip="Insert element at specified index" disabled>Insert at Index</button>
+                    <button type="button" id="deleteHeadButton" class="btn btn-danger" data-tooltip="Remove head node" disabled>Delete Head</button>
+                    <button type="button" id="deleteTailButton" class="btn btn-danger" data-tooltip="Remove tail node" disabled>Delete Tail</button>
+                    <button type="button" id="deleteByIndexButton" class="btn btn-danger" data-tooltip="Remove node at index" disabled>Delete by Index</button>
+                    <button type="button" id="clearListButton" class="btn btn-danger" data-tooltip="Clear entire list" disabled>Clear List</button>
                 </div>
             </div>
 
             <div class="control-section" id="cllOpsQuery">
                 <div class="control-section-title">4. Search, Traversal &amp; Inspection</div>
                 <div class="controls-row">
-                    <button type="button" id="sizeButton" class="btn btn-secondary" onclick="size()" data-tooltip="Query current node count" disabled>Size</button>
-                    <button type="button" id="showHeadButton" class="btn btn-secondary" onclick="showHead()" data-tooltip="Return head node" disabled>Head</button>
-                    <button type="button" id="showTailButton" class="btn btn-secondary" onclick="showTail()" data-tooltip="Return tail node" disabled>Tail</button>
-                    <button type="button" id="reverseListButton" class="btn btn-secondary" onclick="reverseList()" data-tooltip="Reverse cyclic pointers" disabled>Reverse</button>
-                    <button type="button" id="sortListButton" class="btn btn-secondary" onclick="sortList()" data-tooltip="Sort nodes ascending" disabled>Sort</button>
-                    <button type="button" id="findButton" class="btn btn-secondary" onclick="find()" data-tooltip="Find node by address" disabled>Find</button>
-                    <button type="button" id="updateButton" class="btn btn-secondary" onclick="update()" data-tooltip="Update value by target address" disabled>Update</button>
-                    <button type="button" id="replaceButton" class="btn btn-secondary" onclick="replace()" data-tooltip="Replace value & address" disabled>Replace</button>
-                    <button type="button" id="checkIfEmptyButton" class="btn btn-secondary" onclick="checkIfEmpty()" data-tooltip="Check if size == 0" disabled>Is Empty?</button>
-                    <button type="button" id="checkIfFullButton" class="btn btn-secondary" onclick="checkIfFull()" data-tooltip="Check if size == max" disabled>Is Full?</button>
+                    <button type="button" id="sizeButton" class="btn btn-secondary" data-tooltip="Query current node count" disabled>Size</button>
+                    <button type="button" id="showHeadButton" class="btn btn-secondary" data-tooltip="Return head node" disabled>Head</button>
+                    <button type="button" id="showTailButton" class="btn btn-secondary" data-tooltip="Return tail node" disabled>Tail</button>
+                    <button type="button" id="reverseListButton" class="btn btn-secondary" data-tooltip="Reverse cyclic pointers" disabled>Reverse</button>
+                    <button type="button" id="sortListButton" class="btn btn-secondary" data-tooltip="Sort nodes ascending" disabled>Sort</button>
+                    <button type="button" id="findButton" class="btn btn-secondary" data-tooltip="Find node by address" disabled>Find</button>
+                    <button type="button" id="updateButton" class="btn btn-secondary" data-tooltip="Update value by target address" disabled>Update</button>
+                    <button type="button" id="replaceButton" class="btn btn-secondary" data-tooltip="Replace value & address" disabled>Replace</button>
+                    <button type="button" id="checkIfEmptyButton" class="btn btn-secondary" data-tooltip="Check if size == 0" disabled>Is Empty?</button>
+                    <button type="button" id="checkIfFullButton" class="btn btn-secondary" data-tooltip="Check if size == max" disabled>Is Full?</button>
                 </div>
             </div>
 
@@ -158,6 +158,6 @@
     </div>
 
     <script src="shared.js"></script>
-    <script src="circLL.js"></script>
+    <script type="module" src="src/pages/circular-linked-list-page.js"></script>
 </body>
 </html>
