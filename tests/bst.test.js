@@ -127,13 +127,14 @@ test("BST: matches sorted-array model and reference BST over 300 seeded random s
                 res = bst.insert(key);
                 assertValidSteps(res, `${label} insert(${key})`);
 
-                if (wasFull) {
-                    assert.equal(res.ok, false, `${label}: full insert should fail`);
-                    assert.match(res.error, /overflow/i);
-                } else if (alreadyPresent) {
+                if (alreadyPresent) {
+                    // Duplicate is reported even when the tree is also full.
                     assert.equal(res.ok, false, `${label}: duplicate insert should fail`);
                     assert.match(res.error, /already/i);
                     assert.equal(res.steps.at(-1).type, "duplicate");
+                } else if (wasFull) {
+                    assert.equal(res.ok, false, `${label}: full insert should fail`);
+                    assert.match(res.error, /overflow/i);
                 } else {
                     assert.equal(res.ok, true, `${label}: insert(${key}) failed: ${res.error}`);
                     assert.equal(res.value.value, key);
@@ -243,7 +244,9 @@ test("BST delete: root with 0 children (leaf) empties tree", () => {
     assertValidSteps(res, "delete root leaf");
     assert.equal(res.ok, true);
     assert.equal(res.value.case, "leaf");
-    assert.equal(res.steps.at(-1).type, "delete-leaf");
+    assert.equal(res.steps.at(-2).type, "delete-leaf");
+    assert.equal(res.steps.at(-1).type, "done");
+    assert.equal(res.steps.at(-1).snapshot.size, 0);
     assert.equal(bst.root, null);
     assert.equal(bst.size, 0);
     assert.equal(bst.height(), -1);
@@ -260,7 +263,8 @@ test("BST delete: root with 1 child (left only, and right only)", () => {
     assertValidSteps(leftRes, "delete root 1 left child");
     assert.equal(leftRes.ok, true);
     assert.equal(leftRes.value.case, "one-child");
-    assert.equal(leftRes.steps.at(-1).type, "delete-one-child");
+    assert.equal(leftRes.steps.at(-2).type, "delete-one-child");
+    assert.equal(leftRes.steps.at(-1).type, "done");
     assert.equal(leftTree.root.value, 25);
     assert.deepEqual(leftTree.toArray(), [10, 25]);
     assert.equal(leftTree.integrityError(), null);
@@ -274,7 +278,8 @@ test("BST delete: root with 1 child (left only, and right only)", () => {
     assertValidSteps(rightRes, "delete root 1 right child");
     assert.equal(rightRes.ok, true);
     assert.equal(rightRes.value.case, "one-child");
-    assert.equal(rightRes.steps.at(-1).type, "delete-one-child");
+    assert.equal(rightRes.steps.at(-2).type, "delete-one-child");
+    assert.equal(rightRes.steps.at(-1).type, "done");
     assert.equal(rightTree.root.value, 75);
     assert.deepEqual(rightTree.toArray(), [75, 90]);
     assert.equal(rightTree.integrityError(), null);
@@ -432,6 +437,49 @@ test("BST: capacity full overflow (capacity 1 and capacity 31)", () => {
     assert.equal(overFull.ok, false);
     assert.match(overFull.error, /overflow/i);
     assert.equal(full.size, 31);
+});
+
+test("BST insert: duplicate into a full tree reports duplicate, not overflow", () => {
+    const bst = new BinarySearchTree(3);
+    for (const v of [50, 30, 70]) assert.equal(bst.insert(v).ok, true);
+    assert.equal(bst.isFull(), true);
+    const before = bst.toArray();
+
+    const dup = bst.insert(70);
+    assertValidSteps(dup, "duplicate into full");
+    assert.equal(dup.ok, false);
+    assert.match(dup.error, /already/i);
+    assert.doesNotMatch(dup.error, /overflow/i);
+    assert.deepEqual(dup.steps.map((s) => s.type), ["go-right", "duplicate"]);
+    assert.equal(dup.steps.at(-1).line, 5);
+    assert.deepEqual(bst.toArray(), before);
+    assert.equal(bst.size, 3);
+
+    // A new key into the same full tree is still an overflow.
+    const over = bst.insert(10);
+    assertValidSteps(over, "new key into full");
+    assert.equal(over.ok, false);
+    assert.match(over.error, /overflow/i);
+    assert.deepEqual(over.steps.map((s) => s.type), ["overflow"]);
+});
+
+test("BST delete: every successful case ends with a done step on the final tree", () => {
+    const build = () => {
+        const t = new BinarySearchTree(15);
+        for (const v of [50, 30, 70, 20, 60, 80, 65]) t.insert(v);
+        return t;
+    };
+    for (const [key, expectedCase] of [[20, "leaf"], [60, "one-child"], [50, "two-children"]]) {
+        const t = build();
+        const res = t.delete(key);
+        assertValidSteps(res, `delete ${key}`);
+        assert.equal(res.ok, true);
+        assert.equal(res.value.case, expectedCase);
+        const last = res.steps.at(-1);
+        assert.equal(last.type, "done", `delete ${key} ends with done`);
+        assert.equal(last.snapshot.size, 6);
+        assert.ok(!last.snapshot.nodes.some((n) => n.value === key), `snapshot no longer holds ${key}`);
+    }
 });
 
 /* ---------------- All 4 traversals + growing visited array ---------------- */

@@ -123,9 +123,17 @@ function setFieldValidity(input, isInvalid) {
 
 /**
  * Displays inline feedback using two static live regions (`#bstAlert` with fixed
- * role="alert" for errors, `#bstStatus` with fixed role="status" for info/success/warning)
- * so role and aria-live are never mutated dynamically.
+ * role="alert" for errors, `#bstStatus` with fixed role="status" for info/success/warning).
+ * Both stay rendered from page load (never [hidden]) so the first message is announced;
+ * only their text and tone class change here. Empty regions collapse via `.bst-live:empty`.
  */
+const LIVE_BASE_CLASS = "alert-banner alert-live bst-live";
+
+function clearLive(region) {
+    region.textContent = "";
+    region.className = LIVE_BASE_CLASS;
+}
+
 function notify(msg, type = "info", invalidField = null) {
     if (notifyRafId) {
         cancelAnimationFrame(notifyRafId);
@@ -136,10 +144,8 @@ function notify(msg, type = "info", invalidField = null) {
     setFieldValidity(els.buildInput, invalidField === "build");
 
     if (!msg) {
-        els.alertBanner.textContent = "";
-        els.alertBanner.hidden = true;
-        els.statusBanner.textContent = "";
-        els.statusBanner.hidden = true;
+        clearLive(els.alertBanner);
+        clearLive(els.statusBanner);
         return;
     }
 
@@ -147,14 +153,13 @@ function notify(msg, type = "info", invalidField = null) {
     const active = isError ? els.alertBanner : els.statusBanner;
     const other = isError ? els.statusBanner : els.alertBanner;
 
-    other.textContent = "";
-    other.hidden = true;
+    clearLive(other);
 
-    const isRepeated = !active.hidden && active.textContent === msg;
-    active.className = `alert-banner alert-live alert-${type}`;
-    active.hidden = false;
+    const isRepeated = active.textContent === msg;
+    active.className = `${LIVE_BASE_CLASS} alert-${type}`;
 
     if (isRepeated) {
+        // Empty then refill on the next frame so an identical message is re-announced.
         active.textContent = "";
         notifyRafId = requestAnimationFrame(() => {
             notifyRafId = 0;
@@ -208,6 +213,23 @@ function svgEl(tag, attrs = {}) {
         el.setAttribute(k, String(v));
     }
     return el;
+}
+
+/**
+ * Pure BST-order check on a step snapshot: the in-order walk must be strictly
+ * increasing and reach exactly `snapshot.size` nodes. Returns null when valid.
+ */
+function snapshotOrderError(snapshot, stats) {
+    const order = stats.inorderNodes;
+    for (let i = 1; i < order.length; i++) {
+        if (order[i].value <= order[i - 1].value) {
+            return `in-order ${order[i].value} follows ${order[i - 1].value}`;
+        }
+    }
+    if (order.length !== snapshot.size) {
+        return `${order.length} reachable nodes, size ${snapshot.size}`;
+    }
+    return null;
 }
 
 /**
@@ -601,6 +623,9 @@ function render(step, index, p) {
             [els.traversalStage, traversalTarget],
         ]);
 
+        // Silence rapid announcements while auto-playing. Set aria-live BEFORE writing the
+        // text so the final frame (playback ended), pauses and manual steps are announced.
+        els.stepMessage.setAttribute("aria-live", isActivelyPlaying ? "off" : "polite");
         els.stepMessage.textContent = step.message;
 
         els.statRoot.textContent = stats.rootValue !== null ? String(stats.rootValue) : "— (empty)";
@@ -610,14 +635,15 @@ function render(step, index, p) {
         els.statMax.textContent = stats.max !== null ? String(stats.max) : "—";
         els.statComparisons.textContent = String(step.comparisons ?? 0);
 
-        const integrityErr = bst.integrityError();
-        els.statValid.textContent = integrityErr !== null
-            ? `Invalid (${integrityErr})`
-            : (step.type === "copy-successor" ? "Relinking…" : "Valid");
+        // Validity of the frame being shown (its snapshot), not of the live tree.
+        const integrityErr = snapshotOrderError(snap, stats);
+        els.statValid.textContent = step.type === "copy-successor"
+            ? "Relinking…"
+            : (integrityErr !== null ? `Invalid (${integrityErr})` : "Valid");
+    } else {
+        // Same frame re-rendered (pause, playback ended): restore announcements.
+        els.stepMessage.setAttribute("aria-live", isActivelyPlaying ? "off" : "polite");
     }
-
-    // Silence rapid announcements while auto-playing; restore on pause, completion, or manual step.
-    els.stepMessage.setAttribute("aria-live", isActivelyPlaying ? "off" : "polite");
 
     els.counter.textContent = `Step ${index + 1} / ${p.length}`;
     els.progress.max = Math.max(0, p.length - 1);

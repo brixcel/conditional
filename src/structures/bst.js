@@ -284,16 +284,30 @@ export class BinarySearchTree {
 
     /* ---------- mutating & traced operations ---------- */
 
+    /** Untraced O(h) membership check used to order insert's error checks. */
+    #containsKey(key) {
+        let curr = this.root;
+        while (curr !== null) {
+            if (key === curr.value) return true;
+            curr = key < curr.value ? curr.left : curr.right;
+        }
+        return false;
+    }
+
     /**
      * Inserts a unique integer key into the BST. O(h) time.
-     * Rejects overflow (when `isFull()`) and duplicates with `{ ok: false, error, steps }`.
+     * Rejects duplicates (checked first, along the search path) and overflow
+     * (when `isFull()` and the key is new) with `{ ok: false, error, steps }`.
      *
      * @param {number} value integer key (0 and negatives allowed)
      */
     insert(value) {
         const key = assertKey(value);
 
-        if (this.isFull()) {
+        // Duplicate wins over overflow: when the tree is full but already holds `key`,
+        // fall through to the normal search path, which ends on the "duplicate" step
+        // without attaching anything.
+        if (this.isFull() && !this.#containsKey(key)) {
             const error =
                 `BST overflow: ${this.capacity === 1 ? "the only slot is" : `all ${this.capacity} slots are`} ` +
                 `used, so ${key} cannot be inserted.`;
@@ -625,6 +639,17 @@ export class BinarySearchTree {
                     comparisons,
                 }),
             );
+            steps.push(
+                this.#step("done", "delete", {
+                    nodeIds: [],
+                    pathIds: [],
+                    line: 3,
+                    message: this._size === 0
+                        ? `Deleted ${deletedVal}. The BST is now empty.`
+                        : `Deleted ${deletedVal}. The BST now has ${this._size} node${this._size === 1 ? "" : "s"}.`,
+                    comparisons,
+                }),
+            );
             return ok({ id: deletedId, value: deletedVal, case: "leaf" }, steps);
         }
 
@@ -655,6 +680,15 @@ export class BinarySearchTree {
                     pathIds: [...pathIds.slice(0, -1), child.id],
                     line: 4,
                     message,
+                    comparisons,
+                }),
+            );
+            steps.push(
+                this.#step("done", "delete", {
+                    nodeIds: [child.id],
+                    pathIds: [],
+                    line: 4,
+                    message: `Deleted ${deletedVal}; ${child.value} took its place. The BST now has ${this._size} node${this._size === 1 ? "" : "s"}.`,
                     comparisons,
                 }),
             );

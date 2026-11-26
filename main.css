@@ -2036,3 +2036,13 @@ input:disabled, select:disabled {
         transform: none;
     }
 }
+
+/* BST feedback live regions (#bstAlert, #bstStatus): always rendered so they stay
+   in the accessibility tree from page load; collapse to nothing while empty. */
+.alert-banner.bst-live { display: block; }
+.alert-banner.bst-live:empty {
+    padding: 0;
+    margin: 0;
+    border-width: 0;
+    background-color: transparent;
+}
