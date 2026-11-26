@@ -180,7 +180,8 @@ function renderTree(step) {
         height: svgH,
         viewBox: `0 0 ${svgW} ${svgH}`,
         role: "img",
-        "aria-label": `Binary ${kind}-heap with ${n} node${n === 1 ? "" : "s"}`,
+        // role="img" hides the nodes, so the name carries the values (level order = array order).
+        "aria-label": `Binary ${kind}-heap with ${n} node${n === 1 ? "" : "s"}, level order: ${items.join(", ")}`,
     });
 
     for (const edge of layout.edges) {

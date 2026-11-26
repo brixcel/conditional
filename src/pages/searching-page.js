@@ -105,6 +105,13 @@ function render(step, index, p) {
         bar.style.opacity = outOfRange || searchExhausted ? "0.3" : "";
     });
 
+    // role="img" hides the bars, so the chart's name carries the values and the window.
+    const markers = [["low", step.low], ["mid", step.mid], ["high", step.high]].filter(([, v]) => v !== null && v !== undefined);
+    els.bars.setAttribute("aria-label", `Array of ${step.array.length}: ${step.array.join(", ")}.` +
+        (step.range ? ` Search window A[${lo}..${hi}].` : "") +
+        (markers.length ? ` ${markers.map(([k, v]) => `${k} = ${v}`).join(", ")}.` : "") +
+        (step.foundIndex !== null && step.foundIndex !== undefined ? ` Target found at index ${step.foundIndex}.` : ""));
+
     [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === step.line));
 
     setStepMessage(step.message, p);

@@ -59,6 +59,13 @@ function render(step, index, p) {
         bar.style.opacity = i < lo || i > hi ? "0.3" : "";
     });
 
+    // role="img" hides the bars, so the chart's name carries the values; colour-coded
+    // state is repeated in words (the step message describes the compare/swap itself).
+    const finalIdx = [...sorted].sort((a, b) => a - b);
+    els.bars.setAttribute("aria-label", `Array of ${step.array.length}: ${step.array.join(", ")}.` +
+        (step.range ? ` Working on A[${lo}..${hi}].` : "") +
+        (finalIdx.length ? ` In final position: ${finalIdx.length === step.array.length ? "all" : "indices " + finalIdx.join(", ")}.` : ""));
+
     [...els.code.children].forEach((li, i) => li.classList.toggle("active", i + 1 === step.line));
 
     setStepMessage(step.message, p);
