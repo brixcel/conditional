@@ -32,6 +32,49 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G10: Graph representation module + page
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
+- Finished at: 2026-11-26 19:18 (Philippine time)
+- Branch: `gemini/g10-graph` (branched from fresh `origin/main` @ `03d0396`; independent of `gemini/g9-trie`)
+- Commit(s): `ac79ad5`
+- Files changed: `src/structures/graph.js`, `tests/graph.test.js`, `src/core/graph-layout.js`, `tests/graph-layout.test.js`, `graph.html`, `src/pages/graph-page.js`, `main.css` (new "Graph Representation Visualizer (G10)" section appended at end; sections 1–15 untouched, `0` deletions)
+- Summary:
+  - Created pure, DOM-free `src/structures/graph.js` (`Graph`, `GRAPH_LIMITS`, `GRAPH_INFO`) supporting all 4 modes (`directed` × `weighted`), vertex IDs `0..11` (max 12), weights `1..99` only in weighted mode (extra weights rejected in unweighted mode; absent edges returned as `null`, never `0` or `-1`), and self-loop/parallel-edge rejection. Implements `addVertex`, `removeVertex` (removes all incident edges step-by-step with sound intermediate snapshots), `addEdge`, `removeEdge`, `hasVertex`, `hasEdge`, `weight`, `neighbors(id)` (**always strictly ascending** for C15 BFS/DFS/Dijkstra/topological sort), `degree`/`inDegree`/`outDegree`, `vertices()`, `edges()`, `toAdjacencyList()`, `toAdjacencyMatrix()`, `clear()`, `static Graph.from(...)`, `snapshot()`, and `integrityError()`. `GRAPH_INFO` provides Adjacency List vs. Adjacency Matrix complexity comparisons (`O(deg(u) + deg(v))` undirected / `O(deg⁺(u))` directed for list edge edits, `O(V + E)` vs `O(V²)` space) and 1-based pseudocode for all operations.
+  - Created pure `src/core/graph-layout.js` (`DEFAULT_GRAPH_LAYOUT`, `layoutCircle(ids, { radius, padding })`) placing vertex 0 at the top `(cx, cy - radius)` and remaining vertices evenly clockwise, plus 4 tests in `tests/graph-layout.test.js` covering `0, 1, 2, 3, 4, 7, 12` vertices, exact radius distance, clockwise order, minimum chord gap, and invalid argument validation.
+  - Added `tests/graph.test.js` (12 tests): **300 seeded mulberry32 sequences** across all 4 modes (75 × 4 modes × 45 ops = 13,500 ops) verified after every operation against an independent `Map<"u,v", weight>` model (`vertices`, `edges`, ascending `neighbors`, all degrees, `toAdjacencyList`, `toAdjacencyMatrix` symmetry & `null` absent edges, `integrityError() === null`, step shapes & 1-based line bounds), plus edge-case and corruption tests.
+  - **Undirected `removeEdge` mutation check:** Temporarily commented out reverse-edge deletion (`v -> u`) in undirected `Graph.prototype.removeEdge`. Running `node --test tests/graph.test.js` immediately failed **2 of 12** tests: `Graph property suite (undirected-unweighted)` (`undirected symmetry violated: 6 -> 11 exists but 11 -> 6 is missing`) and `Graph property suite (undirected-weighted)` (`undirected symmetry violated: 7 -> 8 exists but 8 -> 7 is missing`). Restored the fix and re-verified 100% pass.
+  - Created `graph.html`, `src/pages/graph-page.js`, and token-only Graph CSS section at the end of `main.css` (`0` `style=""` in `graph.html`, `0` `.style` / `.innerHTML` / native dialogs in `src/pages/graph-page.js`, `0` hardcoded hex/rgb colors in `main.css`). Features Directed & Weighted toggles (rebuilding via `Graph.from` while preserving valid edges, collapsing opposite-direction pairs with warning on Directed → Undirected, and toggling `#weightInput.disabled`), Vertex/Edge forms, Sample/Random/Clear, and **three pooled synchronized views** of `step.snapshot`: inline SVG Graph (directed arrowheads trimmed to circle perimeter, quadratic Bézier curves for mutual directed edges, haloed weight labels, crimson dash-dot ghost on `remove-edge`), sorted Adjacency List (`∅ (no outgoing edges)` when directed), and Adjacency Matrix (`·` = `null`, accessible `.visually-hidden` descriptions on every `<td>` cell such as `"0 to 7: weight 42, added"`). Uses **`bindPlayerKeys(document, playerControls)`** from `src/core/player-keys.js` (with `.hp-scroll-region` and `#sideNavbar.active` guards) and **`window.DSA_UI.announce(...)`** + `rescueFocus` from `shared.js`. Audited by `qa-engineer`, `accessibility-performance`, and `learning-content` subagents with all Critical/Major/Minor findings resolved prior to commit.
+- npm test output (paste the real lines):
+    # tests 337
+    # pass 336
+    # fail 0
+    # todo 1
+    [FAIL] Every HTML page except index.html is listed in navCategories
+    SUMMARY: 68 / 69 assertions passed (99%)
+  *(Note: the single `todo` in `node --test` is the pre-existing `avl-tree.html` live-region TODO, and the single `[FAIL]` in `tests/legacy-regression.cjs` is the expected C10 nav check for `graph.html` awaiting Claude's `shared.js` nav entry on merge. All 5 `graph.html` checks in `tests/a11y-static.test.js` and all 4 `graph.html` checks in `tests/legacy-regression.cjs` pass.)*
+- Browser checks done: Verified `graph.html` on `http://localhost:5510/graph.html` at `1280px` desktop and `375px` mobile in **both** light (`rgb(248, 250, 252)`) and dark (`rgb(11, 17, 32)`) themes via `#themeToggle`. Console clean: yes (`consoleEntries: []`, 0 uncaught errors/rejections, 0 dialogs). Verified **Play** advances (`Step 1 / 14` → `Step 4 / 14`, button displays `Pause`); verified on-screen Adjacency Matrix stays strictly symmetric in undirected mode across initial load, `removeVertex(2)`, weighted `addEdge(0, 7, 42)`, and Directed → Undirected collapse; verified `removeVertex(2)` removes vertex `2` and all 3 incident edges cleanly from SVG, Adjacency List, and Adjacency Matrix (`svgNodes: ["0","1","3","4","5"]`, `matrixHeaders: ["0","1","3","4","5"]`, `vertex2StillInAdjList: false`); verified directed mode renders arrowheads (`marker-end`), curves mutual edges (`0 → 7` and `7 → 0` with quadratic `Q` paths), makes matrix asymmetric, displays `"∅ (no outgoing edges)"` for sinks, and collapses opposite-direction pair on switch back to undirected; verified accessible matrix cells (`"0 to 7: weight 42, added"`, `"7 to 0: weight 42, added"`, `"0 to 0: no self-loop"`), inline `role="alert"` validation (self-loop & missing vertex), Random & Clear (empty states in all 3 views + Play disabled); verified at `375px` with full **12 / 12 vertices** in both themes: `scrollOverflowX === 0`, checkboxes `18px × 18px`, `.gr-mode-hint` `41px` tall, zero label/stage overlap across all 3 views, and `13 × 13` matrix scrolls internally (`417px` inside `268px`).
+- Not done / not verified: Full screen-reader listening pass (NVDA/VoiceOver) was not run. Did not edit `shared.js`, `index.html`, `src/core/tree-layout.js`, `src/core/player-keys.js`, `src/core/step-player.js`, `avl-tree.html`, or `main.css` sections 1–15.
+- Requests for Claude:
+  1. **Nav entry for `shared.js` (either new `Graphs` category or under `Tree / Graph Structures`):**
+     - `SVG_ICONS.graph`: `<svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><line x1="7.5" y1="6" x2="16.5" y2="6"/><line x1="6.4" y1="8.1" x2="10.6" y2="15.9"/><line x1="17.6" y1="8.1" x2="13.4" y2="15.9"/></svg>`
+     - Item: `{ label: "Graph Representation", href: "graph.html", iconKey: "graph" }`
+  2. **Homepage card for `index.html`:**
+     - Link: `graph.html`
+     - Title: `Graph Representation`
+     - Description: `Build directed or undirected, weighted or unweighted graphs and watch the Graph Diagram, sorted Adjacency List, and Adjacency Matrix stay synchronized on every step.`
+     - Footer: `O(V + E) List · O(V²) Matrix` &rarr; `Launch Visualizer`
+  3. **CSS section & classes added at end of `main.css` (lines 2146–2627, token-only; renumber to section 17 after G9 merges):**
+     - `.gr-card-header` (with `.step-counter`), `.gr-mode-row`, `.gr-toggle` (`input[type="checkbox"]`), `.gr-mode-hint`, `.gr-input-xs`
+     - `.gr-viz-stage` (with `.viz-stage-label`), `.gr-sub-stage`, `.gr-views-grid`, `.gr-scroll-region`, `.gr-svg-region`, `.gr-svg`
+     - `.gr-arrow-default`, `.gr-arrow-add`, `.gr-arrow-select`, `.gr-arrow-remove`, `.gr-arrow-compare`
+     - `.gr-edge`, `.gr-edge-ghost`, `.gr-edge-weight`, `.gr-node`, `.gr-node-circle`, `.gr-node-value`, `.gr-state-add`, `.gr-state-endpoint`, `.gr-state-remove`
+     - `.gr-legend`, `.gr-sw-add`, `.gr-sw-endpoint`, `.gr-sw-remove`, `.gr-sw-empty`
+     - `.gr-adj-list`, `.gr-adj-row`, `.gr-adj-row-add`, `.gr-adj-row-endpoint`, `.gr-adj-row-remove`, `.gr-adj-vertex`, `.gr-adj-arrow`, `.gr-adj-neighbors`, `.gr-adj-chip`, `.gr-chip-add`, `.gr-chip-weight`, `.gr-adj-empty-item`
+     - `.gr-matrix`, `.gr-matrix-corner`, `.gr-matrix-edge`, `.gr-matrix-diag`, `.gr-matrix-hdr-add`, `.gr-matrix-hdr-endpoint`, `.gr-matrix-hdr-remove`, `.gr-matrix-cell-add`, `.gr-matrix-cell-remove`
+     - `.gr-hidden` (kept last with `.gr-svg`/`.gr-adj-list`/`.gr-matrix`/`.gr-adj-row`/`.gr-adj-chip`/`.gr-adj-empty-item` modifiers), plus `@media (max-width: 640px)` and `@media (prefers-reduced-motion: reduce)` rules.
+
+---
+
 ### G9: Trie (Prefix Tree) module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 18:21 (Philippine time)

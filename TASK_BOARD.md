@@ -23,6 +23,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G10 | Graph representation module + `layoutCircle` + 3-view page | Gemini | `gemini/g10-graph` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |

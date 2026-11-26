@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Representation - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <main class="page-container" id="main-content">
+        <header class="page-header">
+            <div class="badge">Graph Structure &bull; Adjacency List &amp; Matrix</div>
+            <h1 class="page-title">Graph Representation Visualizer</h1>
+            <p class="page-desc">
+                Build directed or undirected, unweighted or weighted graphs (up to 12 vertices, IDs
+                <code>0&ndash;11</code>) and inspect three synchronized views of every recorded state: an
+                interactive <strong>Graph Diagram</strong>, a sorted <strong>Adjacency List</strong>, and an
+                <strong>Adjacency Matrix</strong> where absent edges are <code>null</code> (shown as
+                <code>&middot;</code>), never <code>0</code> or <code>&minus;1</code>.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="graphName">Graph</h2>
+            <p class="concept-body" id="graphSummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Add Edge</div><div class="prop-value" id="cxAddEdge"></div></div>
+                <div class="prop-item"><div class="prop-label">Edge Lookup</div><div class="prop-value" id="cxHasEdge"></div></div>
+                <div class="prop-item"><div class="prop-label">List Neighbors</div><div class="prop-value" id="cxNeighbors"></div></div>
+                <div class="prop-item"><div class="prop-label">Space</div><div class="prop-value" id="cxSpace"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Graph Controls &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Graph Mode</div>
+                <div class="controls-row gr-mode-row">
+                    <label class="gr-toggle" for="directedToggle">
+                        <input type="checkbox" id="directedToggle">
+                        <span>Directed</span>
+                    </label>
+                    <label class="gr-toggle" for="weightedToggle">
+                        <input type="checkbox" id="weightedToggle">
+                        <span>Weighted</span>
+                    </label>
+                    <span class="text-muted gr-mode-hint" id="modeHint">
+                        Undirected edges are symmetric (u &mdash; v). Weights are disabled in unweighted mode.
+                    </span>
+                </div>
+            </div>
+
+            <form class="control-section" id="vertexForm" novalidate>
+                <div class="control-section-title">2. Vertices (IDs 0&ndash;11, Max 12)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="vertexInput">Vertex ID (0&ndash;11)</label>
+                        <input type="text" id="vertexInput" class="input-sm" inputmode="numeric"
+                               autocomplete="off" placeholder="e.g. 6">
+                    </div>
+                    <button type="submit" class="btn" id="addVertexBtn">Add vertex</button>
+                    <button type="button" class="btn btn-danger" id="removeVertexBtn">Remove vertex</button>
+                </div>
+            </form>
+
+            <form class="control-section" id="edgeForm" novalidate>
+                <div class="control-section-title">3. Edges (No Self-Loops or Parallel Edges)</div>
+                <div class="controls-row">
+                    <div class="field">
+                        <label class="field-label" for="fromInput">From (0&ndash;11)</label>
+                        <input type="text" id="fromInput" class="input-sm gr-input-xs" inputmode="numeric"
+                               autocomplete="off" placeholder="e.g. 0">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="toInput">To (0&ndash;11)</label>
+                        <input type="text" id="toInput" class="input-sm gr-input-xs" inputmode="numeric"
+                               autocomplete="off" placeholder="e.g. 3">
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="weightInput">Weight (1&ndash;99)</label>
+                        <input type="text" id="weightInput" class="input-sm gr-input-xs" inputmode="numeric"
+                               autocomplete="off" placeholder="1–99" disabled>
+                    </div>
+                    <button type="submit" class="btn" id="addEdgeBtn">Add edge</button>
+                    <button type="button" class="btn btn-danger" id="removeEdgeBtn">Remove edge</button>
+                </div>
+            </form>
+
+            <div class="control-section">
+                <div class="control-section-title">4. Quick Actions</div>
+                <div class="controls-row">
+                    <button type="button" class="btn btn-secondary" id="sampleBtn">Sample graph</button>
+                    <button type="button" class="btn btn-secondary" id="randomBtn">Random</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="graphError" class="alert-banner alert-live bst-live" role="alert"></div>
+            <div id="graphStatus" class="alert-banner alert-live bst-live"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header gr-card-header">
+                <h2 class="card-title">Synchronized Graph Views</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" title="First step (Home)"><span aria-hidden="true">&#x23EE;</span> Reset</button>
+                <button type="button" class="btn btn-secondary" id="stepBackBtn" title="Previous step (&larr;)"><span aria-hidden="true">&#x25C0;</span> Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)"><span aria-hidden="true" id="playIcon">&#x25B6;</span> <span id="playLabel">Play</span></button>
+                <button type="button" class="btn btn-secondary" id="stepFwdBtn" title="Next step (&rarr;)">Step <span aria-hidden="true">&#x25B6;</span></button>
+                <div class="field field-inline">
+                    <label class="field-label" for="speedSelect">Speed</label>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="progress" class="visually-hidden">Execution step</label>
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0">
+
+            <div class="viz-stage gr-viz-stage">
+                <span class="viz-stage-label" id="graphStageLabel">View 1 &mdash; Graph (Circular Layout)</span>
+                <div id="graphStage" class="scroll-box scroll-box-clean hp-scroll-region gr-scroll-region gr-svg-region"
+                     role="region" aria-labelledby="graphStageLabel" tabindex="0">
+                    <svg id="graphSvg" class="hp-svg bst-svg gr-svg" role="img"
+                         aria-labelledby="graphSvgTitle" aria-describedby="graphSvgDesc"
+                         width="386" height="386" viewBox="0 0 386 386">
+                        <title id="graphSvgTitle">Graph visualization</title>
+                        <desc id="graphSvgDesc">Empty graph.</desc>
+                        <defs>
+                            <marker id="gr-arrow-default" class="gr-arrow-default"
+                                    markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                                    orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 1 1 L 8.5 4.5 L 1 8 Z"></path>
+                            </marker>
+                            <marker id="gr-arrow-add" class="gr-arrow-add"
+                                    markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                                    orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 1 1 L 8.5 4.5 L 1 8 Z"></path>
+                            </marker>
+                            <marker id="gr-arrow-select" class="gr-arrow-select"
+                                    markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                                    orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 1 1 L 8.5 4.5 L 1 8 Z"></path>
+                            </marker>
+                            <marker id="gr-arrow-remove" class="gr-arrow-remove"
+                                    markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                                    orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 1 1 L 8.5 4.5 L 1 8 Z"></path>
+                            </marker>
+                            <marker id="gr-arrow-compare" class="gr-arrow-compare"
+                                    markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                                    orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 1 1 L 8.5 4.5 L 1 8 Z"></path>
+                            </marker>
+                        </defs>
+                        <g id="graphEdgeLayer"></g>
+                        <g id="graphGhostLayer"></g>
+                        <g id="graphNodeLayer"></g>
+                    </svg>
+                    <p id="graphEmpty" class="text-muted text-italic hp-empty gr-hidden">
+                        Graph is empty. Add a vertex or load the sample graph.
+                    </p>
+                </div>
+                <div class="bar-legend gr-legend" aria-hidden="true">
+                    <span><i class="sw gr-sw-add"></i> Added vertex / edge (dotted)</span>
+                    <span><i class="sw gr-sw-endpoint"></i> Edge endpoint (dashed)</span>
+                    <span><i class="sw gr-sw-remove"></i> Removed edge / endpoint (dash-dot in graph, double in list/matrix)</span>
+                    <span><i class="sw gr-sw-empty"></i> No edge in matrix (null &middot;)</span>
+                </div>
+            </div>
+
+            <div class="grid-2 gr-views-grid">
+                <div class="viz-stage gr-viz-stage gr-sub-stage">
+                    <span class="viz-stage-label" id="adjListStageLabel">View 2 &mdash; Adjacency List (Ascending Neighbors)</span>
+                    <div id="adjListStage" class="scroll-box scroll-box-clean hp-scroll-region gr-scroll-region"
+                         role="region" aria-labelledby="adjListStageLabel" tabindex="0">
+                        <ol id="adjList" class="gr-adj-list" role="list"></ol>
+                        <p id="adjListEmpty" class="text-muted text-italic hp-empty gr-hidden">
+                            No vertices in adjacency list.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="viz-stage gr-viz-stage gr-sub-stage">
+                    <span class="viz-stage-label" id="adjMatrixStageLabel">View 3 &mdash; Adjacency Matrix (&middot; = null)</span>
+                    <div id="adjMatrixStage" class="scroll-box scroll-box-clean hp-scroll-region gr-scroll-region"
+                         role="region" aria-labelledby="adjMatrixStageLabel" tabindex="0">
+                        <table id="adjMatrix" class="gr-matrix">
+                            <caption id="adjMatrixCaption" class="visually-hidden">
+                                Adjacency matrix representation of the current graph snapshot.
+                            </caption>
+                            <thead id="adjMatrixHead"></thead>
+                            <tbody id="adjMatrixBody"></tbody>
+                        </table>
+                        <p id="adjMatrixEmpty" class="text-muted text-italic hp-empty gr-hidden">
+                            No vertices in adjacency matrix.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Build)</div>
+                    <ol class="pseudocode hp-scroll-region" id="pseudocode" role="list" aria-labelledby="codeHeading" tabindex="0"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Graph State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Vertices</span><strong id="statVertices">0 / 12</strong></div>
+                        <div><span>Edges</span><strong id="statEdges">0</strong></div>
+                        <div><span>Mode</span><strong id="statMode">Undirected &middot; Unweighted</strong></div>
+                        <div><span>Operation</span><strong id="statOperation">Build</strong></div>
+                        <div><span>Integrity</span><strong id="statIntegrity">OK</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Adjacency List vs. Adjacency Matrix Complexity</h2>
+            <div class="table-wrap hp-scroll-region" role="region" aria-label="Graph representation complexity table" tabindex="0">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Adjacency List</th>
+                            <th scope="col">Adjacency Matrix</th>
+                            <th scope="col">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Notation: <code>V</code> = vertices, <code>E</code> = edges, <code>deg(u)</code> = degree of vertex <code>u</code>
+                (out-degree <code>deg&supplus;(u)</code> in directed graphs).
+                Keyboard shortcuts when focus is outside a control or scroll region: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Adjacency List vs. Adjacency Matrix Tradeoffs</h2>
+                    <p>An <strong>Adjacency List</strong> uses <code>O(V + E)</code> space and iterates vertex <code>u</code>&rsquo;s neighbors in <code>O(deg(u))</code>, making it ideal for sparse graphs (<code>E &ll; V&sup2;</code>). An <strong>Adjacency Matrix</strong> uses <code>O(V&sup2;)</code> space but checks whether edge <code>(u, v)</code> exists in <code>O(1)</code> array indexing.</p>
+                </div>
+                <div class="check">
+                    <h2>Undirected Symmetry vs. Directed Asymmetry</h2>
+                    <p>In an <strong>undirected</strong> graph, edge <code>u &mdash; v</code> updates both <code>adj[u]</code> and <code>adj[v]</code>, so the adjacency matrix is symmetric (<code>M[u][v] = M[v][u]</code>). In a <strong>directed</strong> graph, <code>u &rarr; v</code> appears only in row <code>u</code>, column <code>v</code>, and mutual edges <code>u &rarr; v</code> and <code>v &rarr; u</code> can carry independent weights.</p>
+                </div>
+                <div class="check">
+                    <h2>Weighted vs. Unweighted &amp; Why <code>null</code> Means No Edge</h2>
+                    <p>Unweighted edges store <code>1</code> (connected), while weighted edges store integer costs in <code>1&ndash;99</code>. Absent edges are stored as <code>null</code> (displayed as <code>&middot;</code>)&mdash;never <code>0</code> or <code>&minus;1</code>&mdash;because real weighted graphs can have zero-cost or negative-cost edges that must never be confused with &ldquo;no edge.&rdquo;</p>
+                </div>
+                <div class="check">
+                    <h2>Ascending Neighbor Order for Traversals</h2>
+                    <p>Keeping every vertex&rsquo;s neighbor list strictly ascending by vertex ID guarantees deterministic visitation order in <strong>BFS</strong> and <strong>DFS</strong>, and deterministic neighbor relaxation order in <strong>Dijkstra&rsquo;s algorithm</strong>, so every student traces the same sequence across runs.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/graph-page.js"></script>
+</body>
+</html>
