@@ -10,9 +10,9 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-27 02:10 |
+| Last updated by Claude | 2026-11-27 02:23 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1, G2, G3 (2026-11-25); G4-G9 (2026-11-26); **G10 merged to `main` at 21:21** |
+| Merged | G1, G2, G3 (2026-11-25); G4-G10 (2026-11-26); **G11, G12, G13 merged to `main` at 2026-11-27 02:23** |
 | **Gemini: do next** | **G14**: lessons for six pages (spec below), branch `gemini/g14-lessons` from fresh `main`. Then **G15** (quiz banks for the same pages), then **G16** (lessons + quizzes for the tree pages), each after reporting the one before. G11, G12 and G13 are reported; Claude reviews and merges them. Take only the task named here |
 | Claude is working on | Reviewing G11-G13; BFS/DFS on the graph page (C23), linked-list pages on the step player (C24), recursion/DP/greedy/backtracking demos (C25). Don't edit the linked-list pages or `graph.html` |
 
