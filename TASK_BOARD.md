@@ -27,6 +27,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
+| C24 | Singly, doubly and circular linked-list pages on the step player (pointer walks, every re-pointed link old → new, head/tail changes, ring wrap); shared `src/core/list-renderer.js`; main.css section 20. Every page now has play/step/keyboard controls | Claude (visualization-engineer agent) | 2026-11-27 02:26 (merged to `main`) |
 | G13 | Segment Tree module + page; Claude renumbered its CSS section (26) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
 | G12 | Fenwick Tree (BIT) module + page; Claude renumbered its CSS section (25) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
 | G11 | Disjoint Set Union (Union-Find) module + page; Claude renumbered its CSS section (24) at merge | Gemini (reviewed by qa-engineer + Claude) | 2026-11-27 02:22 (merged to `main`) |
