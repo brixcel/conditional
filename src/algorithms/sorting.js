@@ -9,7 +9,7 @@
  * Step shape:
  * {
  *   array: number[],        // array contents at this step
- *   type: "start" | "compare" | "swap" | "shift" | "insert" | "select" | "sorted" | "done",
+ *   type: "start" | "compare" | "swap" | "shift" | "insert" | "select" | "split" | "count" | "sorted" | "done",
  *   indices: number[],      // indices involved in this step
  *   sorted: number[],       // indices known to be in final position
  *   line: number,           // 1-based pseudocode line being executed
@@ -406,8 +406,8 @@ export const SORTING_ALGORITHMS = {
             "    swap A[i], A[hi]   (pivot lands in its final place)",
             "    quickSort(A, lo, i − 1);  quickSort(A, i + 1, hi)",
         ],
-        complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n²)", space: "O(log n) avg stack", stable: false },
-        summary: "Picks a pivot (here: the last element, Lomuto scheme), moves smaller values left of it and larger values right, then sorts each side. Fast in practice, but already-sorted input with this pivot choice hits the O(n²) worst case.",
+        complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n²)", space: "O(log n) avg · linear worst", stable: false },
+        summary: "Picks a pivot (here: the last element, Lomuto scheme), moves smaller values left of it and larger values right, then sorts each side. Fast in practice, but with this pivot and a strict < test, already-sorted, reverse-sorted and all-equal input all hit the O(n²) worst case.",
     },
     heap: {
         name: "Heap Sort",
@@ -422,7 +422,7 @@ export const SORTING_ALGORITHMS = {
             "    if largest ≠ i: swap A[i], A[largest];  i ← largest;  repeat",
         ],
         complexity: { best: "O(n log n)", average: "O(n log n)", worst: "O(n log n)", space: "O(1)", stable: false },
-        summary: "Treats the array as a binary max-heap (children of index i are 2i + 1 and 2i + 2). Repeatedly swaps the root, the largest value, to the end and restores the heap. In-place and always O(n log n).",
+        summary: "Treats the array as a binary max-heap (children of index i are 2i + 1 and 2i + 2). Repeatedly swaps the root, the largest value, to the end and restores the heap. In-place and O(n log n) in the worst case; the O(n log n) best case assumes distinct keys.",
     },
     counting: {
         name: "Counting Sort",
@@ -441,7 +441,7 @@ export const SORTING_ALGORITHMS = {
         name: "Radix Sort (LSD)",
         run: radixSort,
         pseudocode: [
-            "for place ← 1, 10, 100, … while place ≤ max",
+            "for place ← 1, 10, 100, … while place ≤ max (negatives first shifted up by −min)",
             "    count how many keys have each digit 0–9 at this place",
             "    prefix sums: count[d] = end position for digit d",
             "    for i ← n − 1 down to 0: B[−−count[digit(A[i])]] ← A[i]",

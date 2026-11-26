@@ -1,0 +1,314 @@
+{
+  "id": "sorting",
+  "title": "Sorting Algorithms",
+  "topic": "sorting",
+  "description": "Bubble, selection, insertion, merge, quick, heap, counting and radix sort exactly as sorting.html runs them.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "sorting-001",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What does one complete pass of bubble sort guarantee?",
+      "choices": [
+        "The largest value not yet in place has moved to the end of the unsorted part",
+        "The smallest value has moved to the front",
+        "The array is sorted",
+        "Every pair of neighbours is now in order"
+      ],
+      "answer": "The largest value not yet in place has moved to the end of the unsorted part",
+      "explanation": "Each comparison swaps the larger neighbour to the right, so the largest unsorted value is carried all the way to the end of the pass (\"bubbles up\"). The smallest value only moves one position left per pass, so it is not guaranteed to reach the front. One pass does not sort the array in general.",
+      "tags": [
+        "bubble"
+      ],
+      "page": "On sorting.html: choose Bubble Sort, enter 5 1 4 2 8 and step to \"Pass 1 complete\"."
+    },
+    {
+      "id": "sorting-002",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Bubble sort runs on [5, 1, 4, 2, 8]. What is the array after the first pass?",
+      "format": "list",
+      "answer": "1, 4, 2, 5, 8",
+      "hint": "Compare positions 0-1, 1-2, 2-3, 3-4 in order, swapping whenever the left value is larger.",
+      "explanation": "5 > 1 swap → [1, 5, 4, 2, 8]; 5 > 4 swap → [1, 4, 5, 2, 8]; 5 > 2 swap → [1, 4, 2, 5, 8]; 5 ≤ 8 no swap. 8 was already the largest, so it stays at the end. Answering [1, 2, 4, 5, 8] confuses one pass with the whole sort: 4 and 2 are still out of order.",
+      "tags": [
+        "bubble",
+        "trace"
+      ],
+      "page": "On sorting.html: choose Bubble Sort, enter 5 1 4 2 8 and step to \"Pass 1 complete\"."
+    },
+    {
+      "id": "sorting-003",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Selection sort runs on [29, 10, 14, 37, 13]. What is the array after the first pass (after index 0 is final)?",
+      "format": "list",
+      "answer": "10, 29, 14, 37, 13",
+      "hint": "Find the minimum of the whole array, then swap it with A[0].",
+      "explanation": "The minimum of the whole array is 10 at index 1, so A[0] and A[1] swap, giving [10, 29, 14, 37, 13]. Only those two positions change. Answering [10, 13, 14, 29, 37] treats selection sort like a full sort; answering [10, 14, 13, 29, 37] imagines several swaps in one pass, but selection sort makes at most one swap per pass.",
+      "tags": [
+        "selection",
+        "trace"
+      ],
+      "page": "On sorting.html: choose Selection Sort, enter 29 10 14 37 13 and step to \"Index 0 now holds 10\"."
+    },
+    {
+      "id": "sorting-004",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Quick sort here uses the last element as the pivot (Lomuto partition). It runs on [4, 7, 2, 6, 1, 5]. What is the array right after the first partition, when the pivot reaches its final place?",
+      "format": "list",
+      "answer": "4, 2, 1, 5, 7, 6",
+      "hint": "The pivot is 5. Keep a boundary i that starts at index 0; each value smaller than 5 is swapped to A[i] and i moves right.",
+      "explanation": "Pivot 5, i = 0. 4 < 5: stays at A[0], i = 1. 7 ≥ 5: leave it. 2 < 5: swap A[1], A[2] → [4, 2, 7, 6, 1, 5], i = 2. 6: leave. 1 < 5: swap A[2], A[4] → [4, 2, 1, 6, 7, 5], i = 3. Finally swap the pivot into A[3] → [4, 2, 1, 5, 7, 6]. The left side holds values below 5 and the right side holds values ≥ 5, but neither side is sorted yet, so [1, 2, 4, 5, 6, 7] is wrong.",
+      "tags": [
+        "quick",
+        "partition",
+        "trace"
+      ],
+      "page": "On sorting.html: choose Quick Sort, enter 4 7 2 6 1 5 and step to \"Pivot 5 is now at index 3\"."
+    },
+    {
+      "id": "sorting-005",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Insertion sort runs on the already-sorted array [1, 2, 3, 4, 5]. How many comparisons does it make in total?",
+      "answer": "4",
+      "hint": "Each key is compared with the value just to its left. What happens when that value is smaller?",
+      "explanation": "Keys 2, 3, 4 and 5 are each compared once with their left neighbour, which is smaller, so the inner loop stops at once: 4 comparisons, which is n − 1. That is why insertion sort's best case is O(n). Answering 10 (n(n−1)/2) describes the worst case, a reversed array.",
+      "tags": [
+        "insertion",
+        "best-case",
+        "trace"
+      ],
+      "page": "On sorting.html: choose Insertion Sort, enter 1 2 3 4 5 and read the comparison count at the end."
+    },
+    {
+      "id": "sorting-006",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "LSD radix sort runs on [170, 45, 75, 90, 802, 24, 2, 66]. What is the array after the first (ones digit) pass?",
+      "format": "list",
+      "answer": "170, 90, 802, 2, 24, 45, 75, 66",
+      "hint": "Group by the last digit (0, 2, 4, 5, 6) and keep values with the same digit in their original order.",
+      "explanation": "Ones digits: 170→0, 45→5, 75→5, 90→0, 802→2, 24→4, 2→2, 66→6. A stable pass orders by digit and keeps ties in input order: digit 0: 170, 90; digit 2: 802, 2; digit 4: 24; digit 5: 45, 75; digit 6: 66. Writing 90 before 170 or 2 before 802 breaks stability, and radix sort relies on stability to stay correct in later passes.",
+      "tags": [
+        "radix",
+        "stability",
+        "trace"
+      ],
+      "page": "On sorting.html: choose Radix Sort (LSD), enter 170 45 75 90 802 24 2 66 and step to \"After the ones pass\"."
+    },
+    {
+      "id": "sorting-007",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the worst-case time complexity of bubble sort?",
+      "choices": [
+        "O(n²)",
+        "O(n)",
+        "O(n log n)",
+        "O(log n)"
+      ],
+      "answer": "O(n²)",
+      "explanation": "On a reversed array every pass compares and swaps every neighbour pair in the unsorted part: (n−1) + (n−2) + … + 1 = n(n−1)/2 comparisons, which is O(n²). O(n) is bubble sort's BEST case (already sorted: one pass with no swaps, then it stops early), not its worst case.",
+      "tags": [
+        "bubble",
+        "complexity"
+      ]
+    },
+    {
+      "id": "sorting-008",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "What is the worst-case time complexity of merge sort?",
+      "choices": [
+        "O(n log n)",
+        "O(n²)",
+        "O(n)",
+        "O(log n)"
+      ],
+      "answer": "O(n log n)",
+      "explanation": "Merge sort always splits in half, giving about log₂ n levels, and merging each level touches all n values, so every input costs O(n log n). O(n²) is tempting because quick sort, also divide and conquer, can degrade to that; merge sort cannot, because its split point does not depend on the data.",
+      "tags": [
+        "merge",
+        "complexity"
+      ]
+    },
+    {
+      "id": "sorting-009",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "Quick sort with the last element as the pivot is given an array that is already sorted, with n distinct values. What is its running time?",
+      "choices": [
+        "O(n²)",
+        "O(n log n)",
+        "O(n)",
+        "O(log n)"
+      ],
+      "answer": "O(n²)",
+      "explanation": "On sorted input the last element is always the largest, so each partition puts the pivot at the end and leaves a subarray only one element smaller: (n−1) + (n−2) + … + 1 comparisons, which is O(n²). O(n log n) is quick sort's average case, which needs pivots that split the range reasonably evenly.",
+      "tags": [
+        "quick",
+        "worst-case",
+        "complexity"
+      ],
+      "page": "On sorting.html: run Quick Sort on 1 2 3 4 5 6 7 8 and compare its comparison count with Merge Sort."
+    },
+    {
+      "id": "sorting-010",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "How much extra memory does merge sort, as implemented here, need?",
+      "choices": [
+        "O(n)",
+        "O(1)",
+        "O(log n)",
+        "O(n²)"
+      ],
+      "answer": "O(n)",
+      "explanation": "Each merge copies the two halves into temporary arrays L and R before writing them back, and the top-level merge copies all n values, so the extra space is O(n). O(1) is true of heap sort, which sorts in place by swapping; that in-place behaviour is the main thing heap sort offers over merge sort.",
+      "tags": [
+        "merge",
+        "space",
+        "complexity"
+      ]
+    },
+    {
+      "id": "sorting-011",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these sorts, as implemented in this visualizer, are stable (equal values keep their original order)? Select all that apply.",
+      "choices": [
+        "Bubble Sort",
+        "Selection Sort",
+        "Insertion Sort",
+        "Merge Sort",
+        "Quick Sort",
+        "Heap Sort"
+      ],
+      "answer": [
+        "Bubble Sort",
+        "Insertion Sort",
+        "Merge Sort"
+      ],
+      "explanation": "Bubble and insertion sort only swap or shift neighbours that are strictly out of order, and merge sort takes from the left half on a tie, so equal values never pass each other. Selection sort's long-distance swap can jump a value over an equal one (for example [2, 2, 1]: the first 2 is swapped to the end), and quick sort's partition swaps and heap sort's root-to-end swaps can do the same, so those three are not stable.",
+      "tags": [
+        "stability"
+      ]
+    },
+    {
+      "id": "sorting-012",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "Selection sort makes fewer comparisons on an already-sorted array than on a reversed one.",
+      "answer": false,
+      "explanation": "Selection sort always scans the whole unsorted part to be sure it has the minimum, so it makes n(n−1)/2 comparisons on every input of size n (15 for n = 6, sorted or reversed). What changes with the input is the number of swaps, not comparisons. Bubble and insertion sort are the ones that speed up on sorted input.",
+      "tags": [
+        "selection",
+        "best-case"
+      ],
+      "page": "On sorting.html: run Selection Sort on 1 2 3 4 5 6 and then on 6 5 4 3 2 1 and compare the comparison counts."
+    },
+    {
+      "id": "sorting-013",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "Counting sort works by comparing pairs of elements.",
+      "answer": false,
+      "explanation": "Counting sort never compares two elements. It counts how often each value occurs, turns the counts into end positions with prefix sums, and writes each value straight into place, so the page shows 0 comparisons. That is how it runs in O(n + k) and escapes the Ω(n log n) lower bound, which applies only to comparison sorts.",
+      "tags": [
+        "counting",
+        "non-comparison"
+      ],
+      "page": "On sorting.html: run Counting Sort on any input and read the comparison count."
+    },
+    {
+      "id": "sorting-014",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "Heap sort is stable.",
+      "answer": false,
+      "explanation": "Heap sort swaps the root with the last element of the heap, which can carry a value far past an equal value, so equal values can end up in reversed order. It is in place (O(1) extra space) and O(n log n) in the worst case, which makes it easy to confuse with merge sort, but merge sort is the stable one.",
+      "tags": [
+        "heap",
+        "stability"
+      ]
+    },
+    {
+      "id": "sorting-015",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "When the fronts of L and R are equal during a merge, this merge sort takes the value from L. Why?",
+      "choices": [
+        "To keep the sort stable: the L copy came first in the original array",
+        "To guarantee the fewest possible comparisons",
+        "Because taking from R would put the values in the wrong order",
+        "It makes no difference; either choice gives the same result in every case"
+      ],
+      "answer": "To keep the sort stable: the L copy came first in the original array",
+      "explanation": "Values in L came from earlier positions than values in R, so taking L on a tie keeps equal values in their original order, which is stability. Taking from R would still produce correctly sorted numbers, so \"wrong order\" is incorrect, and the rule is not about saving comparisons. It does matter, though: when records are sorted by one field (such as students sorted by grade), an unstable merge could swap two students with the same grade.",
+      "tags": [
+        "merge",
+        "stability"
+      ],
+      "page": "On sorting.html: run Merge Sort on 3 1 3 2 and read the step that says the tie goes to L."
+    },
+    {
+      "id": "sorting-016",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "Heap sort stores a binary heap in an array starting at index 0. Where are the children of the value at index i?",
+      "choices": [
+        "2i + 1 and 2i + 2",
+        "2i and 2i + 1",
+        "i + 1 and i + 2",
+        "i / 2 and i / 2 + 1"
+      ],
+      "answer": "2i + 1 and 2i + 2",
+      "explanation": "With the root at index 0, its children are at 1 and 2, their children at 3–6, and so on: children of i are 2i + 1 and 2i + 2. The formula 2i and 2i + 1 is right only when the root is stored at index 1, which this visualizer does not do.",
+      "tags": [
+        "heap"
+      ]
+    },
+    {
+      "id": "sorting-017",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Run each sort on the already-sorted input 1 2 3 4 5 6 7 8. Which ones make only n − 1 = 7 comparisons? Select all that apply.",
+      "choices": [
+        "Bubble Sort",
+        "Insertion Sort",
+        "Selection Sort",
+        "Merge Sort",
+        "Quick Sort",
+        "Heap Sort"
+      ],
+      "answer": [
+        "Bubble Sort",
+        "Insertion Sort"
+      ],
+      "explanation": "Bubble sort finishes one pass with no swaps and stops early, and insertion sort compares each key once with a smaller neighbour: 7 comparisons each, so O(n). Selection sort still makes all 28, quick sort with a last-element pivot hits its worst case (28), merge sort makes 12, and heap sort still builds and dismantles a heap (27).",
+      "tags": [
+        "best-case",
+        "comparisons"
+      ],
+      "page": "On sorting.html: enter 1 2 3 4 5 6 7 8 and run every algorithm, reading the comparison count at the end."
+    },
+    {
+      "id": "sorting-018",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "How many comparisons does selection sort make on any array of 5 values?",
+      "answer": "10",
+      "hint": "Pass 1 compares against 4 values, pass 2 against 3, and so on.",
+      "explanation": "Pass 1 compares 4 times, pass 2 three times, then 2, then 1: 4 + 3 + 2 + 1 = 10 = n(n−1)/2. The count does not depend on the values, because selection sort always scans the whole unsorted part. Answering 4 (n − 1) gives the number of passes, not comparisons.",
+      "tags": [
+        "selection",
+        "comparisons"
+      ]
+    }
+  ]
+}

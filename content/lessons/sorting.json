@@ -1,0 +1,290 @@
+{
+  "id": "sorting",
+  "title": "Sorting Algorithms",
+  "page": "sorting.html",
+  "module": "src/algorithms/sorting.js",
+  "controller": "src/pages/sorting-page.js",
+  "summary": "Eight ways to put an array in ascending order: simple O(n²) sorts, O(n log n) divide and conquer and heap sorts, and two sorts that count instead of compare.",
+  "prerequisites": ["arrays", "recursion", "heap"],
+  "objectives": [
+    "Students can trace Bubble, Selection and Insertion Sort on a short array and predict the array after each pass.",
+    "Students can state the best, average and worst time and the extra space of each of the eight sorts on this page.",
+    "Students can explain what a stable sort is and name which of the eight sorts are stable.",
+    "Students can explain why sorted input is the best case for Bubble and Insertion Sort but the worst case for this Quick Sort.",
+    "Students can explain how Counting and Radix Sort order values without comparing them, and when they pay off.",
+    "Students can choose a suitable sort given the input size, value range, memory limit and need for stability."
+  ],
+  "levels": {
+    "beginner": [
+      "Sorting puts values in order, here from smallest to largest. Every algorithm on this page ends with the same sorted array, but takes different steps to get there. Counting those steps, the comparisons and the array writes, is how we compare algorithms.",
+      "Bubble Sort compares each pair of neighbours and swaps them if the left one is larger. After each pass the largest remaining value has moved to the end, like a bubble rising to the top.",
+      "Selection Sort scans the unsorted part for the smallest value and swaps it to the front. Insertion Sort works like sorting playing cards in your hand: take the next card and slide it left until it sits after a smaller or equal card.",
+      "Merge Sort and Quick Sort use divide and conquer: split the array into smaller parts, sort the parts, and combine them. Heap Sort uses a heap, a tree stored in the array where every parent is ≥ its children, to pull out the largest value again and again.",
+      "Counting Sort and Radix Sort never compare two values with each other. They count how many times each value or digit appears and use the counts to write every value straight into its place. Their Comparisons counter on the page stays at 0."
+    ],
+    "intermediate": [
+      "Time complexity describes how the number of steps grows with n, the number of values. With O(n²), doubling n makes roughly four times the work. O(n log n) grows much more slowly. Best, average and worst case describe the luckiest, a typical, and the unluckiest input of size n.",
+      "Bubble Sort here stops early when a pass makes no swaps, and Insertion Sort stops shifting as soon as it meets a value ≤ the key. On sorted input both finish after n − 1 comparisons, so their best case is O(n). Selection Sort has no early exit: it always makes n(n − 1)/2 comparisons, so even its best case is O(n²).",
+      "Merge Sort always splits in the middle, giving about log₂ n levels with O(n) merge work per level: O(n log n) on every input, plus an O(n) buffer for the halves. Heap Sort is also O(n log n) but needs only O(1) extra space.",
+      "Quick Sort averages O(n log n). This page always uses the last element as the pivot (the Lomuto partition scheme). On sorted input every partition puts all other values on one side, so each level removes only the pivot and the total becomes O(n²).",
+      "A sort is stable if equal values keep their original order. This matters when you sort by one key after another: sort a class list by surname, then stable-sort it by section, and each section stays in surname order. Bubble, Insertion, Merge, Counting and Radix Sort are stable here. Selection, Quick and Heap Sort are not.",
+      "In-place means the sort moves values inside the input array and never needs a second array of size n. Bubble, Selection, Insertion and Heap Sort use O(1) extra space. Quick Sort is in-place but uses the recursion stack. Merge, Counting and Radix Sort copy values into extra arrays."
+    ],
+    "advanced": [
+      "Any comparison sort needs Ω(n log n) comparisons in the worst case. It must tell apart all n! possible orderings, and each comparison has only two outcomes, so it needs at least log₂(n!) comparisons, which grows like n log n. Ω (big-omega) means at least this much. Merge Sort and Heap Sort meet this bound.",
+      "Counting Sort makes no comparisons, so that bound does not apply. It costs O(n + k), where k = max − min + 1 is the range of values. It pays off only when k is small compared with n: if 8 values span 1 to 999, k is 999 and the count array is far larger than the input. This version subtracts min, so negative values work.",
+      "Radix Sort (LSD, least significant digit first) runs one stable counting pass per decimal digit, ones first. Each pass costs O(n + 10), so d digits cost O(d·(n + 10)). Earlier passes survive only because each pass is stable. If there are negative values, every key is first shifted up by −min, which can add a digit.",
+      "This Quick Sort is also O(n²) on reverse-sorted input, where each pivot is the smallest or largest value left, and on all-equal input, where values equal to the pivot all go right. Recursion depth is O(log n) on average but n − 1 on sorted input, so the page lists its stack space as O(log n) on average and linear, O(n), in the worst case.",
+      "Heap Sort first builds a max-heap bottom-up in O(n) time, then does n − 1 swap-and-sift-down steps of O(log n) each. The children of index i are at 2i + 1 and 2i + 2, so the tree needs no pointers. Its long-distance swaps are what make it unstable."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "Bubble Sort",
+      "lines": [
+        "for i ← 0 to n − 2",
+        "    swapped ← false",
+        "    for j ← 0 to n − 2 − i",
+        "        if A[j] > A[j + 1]",
+        "            swap A[j], A[j + 1];  swapped ← true",
+        "    if not swapped: stop  (already sorted)"
+      ],
+      "registry": "SORTING_ALGORITHMS.bubble.pseudocode"
+    },
+    {
+      "name": "Selection Sort",
+      "lines": [
+        "for i ← 0 to n − 2",
+        "    min ← i",
+        "    for j ← i + 1 to n − 1",
+        "        if A[j] < A[min]",
+        "            min ← j",
+        "    swap A[i], A[min]  (if min ≠ i)"
+      ],
+      "registry": "SORTING_ALGORITHMS.selection.pseudocode"
+    },
+    {
+      "name": "Insertion Sort",
+      "lines": [
+        "for i ← 1 to n − 1",
+        "    key ← A[i];  j ← i − 1",
+        "    while j ≥ 0 and A[j] > key",
+        "        A[j + 1] ← A[j];  j ← j − 1",
+        "    A[j + 1] ← key"
+      ],
+      "registry": "SORTING_ALGORITHMS.insertion.pseudocode"
+    },
+    {
+      "name": "Merge Sort",
+      "lines": [
+        "mergeSort(A, lo, hi)",
+        "    if lo ≥ hi: return   (one element is sorted)",
+        "    mid ← ⌊(lo + hi) / 2⌋",
+        "    mergeSort(A, lo, mid);  mergeSort(A, mid + 1, hi)",
+        "    L ← A[lo..mid];  R ← A[mid + 1..hi]",
+        "    while L and R are not empty: take the smaller front (L on a tie)",
+        "        A[k] ← taken value;  k ← k + 1",
+        "    copy whatever is left in L or R into A"
+      ],
+      "registry": "SORTING_ALGORITHMS.merge.pseudocode"
+    },
+    {
+      "name": "Quick Sort",
+      "lines": [
+        "quickSort(A, lo, hi)",
+        "    if lo ≥ hi: return",
+        "    pivot ← A[hi];  i ← lo",
+        "    for j ← lo to hi − 1",
+        "        if A[j] < pivot: swap A[i], A[j];  i ← i + 1",
+        "    swap A[i], A[hi]   (pivot lands in its final place)",
+        "    quickSort(A, lo, i − 1);  quickSort(A, i + 1, hi)"
+      ],
+      "registry": "SORTING_ALGORITHMS.quick.pseudocode"
+    },
+    {
+      "name": "Heap Sort",
+      "lines": [
+        "for i ← ⌊n/2⌋ − 1 down to 0: siftDown(A, i, n)   (build max-heap)",
+        "for end ← n − 1 down to 1",
+        "    swap A[0], A[end]   (largest goes to its final place)",
+        "    siftDown(A, 0, end)",
+        "siftDown(A, i, size):",
+        "    largest ← biggest of A[i], A[2i + 1], A[2i + 2] inside size",
+        "    if largest ≠ i: swap A[i], A[largest];  i ← largest;  repeat"
+      ],
+      "registry": "SORTING_ALGORITHMS.heap.pseudocode"
+    },
+    {
+      "name": "Counting Sort",
+      "lines": [
+        "k ← max − min + 1;  count[0..k−1] ← 0",
+        "for each x in A: count[x − min] ← count[x − min] + 1",
+        "for v ← 1 to k − 1: count[v] ← count[v] + count[v − 1]",
+        "for i ← n − 1 down to 0: count[A[i] − min]−−;  B[count[A[i] − min]] ← A[i]",
+        "A ← B"
+      ],
+      "registry": "SORTING_ALGORITHMS.counting.pseudocode"
+    },
+    {
+      "name": "Radix Sort (LSD)",
+      "lines": [
+        "for place ← 1, 10, 100, … while place ≤ max (negatives first shifted up by −min)",
+        "    count how many keys have each digit 0–9 at this place",
+        "    prefix sums: count[d] = end position for digit d",
+        "    for i ← n − 1 down to 0: B[−−count[digit(A[i])]] ← A[i]",
+        "    A ← B"
+      ],
+      "registry": "SORTING_ALGORITHMS.radix.pseudocode"
+    }
+  ],
+  "complexity": {
+    "bubble": {
+      "best": "O(n)",
+      "average": "O(n²)",
+      "worst": "O(n²)",
+      "space": "O(1)",
+      "stable": true,
+      "inPlace": true,
+      "note": "The O(n) best case comes from the early exit on line 6 (no swaps in a pass). Without it Bubble Sort is O(n²) on every input.",
+      "registry": "SORTING_ALGORITHMS.bubble.complexity"
+    },
+    "selection": {
+      "best": "O(n²)",
+      "average": "O(n²)",
+      "worst": "O(n²)",
+      "space": "O(1)",
+      "stable": false,
+      "inPlace": true,
+      "note": "Always n(n − 1)/2 comparisons, but at most n − 1 swaps, which helps when writes are expensive.",
+      "registry": "SORTING_ALGORITHMS.selection.complexity"
+    },
+    "insertion": {
+      "best": "O(n)",
+      "average": "O(n²)",
+      "worst": "O(n²)",
+      "space": "O(1)",
+      "stable": true,
+      "inPlace": true,
+      "note": "The number of shifts equals the number of inversions (pairs that are out of order), so nearly sorted input is fast. Reverse-sorted input is the worst case.",
+      "registry": "SORTING_ALGORITHMS.insertion.complexity"
+    },
+    "merge": {
+      "best": "O(n log n)",
+      "average": "O(n log n)",
+      "worst": "O(n log n)",
+      "space": "O(n)",
+      "stable": true,
+      "inPlace": false,
+      "note": "Always splits at the middle, so no input is worse than another. The extra space is the L and R copies made while merging. Ties take from L, which keeps it stable.",
+      "registry": "SORTING_ALGORITHMS.merge.complexity"
+    },
+    "quick": {
+      "best": "O(n log n)",
+      "average": "O(n log n)",
+      "worst": "O(n²)",
+      "space": "O(log n) avg · linear worst",
+      "stable": false,
+      "inPlace": true,
+      "note": "Lomuto partition with the last element as pivot. Sorted, reverse-sorted and all-equal input give O(n²). Recursion depth is O(log n) on average but n − 1 in the worst case.",
+      "registry": "SORTING_ALGORITHMS.quick.complexity"
+    },
+    "heap": {
+      "best": "O(n log n)",
+      "average": "O(n log n)",
+      "worst": "O(n log n)",
+      "space": "O(1)",
+      "stable": false,
+      "inPlace": true,
+      "note": "Building the heap is O(n); the n − 1 sift-downs are O(log n) each. The best case assumes distinct values: if all values are equal, no sift-down moves anything.",
+      "registry": "SORTING_ALGORITHMS.heap.complexity"
+    },
+    "counting": {
+      "best": "O(n + k)",
+      "average": "O(n + k)",
+      "worst": "O(n + k)",
+      "space": "O(n + k)",
+      "stable": true,
+      "inPlace": false,
+      "note": "k = max − min + 1, the range of values. Makes 0 comparisons. Scanning right to left in the last loop keeps equal values in order.",
+      "registry": "SORTING_ALGORITHMS.counting.complexity"
+    },
+    "radix": {
+      "best": "O(d·(n + 10))",
+      "average": "O(d·(n + 10))",
+      "worst": "O(d·(n + 10))",
+      "space": "O(n + 10)",
+      "stable": true,
+      "inPlace": false,
+      "note": "d = number of decimal digits in the largest key (after shifting negatives up), 10 = number of possible digits. Makes 0 comparisons.",
+      "registry": "SORTING_ALGORITHMS.radix.complexity"
+    }
+  },
+  "applications": [
+    "Python's built-in sort and Java's sort for arrays of objects use Timsort, a stable hybrid of Merge Sort and Insertion Sort that is fast on data that is already partly sorted.",
+    "Introsort, used for std::sort in common C++ standard libraries, starts with Quick Sort, switches to Heap Sort if the recursion gets too deep, and finishes small parts with Insertion Sort.",
+    "External sorting of files too large for memory is based on merging: sort chunks that fit in memory, write them out, then merge the sorted chunks.",
+    "Radix Sort suits fixed-length keys with few digits, such as student numbers or dates written as YYYYMMDD, where d is small and no comparisons are needed."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "An O(n log n) sort is always faster than an O(n²) sort.",
+      "correction": "Big-O describes growth for large n. On small or nearly sorted arrays Insertion Sort often wins. On 1 2 3 4 5 6 7 8 this page shows 7 comparisons for Insertion Sort and 12 for Merge Sort."
+    },
+    {
+      "mistake": "Quick Sort is always O(n log n).",
+      "correction": "Only on average. With the last element as pivot, as on this page, sorted input is the worst case: 1 2 3 4 5 6 7 8 takes 28 comparisons, as many as Selection Sort."
+    },
+    {
+      "mistake": "An unstable sort can give a wrongly sorted result.",
+      "correction": "All eight sorts give correctly sorted output. Stable only means equal values keep their original relative order, which matters when each value carries other data, such as a student record."
+    },
+    {
+      "mistake": "Counting Sort is O(n), so it is always the best choice.",
+      "correction": "It is O(n + k). When the value range k is much larger than n, the count array dominates both time and memory, and it only works on whole-number keys."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Best case: sorted input",
+      "action": "Choose “Bubble Sort” in “Algorithm”. Type the values in “Values (2–16 whole numbers, −99 to 999)”, press “Load Values”, then press “▶ Play” (or drag the step slider to the end).",
+      "input": "1 2 3 4 5 6 7 8",
+      "expect": "After the first pass you see “No swaps in pass 1, so the array is already sorted — stop early.” The last step reads “Sorted: [1, 2, 3, 4, 5, 6, 7, 8] — 7 comparisons, 0 array writes.”"
+    },
+    {
+      "label": "Same input, no early exit",
+      "action": "Keep the same loaded values and choose “Selection Sort” in “Algorithm”, then “Quick Sort”. Press “▶ Play” for each and watch the Recursion depth counter during Quick Sort.",
+      "input": "",
+      "expect": "Both end with “28 comparisons, 0 array writes”. Selection Sort makes every comparison anyway. Quick Sort hits its O(n²) worst case: each partition only removes the pivot, and Recursion depth climbs to 7."
+    },
+    {
+      "label": "Worst case for the simple sorts",
+      "action": "Load the reversed values with “Load Values”, then compare “Bubble Sort” and “Insertion Sort” in “Algorithm”, pressing “▶ Play” for each.",
+      "input": "8 7 6 5 4 3 2 1",
+      "expect": "Bubble Sort ends with “28 comparisons, 56 array writes” (every swap is 2 writes). Insertion Sort ends with “28 comparisons, 35 array writes”: 28 shifts plus 7 key placements, because shifting writes once instead of swapping."
+    },
+    {
+      "label": "Merge Sort ignores the input order",
+      "action": "Load the sorted values with “Load Values”, choose “Merge Sort” in “Algorithm” and press “▶ Play”. Watch the faded bars and the Active range counter.",
+      "input": "1 2 3 4 5 6 7 8",
+      "expect": "The last step reads “Sorted: [1, 2, 3, 4, 5, 6, 7, 8] — 12 comparisons, 24 array writes.” Every element is written once per level, and 8 values give 3 levels, so 3 × 8 = 24 writes."
+    },
+    {
+      "label": "Radix Sort, one digit at a time",
+      "action": "Load the values with “Load Values”, choose “Radix Sort (LSD)” in “Algorithm”, and use “Step ▶” to stop after each pass. The Key / pivot / digit counter names the current digit.",
+      "input": "170 45 75 90 802 24 2 66",
+      "expect": "After the first pass: “After the ones pass: [170, 90, 802, 2, 24, 45, 75, 66].” 170 stays before 90 because both end in 0 and the pass is stable. Three passes in all, and Comparisons stays at 0."
+    },
+    {
+      "label": "Counting Sort with negative values",
+      "action": "Load the values with “Load Values”, choose “Counting Sort” in “Algorithm”, and press “Step ▶” to read the first steps.",
+      "input": "3 -2 0 3 -2 1",
+      "expect": "Step 2 explains “k = 3 − (-2) + 1 = 6 slots”, so value v is counted in slot v − (−2). The last step reads “Sorted: [-2, -2, 0, 1, 3, 3] — 0 comparisons, 6 array writes.”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapters 2, 6, 7 and 8.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Chapter 2, Sorting.",
+    "Knuth, D. E. The Art of Computer Programming, Vol. 3: Sorting and Searching, 2nd ed. Addison-Wesley, 1998. Section 5.2."
+  ],
+  "reviewed": null
+}
