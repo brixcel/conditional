@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Table - DSA Visualizer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="page-header">
+            <div class="badge">Associative Structure &bull; Hashing</div>
+            <h1 class="page-title">Hash Table Visualization</h1>
+            <p class="page-desc">
+                Map integer keys to buckets using <code>h(k) = ((k mod m) + m) mod m</code>.
+                Switch between <strong>Separate Chaining</strong> and <strong>Linear Probing</strong>
+                to watch collisions, probe sequences, tombstones, and rehashing step by step.
+            </p>
+        </header>
+
+        <div class="concept-card">
+            <h2 class="concept-title" id="strategyName">Separate Chaining</h2>
+            <p class="concept-body" id="strategySummary"></p>
+            <div class="concept-props">
+                <div class="prop-item"><div class="prop-label">Insert (Avg)</div><div class="prop-value" id="cxInsert"></div></div>
+                <div class="prop-item"><div class="prop-label">Search (Avg)</div><div class="prop-value" id="cxSearch"></div></div>
+                <div class="prop-item"><div class="prop-label">Delete (Avg)</div><div class="prop-value" id="cxDelete"></div></div>
+                <div class="prop-item"><div class="prop-label">Worst Case</div><div class="prop-value" id="cxWorst"></div></div>
+                <div class="prop-item"><div class="prop-label">Load Factor (&alpha;)</div><div class="prop-value" id="cxLoad"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Configuration &amp; Operations</h2>
+            </div>
+
+            <div class="control-section">
+                <div class="control-section-title">1. Collision Strategy &amp; Table Size</div>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Collision Resolution</span>
+                        <select id="strategySelect">
+                            <option value="chaining" selected>Separate Chaining (Buckets + Chains)</option>
+                            <option value="linear">Linear Probing (Open Addressing)</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Table Size m (3–19)</span>
+                        <input type="text" id="capacityInput" class="input-sm" inputmode="numeric" autocomplete="off"
+                               value="7" aria-describedby="htMessage">
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="button" class="btn btn-secondary" id="rehashBtn">Rehash / Resize</button>
+                    <button type="button" class="btn btn-secondary" id="demoBtn">Load Demo Data</button>
+                    <button type="button" class="btn btn-danger" id="clearBtn">Clear Table</button>
+                </div>
+            </div>
+
+            <form class="control-section" id="opForm" novalidate>
+                <div class="control-section-title">2. Insert, Search &amp; Delete</div>
+                <div class="controls-row">
+                    <label class="field">
+                        <span class="field-label">Integer Key (&minus;9999 to 9999)</span>
+                        <input type="text" id="keyInput" class="input-sm" inputmode="numeric" autocomplete="off"
+                               placeholder="e.g. 24 or -5" aria-describedby="htMessage">
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Value (optional, max 24 chars)</span>
+                        <input type="text" id="valueInput" class="input-md" maxlength="24" autocomplete="off"
+                               placeholder="e.g. Ana">
+                    </label>
+                </div>
+                <div class="controls-row">
+                    <button type="submit" class="btn" id="insertBtn">Insert / Update</button>
+                    <button type="button" class="btn btn-secondary" id="searchBtn">Search Key</button>
+                    <button type="button" class="btn btn-danger" id="deleteBtn">Delete Key</button>
+                </div>
+            </form>
+
+            <div id="htMessage" class="alert-banner alert-live" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Table State &amp; Step Replay</h2>
+                <span class="step-counter" id="stepCounter" aria-live="off">Step 0 / 0</span>
+            </div>
+
+            <div class="player-controls" role="group" aria-label="Playback controls">
+                <button type="button" class="btn btn-secondary" id="resetBtn" aria-label="Back to first step" title="First step (Home)">&#x23EE; Reset</button>
+                <button type="button" class="btn btn-secondary" id="prevBtn" aria-label="Previous step" title="Previous step (&larr;)">&#x25C0; Back</button>
+                <button type="button" class="btn" id="playBtn" title="Play / pause (Space)">&#x25B6; Play</button>
+                <button type="button" class="btn btn-secondary" id="nextBtn" aria-label="Next step" title="Next step (&rarr;)">Step &#x25B6;</button>
+                <label class="field field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speedSelect">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1&times;</option>
+                        <option value="2">2&times;</option>
+                        <option value="4">4&times;</option>
+                    </select>
+                </label>
+            </div>
+
+            <input type="range" class="player-progress" id="progress" min="0" max="0" value="0" aria-label="Execution step">
+
+            <div class="viz-stage">
+                <span class="viz-stage-label" id="stageLabel">Separate Chaining — Bucket Array</span>
+                <div id="hashStage" class="scroll-box scroll-box-clean" aria-label="Hash Table Visualization"></div>
+                <div class="bar-legend" aria-hidden="true">
+                    <span><i class="sw sw-select"></i> Hash / Home</span>
+                    <span><i class="sw sw-compare"></i> Probing / Collision</span>
+                    <span><i class="sw sw-sorted"></i> Inserted / Found</span>
+                    <span><i class="sw sw-swap"></i> Deleted / Not Found</span>
+                </div>
+            </div>
+
+            <p class="step-message" id="stepMessage" aria-live="polite"></p>
+
+            <div class="grid-2 algo-detail">
+                <div>
+                    <div class="control-section-title" id="codeHeading">Pseudocode (Insert)</div>
+                    <ol class="pseudocode" id="pseudocode"></ol>
+                </div>
+                <div>
+                    <div class="control-section-title">Hash Table State</div>
+                    <div class="state-monitor stat-grid">
+                        <div><span>Hash Function</span><strong id="statFormula">h(k) = k mod 7</strong></div>
+                        <div><span>Entries (n)</span><strong id="statSize">0</strong></div>
+                        <div><span>Capacity (m)</span><strong id="statCap">7</strong></div>
+                        <div><span>Load Factor (&alpha; = n/m)</span><strong id="statLoad">0.00</strong></div>
+                        <div><span>Tombstones (DELETED)</span><strong id="statTombstones">0</strong></div>
+                        <div><span>Probes (This Op)</span><strong id="statProbes">0</strong></div>
+                        <div><span>Total Collisions</span><strong id="statCollisions">0</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Collision Resolution Comparison</h2>
+            <div class="table-wrap">
+                <table class="cx-table">
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Insert (Avg)</th>
+                            <th>Search (Avg)</th>
+                            <th>Delete (Avg)</th>
+                            <th>Worst Case</th>
+                            <th>Space</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cxTable"></tbody>
+                </table>
+            </div>
+            <p class="concept-body table-note">
+                Keyboard shortcuts when focus is outside an input: <kbd>Space</kbd> play/pause,
+                <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.
+            </p>
+            <div class="grid-2">
+                <div class="check">
+                    <h2>Modulo Hashing &amp; Negative Keys</h2>
+                    <p>Using <code>((k mod m) + m) mod m</code> guarantees a valid bucket index in <code>[0, m &minus; 1]</code> even for negative keys. Choosing a prime table size <code>m</code> (such as 7, 11, or 13) reduces clustering when keys share common factors.</p>
+                </div>
+                <div class="check">
+                    <h2>Load Factor (&alpha; = n / m) &amp; Rehashing</h2>
+                    <p>As &alpha; grows, chains lengthen in Separate Chaining and probe runs grow sharply in Linear Probing. Rehashing allocates a fresh table size and reinserts every live key, restoring O(1) expected time.</p>
+                </div>
+                <div class="check">
+                    <h2>Primary Clustering (Linear Probing)</h2>
+                    <p>In Linear Probing, consecutive occupied slots merge into long runs. Any key hashing into a run must walk to the end of it, making the cluster even longer.</p>
+                </div>
+                <div class="check">
+                    <h2>Why DELETED Tombstones Matter</h2>
+                    <p>Setting a deleted slot back to <code>EMPTY</code> in Linear Probing would break search chains for keys inserted later via collisions. A <code>DELETED</code> tombstone tells Search to keep probing while letting Insert reuse the slot.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script type="module" src="src/pages/hash-table-page.js"></script>
+</body>
+</html>
