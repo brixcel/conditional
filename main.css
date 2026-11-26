@@ -3067,3 +3067,556 @@ input:disabled, select:disabled {
         animation: none;
     }
 }
+
+/* --------------------------------------------------------------------------
+   20. Segment Tree (G13)
+   Reuses sections 14/15 (.hp-*, .bst-*) scroll regions and cells; uses
+   section 1 design tokens only (zero hardcoded colours). Every overlap and
+   step state pairs colour with border geometry + a glyph badge (WCAG 1.4.1).
+   -------------------------------------------------------------------------- */
+.st-card-header {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.st-card-header .step-counter {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.st-input-xs {
+    width: 112px;
+    max-width: 100%;
+}
+
+.st-viz-stage,
+.st-array-stage {
+    padding-top: 14px;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+}
+
+.st-viz-stage .viz-stage-label,
+.st-array-stage .viz-stage-label {
+    position: static;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.st-array-region {
+    width: 100%;
+    padding: 6px 4px;
+}
+
+.st-array-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    justify-content: safe center;
+    gap: 8px;
+    padding: 4px 6px;
+    width: max-content;
+    min-width: 100%;
+    overflow-x: visible;
+}
+
+.st-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+/* Tree edges — stroke-linecap: butt on all dashed/dotted patterns. */
+.st-edge {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.st-edge.st-edge-full {
+    stroke: var(--bar-sorted);
+    stroke-width: 3;
+    stroke-dasharray: none;
+}
+
+.st-edge.st-edge-partial {
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-edge.st-edge-disjoint {
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 2 3;
+}
+
+.st-edge.st-edge-combine {
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+}
+
+.st-edge.st-edge-visit {
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+/* Tree nodes */
+.st-node-box {
+    fill: var(--bg-card);
+    stroke: var(--primary-light);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    transition: fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.st-node-inner {
+    display: none;
+    fill: none;
+    stroke: var(--bar-sorted);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    pointer-events: none;
+}
+
+.st-active-halo {
+    display: none;
+    fill: none;
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-linecap: butt;
+    pointer-events: none;
+}
+
+.st-node.st-active .st-active-halo {
+    display: inline;
+}
+
+.st-node.st-root .st-node-box {
+    stroke: var(--primary-text);
+    stroke-width: 2.5;
+}
+
+.st-node.st-pending .st-node-box {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 3 3;
+}
+
+.st-node.st-pending .st-node-value {
+    fill: var(--text-muted);
+}
+
+/* Full overlap: double solid ring + success tokens */
+.st-node.st-full .st-node-box {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+    stroke-width: 2.5;
+    stroke-dasharray: none;
+}
+
+.st-node.st-full .st-node-inner {
+    display: inline;
+    stroke: var(--bar-sorted);
+}
+
+.st-node.st-full .st-active-halo {
+    stroke: var(--bar-sorted);
+}
+
+/* Partial overlap: dashed border + warning tokens */
+.st-node.st-partial .st-node-box {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-node.st-partial .st-active-halo {
+    stroke: var(--bar-compare);
+}
+
+/* Disjoint: dotted border + subdued surface (maintains >= 4.5:1 text & >= 3:1 stroke) */
+.st-node.st-disjoint .st-node-box {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+    stroke-width: 2;
+    stroke-dasharray: 2 3;
+}
+
+.st-node.st-disjoint .st-node-value {
+    fill: var(--text-secondary);
+}
+
+.st-node.st-disjoint .st-active-halo {
+    stroke: var(--text-light);
+}
+
+/* Combine / Recompute: dotted thick border + primary-select tokens */
+.st-node.st-combine .st-node-box,
+.st-node.st-recompute .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 3;
+    stroke-dasharray: 2 2;
+}
+
+.st-node.st-combine .st-active-halo,
+.st-node.st-recompute .st-active-halo {
+    stroke: var(--bar-select);
+}
+
+/* Update / Populate leaf: double solid ring + primary-select tokens */
+.st-node.st-update-leaf .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+    stroke-width: 2.5;
+    stroke-dasharray: none;
+}
+
+.st-node.st-update-leaf .st-node-inner {
+    display: inline;
+    stroke: var(--bar-select);
+}
+
+.st-node.st-update-leaf .st-active-halo {
+    stroke: var(--bar-select);
+}
+
+/* Active visiting: dashed focus border */
+.st-node.st-visit .st-node-box {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+    stroke-width: 2.5;
+    stroke-dasharray: 5 3;
+}
+
+.st-node.st-visit .st-active-halo {
+    stroke: var(--border-focus);
+}
+
+.st-node-value {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.st-node-range {
+    fill: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--bg-stage);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.st-node.st-root .st-node-range,
+.st-node.st-combine .st-node-range,
+.st-node.st-recompute .st-node-range,
+.st-node.st-update-leaf .st-node-range,
+.st-node.st-visit .st-node-range {
+    fill: var(--primary-text);
+    font-weight: 700;
+}
+
+.st-node.st-full .st-node-range {
+    fill: var(--success-text);
+    font-weight: 700;
+}
+
+.st-node.st-partial .st-node-range {
+    fill: var(--warning-text);
+    font-weight: 700;
+}
+
+/* Top-right non-colour glyph badge on classified/active nodes */
+.st-badge {
+    display: none;
+    pointer-events: none;
+}
+
+.st-badge.st-badge-visible {
+    display: inline;
+}
+
+.st-badge-bg {
+    fill: var(--bg-card);
+    stroke: var(--text-light);
+    stroke-width: 1.5;
+}
+
+.st-badge-text {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.st-node.st-full .st-badge-bg {
+    fill: var(--success-subtle);
+    stroke: var(--bar-sorted);
+}
+
+.st-node.st-full .st-badge-text {
+    fill: var(--success-text);
+}
+
+.st-node.st-partial .st-badge-bg {
+    fill: var(--warning-subtle);
+    stroke: var(--bar-compare);
+}
+
+.st-node.st-partial .st-badge-text {
+    fill: var(--warning-text);
+}
+
+.st-node.st-disjoint .st-badge-bg {
+    fill: var(--bg-subtle);
+    stroke: var(--text-light);
+}
+
+.st-node.st-disjoint .st-badge-text {
+    fill: var(--text-secondary);
+}
+
+.st-node.st-combine .st-badge-bg,
+.st-node.st-recompute .st-badge-bg,
+.st-node.st-update-leaf .st-badge-bg {
+    fill: var(--primary-subtle);
+    stroke: var(--bar-select);
+}
+
+.st-node.st-combine .st-badge-text,
+.st-node.st-recompute .st-badge-text,
+.st-node.st-update-leaf .st-badge-text {
+    fill: var(--primary-text);
+}
+
+.st-node.st-visit .st-badge-bg {
+    fill: var(--primary-subtle);
+    stroke: var(--border-focus);
+}
+
+.st-node.st-visit .st-badge-text {
+    fill: var(--primary-text);
+}
+
+/* Legend swatches — 1:1 border style, token palette, and glyph cue */
+.st-sw {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+}
+
+.st-sw-full {
+    background-color: var(--success-subtle);
+    border: 2px solid var(--bar-sorted);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3px var(--bar-sorted);
+    color: var(--success-text);
+}
+
+.st-sw-full::after {
+    content: "\2713";
+}
+
+.st-sw-partial {
+    background-color: var(--warning-subtle);
+    border: 2px dashed var(--bar-compare);
+    color: var(--warning-text);
+}
+
+.st-sw-partial::after {
+    content: "\00BD";
+}
+
+.st-sw-disjoint {
+    background-color: var(--bg-subtle);
+    border: 2px dotted var(--text-light);
+    color: var(--text-secondary);
+}
+
+.st-sw-disjoint::after {
+    content: "\2717";
+}
+
+.st-sw-combine {
+    background-color: var(--primary-subtle);
+    border: 2px dotted var(--bar-select);
+    color: var(--primary-text);
+}
+
+.st-sw-combine::after {
+    content: "+";
+}
+
+.st-sw-leaf {
+    background-color: var(--primary-subtle);
+    border: 2px solid var(--bar-select);
+    box-shadow: inset 0 0 0 2px var(--bg-card), inset 0 0 0 3px var(--bar-select);
+    color: var(--primary-text);
+}
+
+.st-sw-leaf::after {
+    content: "\2605";
+}
+
+.st-sw-visit {
+    background-color: var(--primary-subtle);
+    border: 2px dashed var(--border-focus);
+    color: var(--primary-text);
+}
+
+.st-sw-visit::after {
+    content: "\2022";
+}
+
+/* Underlying array cells & target query range bracket */
+.st-arr-wrap {
+    padding: 6px 4px 2px;
+    border-top: 3px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+}
+
+.st-arr-wrap.st-arr-in-query {
+    border-top-color: var(--border-focus);
+    border-top-style: dashed;
+}
+
+.st-arr-wrap.st-arr-query-start {
+    border-left-color: var(--border-focus);
+    border-left-style: dashed;
+    border-top-left-radius: var(--radius-sm);
+}
+
+.st-arr-wrap.st-arr-query-end {
+    border-right-color: var(--border-focus);
+    border-right-style: dashed;
+    border-top-right-radius: var(--radius-sm);
+}
+
+.st-arr-cell {
+    min-width: 52px;
+    min-height: 38px;
+    padding: 6px 8px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.st-arr-cell.st-arr-in-range {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    border-width: 2px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-full {
+    border-color: var(--bar-sorted);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--success-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-partial {
+    border-color: var(--bar-compare);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--warning-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-disjoint {
+    border-color: var(--text-light);
+    border-style: dotted;
+    border-width: 2px;
+    background-color: var(--bg-subtle);
+    color: var(--text-secondary);
+}
+
+.st-arr-cell.st-arr-combine {
+    border-color: var(--bar-select);
+    border-style: dotted;
+    border-width: 3px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-leaf {
+    border-color: var(--bar-select);
+    border-style: double;
+    border-width: 4px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-cell.st-arr-visit {
+    border-color: var(--border-focus);
+    border-style: dashed;
+    border-width: 2.5px;
+    background-color: var(--primary-subtle);
+    color: var(--text-primary);
+}
+
+.st-arr-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    min-height: 1.15em;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.st-arr-tag.st-tag-full {
+    color: var(--success-text);
+}
+
+.st-arr-tag.st-tag-partial {
+    color: var(--warning-text);
+}
+
+.st-arr-tag.st-tag-disjoint {
+    color: var(--text-secondary);
+}
+
+.st-arr-tag.st-tag-accent {
+    color: var(--primary-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .st-edge,
+    .st-node-box,
+    .st-arr-cell {
+        transition: none;
+    }
+}
+
+/* Kept last in the Segment Tree section so no display rule overrides it. */
+.st-hidden,
+.st-arr-wrap.st-hidden,
+.st-edge.st-hidden,
+.st-node.st-hidden {
+    display: none;
+}
