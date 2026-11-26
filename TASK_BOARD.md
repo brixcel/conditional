@@ -10,7 +10,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 | ID | Task | Owner | Branch | Files owned |
 |---|---|---|---|---|
 | C12 | AVL tree as a pure module + module page | Claude (data-structures agent) | `claude/c12-avl` | `src/structures/avl.js`, `src/pages/avl-page.js`, `avl-tree.html`, `tests/avl.test.js` |
-| G9 | Trie module + page | Gemini | `gemini/g9-trie` | see GEMINI_HANDOFF.md#g9 |
 
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
@@ -29,6 +28,7 @@ and list any CSS they need in their handoff report.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G9 | Trie (Prefix Tree) module + `layoutGeneralTree` + page | Gemini | `gemini/g9-trie` | Claude |
 
 ## Done
 | ID | Task | Owner | Date |
