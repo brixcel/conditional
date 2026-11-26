@@ -10,11 +10,11 @@ times came from this PC's clock, which was about 8 minutes slow.
 
 | | |
 |---|---|
-| Last updated by Claude | 2026-11-26 10:53 |
+| Last updated by Claude | 2026-11-26 10:56 |
 | Claude reviews Gemini branches | **paused since 02:26** (automatic review turned off to save usage). Ask Claude for a review when a branch is ready |
-| Merged | G1 at 21:40, G2 at 22:06, G3 at 23:31, G4 at 10:34 (2026-11-26) |
-| **Gemini: do next** | **nothing assigned yet.** G5 and G6 (hash table) are approved. Wait for Claude to write G7 here. Please take only the task named here, and never reuse an ID |
-| Claude is working on | Reviewed G5 and G6 at 10:53 (both approved, waiting for the user to merge). Found and fixed a StepPlayer bug that broke Play in browsers |
+| Merged | G1, G2, G3 (2026-11-25); G4, G5, G6 (2026-11-26, G5/G6 at 10:56) |
+| **Gemini: do next** | **G7**: Heap page (logic already exists) + shared tree layout helper. Start from fresh `main` on branch `gemini/g7-heap-page`. After G7 is merged, **G8** (Binary Search Tree) is next. Take only the task named here |
+| Claude is working on | G5, G6 and the StepPlayer Play fix merged to `main` at 10:56. Claude does not edit the G7 files below |
 
 **Short prompt for Antigravity after the first time:**
 > Continue: read the Status table in `GEMINI_HANDOFF.md`, do the task under
@@ -147,5 +147,63 @@ src/pages/regular-queue-page.js` prints 0; `npm test` passes; every page you tou
 before at 375px and desktop in **both** themes (use the new theme button, top right), with no console errors.
 
 ---
+## G7: Heap page + tree layout helper <a id="g7"></a>
+**Why:** the min/max heap logic and tests are already on `main` (`src/structures/heap.js`, `tests/heap.test.js`) but students
+cannot see it. A heap is a tree stored in an array, so the page shows **both views of the same `snapshot.items`**.
+**Files you own (all new except `main.css`):** `heap.html`, `src/pages/heap-page.js`, `src/core/tree-layout.js`,
+`tests/tree-layout.test.js`, and a **new section 14** at the end of `main.css` (add only; do not edit sections 1-13).
+**Do not edit:** `src/structures/heap.js`, `tests/heap.test.js`, `src/core/step-player.js`, `shared.js`, `index.html`.
+If the heap module seems wrong or missing something, stop and write it in your report.
+**Reference pages:** `searching.html` + `src/pages/searching-page.js` (StepPlayer, pseudocode, counters) and
+`hash-table.html` (operation buttons that play steps).
+**Do:**
+1. `src/core/tree-layout.js` (pure, DOM-free): `layoutCompleteTree(n, { levelGap, minGap })` returns, for array indices
+   `0..n-1` of a complete binary tree, `{ nodes: [{ index, depth, x, y }], edges: [{ from, to }], width, height }`.
+   Leaves at the deepest level are `minGap` apart; parents are centred over their children. Keep it general enough that
+   G8 can add a BST layout next to it later; G7 only needs the complete-tree version.
+   `tests/tree-layout.test.js`: n = 0, 1, 2, 3, 7, 31, 63; every edge is parent to child (`to = 2*from + 1` or `+ 2`);
+   no two nodes on one level overlap (x differs by >= minGap); each parent's x is between its children's x; y = depth * levelGap.
+2. `heap.html` + `src/pages/heap-page.js` (ES module, StepPlayer):
+   - Controls: heap kind select (Min-heap / Max-heap), Value input + **Insert**, **Extract root**, **Peek**,
+     Values list + **Build heap** (O(n) bottom-up via `BinaryHeap.from` / `build`), **Random values**, **Clear**.
+     Page capacity **31** (5 levels, readable on a phone). Values: whole numbers -99 to 999 via `parseInteger`
+     (`src/core/validate.js`); the list via `parseArrayInput` from `src/algorithms/sorting.js` (1-31 values).
+     Changing the kind rebuilds the heap from the current items with `build` and plays those steps.
+   - Errors (overflow, underflow, bad input) show inline in an `.alert-banner.alert-live` with `role="alert"`. No dialogs.
+   - **Tree view:** inline **SVG** built with `document.createElementNS`, positions from `layoutCompleteTree`
+     (set `x`/`y`/`cx`/`cy` attributes, never `style`). Each node shows its value and index. Put it inside a
+     `.scroll-box.scroll-box-clean` so 31 nodes scroll sideways on a 375px screen instead of overflowing the page.
+   - **Array view:** one row of cells `[0]..[n-1]` under the tree, highlighted the same way as the tree.
+   - Highlight `step.indices` in both views with classes from your section 14 (e.g. `.hp-compare`, `.hp-swap`,
+     `.hp-settled`, `.hp-root`), using existing colour tokens only (`--bar-compare`, `--bar-swap`, `--bar-sorted`,
+     `--primary-*`, ...) so dark mode works. No hard-coded colours, no `.style` writes, no `innerHTML` with values.
+   - Step message, counters (`comparisons`, `swaps` from the step), size / capacity, and the root (min or max).
+   - Pseudocode panel from `HEAP_INFO.pseudocode`. Heap steps have **no `line` field**, so map step types to lines in the
+     page, exactly like this (1-based):
+
+     | Operation | Pseudocode shown | Step type -> line |
+     |---|---|---|
+     | Insert | `insert` | `insert`->1, `compare`->2, `swap`->3, `done`->2 |
+     | Extract | `extract` | `extract`->1, `move-last`->2, `compare`/`swap`/`settled`->3, `done`->4 |
+     | Build | `build` | `build-start`->1, `heapify`->2, `compare`/`swap`/`settled`->3, `done`->3 |
+     | overflow / underflow | (keep current) | no highlight |
+
+   - Complexity table from `HEAP_INFO.complexity`, and a short concept card (complete tree, parent = floor((i-1)/2),
+     children 2i+1 / 2i+2, heap property for min vs max).
+3. Player controls + keyboard shortcuts as on the Searching page. Check that **Play** really advances the step counter
+   (Play was broken site-wide until today's fix, so start from fresh `main`).
+**Done when:** `npm test` passes with your new layout tests; the page works at 375px and desktop in **both** themes with no
+console errors and no horizontal page scroll; insert, extract (including on an empty heap), build of 31 values, kind switch,
+clear and invalid input all behave; `grep -c 'style="' heap.html` is 0 and `src/pages/heap-page.js` has no `.style`.
+In your report: the nav entry and homepage card you want (Claude adds them), and every class you added to section 14.
+
+## G8: Binary Search Tree module + page (after G7 is merged) <a id="g8"></a>
+**Do not start until G7 is merged and this section says "ready".** Status: **not ready**.
+Planned scope: `src/structures/bst.js` (insert, search, delete with all 3 cases using the in-order successor, min, max,
+in/pre/post/level-order traversal, height), each recording steps with node ids; model-based tests against a sorted set plus
+the BST-order invariant after every operation; `bst.html` + page reusing `src/core/tree-layout.js` (Claude adds a BST layout
+to it first, or asks you to). Claude finishes this spec when G7 lands.
+
+---
 ## Queue after these (not ready yet)
-Hash table page, heap page (the logic exists: `src/structures/heap.js`). They will be specified here when ready.
+Graph representations (adjacency list / matrix), BFS / DFS. They will be specified here when ready.

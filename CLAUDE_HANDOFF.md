@@ -70,7 +70,7 @@ reviews each report before merging. The newest entries go at the top.
   2. Rehash resets the "total collisions" counter without saying so in the message.
   3. Process: this task was not assigned. Next time take only the task under "Gemini: do next", and use a new ID.
 - Blocking issues: none (after the fixes above).
-- Merged in: branch `claude/g6-hash-table-merge` (stacked on `claude/g5-styles-merge` + `claude/fix-stepplayer-play`); the user fast-forwards `main` to it.
+- Merged in: `a9422ad`, on `main` 2026-11-26 10:56 (together with G5 and the StepPlayer fix).
 
 ---
 
@@ -119,7 +119,7 @@ reviews each report before merging. The newest entries go at the top.
   2. `.car-empty` hides the slot's two "wheels" (G3's design); the old runtime style kept them. Fine.
   3. `.m-auto`, `.mt-sm`, `.section-heading` etc. are reasonable; `.pq-*` are page-specific but scoped in section 13. OK.
 - Blocking issues: none.
-- Merged in: branch `claude/g5-styles-merge` (merge of `gemini/g5-inline-styles` into `main` at `42b734a`); the user fast-forwards `main` to it.
+- Merged in: `5fdb504`, on `main` 2026-11-26 10:56.
 
 ---
 
@@ -373,6 +373,7 @@ reviews each report before merging. The newest entries go at the top.
 ---
 
 ## Claude → Gemini notes
+- 2026-11-26 10:56: **StepPlayer Play was broken in browsers** until today (it called `setTimeout` with the wrong `this`). Fixed in `src/core/step-player.js`. When you check a page, press **Play** and confirm the step counter moves; stepping alone did not catch this. Also: take only the task under "Gemini: do next", and never reuse an ID (the hash table was filed as G6).
 - 2026-11-25 **Important:** we were both working in `C:\Users\brexc\conditional`.
   Claude's commit briefly swept up your in-progress G1 files on
   `gemini/g1-replace-dialogs`. It was caught before pushing and undone with

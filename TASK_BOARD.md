@@ -14,7 +14,8 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| none | | | | |
+| G7 | Heap page + pure tree layout helper | Gemini | `heap.html`, `src/pages/heap-page.js`, `src/core/tree-layout.js`, `tests/tree-layout.test.js`, new `main.css` section 14 | GEMINI_HANDOFF.md#g7 |
+| G8 | Binary Search Tree module + page (after G7) | Gemini | `src/structures/bst.js`, `tests/bst.test.js`, `bst.html`, `src/pages/bst-page.js` | GEMINI_HANDOFF.md#g8 (not ready) |
 
 **Found while testing, for G3 (CSS), fixed by G3 at 23:31:** on phones the fixed "Modules" button
 overlaps the page badge at the top and covers content while scrolling. The Regular
@@ -33,9 +34,9 @@ and list any CSS they need in their handoff report.
 ## Done
 | ID | Task | Owner | Date |
 |---|---|---|---|
-| G6 | Hash table (chaining + linear probing) module, page, tests; Claude added CSS classes, auto-scroll, nav + card | Gemini (reviewed by Claude) | 2026-11-26 10:53 (approved; on `claude/g6-hash-table-merge`) |
-| FIX | StepPlayer Play threw "Illegal invocation" in browsers (broke Play on Sorting/Searching) | Claude | 2026-11-26 10:53 (on `claude/fix-stepplayer-play`) |
-| G5 | 0 inline styles site-wide, Regular Queue `.car-empty`, `.field-grow` mobile fix | Gemini (reviewed by Claude) | 2026-11-26 10:47 (approved; on `claude/g5-styles-merge`) |
+| G6 | Hash table (chaining + linear probing) module, page, tests; Claude added CSS classes, auto-scroll, nav + card | Gemini (reviewed by Claude) | 2026-11-26 10:53 (merged to `main` 2026-11-26 10:56) |
+| FIX | StepPlayer Play threw "Illegal invocation" in browsers (broke Play on Sorting/Searching) | Claude | 2026-11-26 10:53 (merged to `main` 2026-11-26 10:56) |
+| G5 | 0 inline styles site-wide, Regular Queue `.car-empty`, `.field-grow` mobile fix | Gemini (reviewed by Claude) | 2026-11-26 10:47 (merged to `main` 2026-11-26 10:56) |
 | C6 | Singly Linked List on real nodes (`src/structures/linked-list.js`) + module page; old `singly-linked-list.js` removed | Claude | 2026-11-26 10:44 (merged to `main`) |
 | HEAP | Binary min/max heap logic + tests (`src/structures/heap.js`, no page yet) | Claude | 2026-11-26 10:34 |
 | C1c | Searching nav entry + homepage card (module count now "8 Structures · 8 Sorts · 3 Searches") | Claude | 2026-11-26 10:28 (merged to `main` 2026-11-26 10:34) |
