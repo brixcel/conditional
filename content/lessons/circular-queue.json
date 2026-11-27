@@ -1,0 +1,206 @@
+{
+  "id": "circular-queue",
+  "title": "Circular Queue (Ring Buffer)",
+  "page": "circular-queue.html",
+  "module": "src/structures/queue.js",
+  "controller": "src/pages/circular-queue-page.js",
+  "summary": "A circular queue wraps front and rear around a fixed-size array using modulo arithmetic, reusing slots freed by dequeue. This page allocates rings of 2 to 100 slots.",
+  "prerequisites": ["arrays", "regular-queue"],
+  "objectives": [
+    "Students can explain how modulo arithmetic solves the false overflow problem of a linear array queue.",
+    "Students can compute the next front or rear index using (index + 1) mod capacity, including wrap-around to 0.",
+    "Students can trace enqueue and dequeue on a circular queue and identify the empty (front = −1) and full states.",
+    "Students can state the time and space complexity of circular queue operations and justify why every operation is O(1).",
+    "Students can choose a circular queue for bounded streaming buffers such as audio playback and cyclic logs."
+  ],
+  "levels": {
+    "beginner": [
+      "A circular queue is a FIFO (First-In, First-Out) waiting line laid out in a closed ring instead of a straight row. Imagine seats around a small carousel: once the line reaches the last seat, the next newcomer takes seat 0 if the person who sat there has already left. No seat goes to waste while the ring still has room.",
+      "In a regular linear queue, slots emptied at the front stay unusable until the whole queue empties. A circular queue fixes that problem by wrapping rear back to index 0 after the last index. Front wraps around the same way as items leave, so the queue keeps cycling without shifting any values.",
+      "On this page you first allocate a ring of 2 to 100 slots, drawn as circles labeled [0] through [capacity − 1] clockwise around a track. You enqueue positive whole numbers from 1 to 1000, and type the current front value to confirm each dequeue. When only one item sits in the ring, a single Front & Rear label marks its slot."
+    ],
+    "intermediate": [
+      "CircularQueue stores an array Q of n (capacity) slots and two indices, front and rear, both initialized to −1 to mark an empty ring. The first enqueue sets front and rear to 0. Each later enqueue advances rear to (rear + 1) mod n (remainder after dividing by n) and writes Q[rear]. When (rear + 1) mod n equals front, the next slot ahead of rear is already occupied by front, so the ring is full.",
+      "Dequeue checks front = −1 for underflow, clears Q[front], and then either resets front and rear to −1 (if front = rear, meaning that was the sole item) or advances front to (front + 1) mod n. Because the class keeps no separate count field, size is computed in O(1) as (rear − front + n) mod n + 1 when non-empty, or 0 when front = −1.",
+      "Every operation — enqueue, dequeue, peek, rear, size, isEmpty and isFull — performs a fixed number of arithmetic operations and at most one array read or write. That gives O(1) time in the best, average and worst cases with O(1) extra space per operation, and O(n) memory for a ring of n slots.",
+      "Every mutation and query loads its recorded steps into Step-by-Step Execution and highlights the matching pseudocode line. A successful enqueue records three steps (full check, set or advance rear, store Q[rear]), and a successful dequeue records four steps (empty check, clear Q[front], reset or advance front, return value). The step message notes explicitly whenever an index wraps around to 0."
+    ],
+    "advanced": [
+      "In a ring of n slots, front and rear alone distinguish n relative offsets, whereas a queue has n + 1 possible sizes (0 through n). Textbooks resolve this empty-vs-full ambiguity in three standard ways: reserve one unused sentinel slot (usable capacity n − 1), store an explicit size counter, or reserve front = −1 for the empty state. CircularQueue uses front = −1, so all n allocated slots hold data.",
+      "When capacity n is a power of two, low-level systems often replace (i + 1) mod n with a bitwise mask (i + 1) & (n − 1) to avoid integer division. CircularQueue allows any capacity from 2 to 100 and uses standard modulo so arbitrary sizes work cleanly. The minimum capacity is 2 because a 1-slot ring never demonstrates wrap-around.",
+      "Unlike the Regular Queue page, this page leaves Dequeue, Peek (Front) and Rear (Last) enabled when the ring is empty so you can trigger and replay an underflow or empty-peek step directly. Dequeue also adds a page-level teaching check that requires typing the current front value in the dequeue input box before CircularQueue.dequeue() runs."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "enqueue(x)",
+      "lines": [
+        "if (rear + 1) mod n == front: overflow, stop",
+        "if front == −1: front ← 0; rear ← 0",
+        "else: rear ← (rear + 1) mod n",
+        "Q[rear] ← x"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.enqueue"
+    },
+    {
+      "name": "dequeue()",
+      "lines": [
+        "if front == −1: underflow, stop",
+        "x ← Q[front]; Q[front] ← empty",
+        "if front == rear: front ← −1; rear ← −1",
+        "else: front ← (front + 1) mod n",
+        "return x"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.dequeue"
+    },
+    {
+      "name": "peek()",
+      "lines": [
+        "if front == −1: return null",
+        "return Q[front]"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.peek"
+    },
+    {
+      "name": "rear()",
+      "lines": [
+        "if front == −1: return null",
+        "return Q[rear]"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.rear"
+    },
+    {
+      "name": "isEmpty()",
+      "lines": [
+        "return front == −1"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.isEmpty"
+    },
+    {
+      "name": "isFull()",
+      "lines": [
+        "return (rear + 1) mod n == front"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.isFull"
+    },
+    {
+      "name": "size()",
+      "lines": [
+        "return (rear − front + n) mod n + 1   (0 if empty)"
+      ],
+      "registry": "QUEUE_INFO.circular.pseudocode.size"
+    }
+  ],
+  "complexity": {
+    "enqueue": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Advances rear with (rear + 1) mod n and writes Q[rear]. Refuses insertion with overflow when (rear + 1) mod n = front."
+    },
+    "dequeue": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Clears Q[front] and advances front with (front + 1) mod n, or resets front and rear to −1 when removing the last item."
+    },
+    "peek": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads Q[front] without modifying the ring. Returns null when front = −1."
+    },
+    "rear": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads Q[rear] without modifying the ring. Returns null when front = −1."
+    },
+    "isEmpty": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Checks whether front = −1."
+    },
+    "isFull": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Checks whether the ring is non-empty and (rear + 1) mod n = front."
+    },
+    "size": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Computes 0 if front = −1, otherwise (rear − front + n) mod n + 1 without counting slots one by one."
+    }
+  },
+  "applications": [
+    "Audio and video streaming buffers: a producer writes incoming frames at rear while playback reads from front inside a fixed-size ring.",
+    "Network interface card (NIC) packet rings: incoming packets reuse fixed memory slots cyclically without repeatedly allocating memory.",
+    "Circular event logs and flight recorders: embedded systems store recent diagnostics in a fixed-size ring so memory usage stays bounded.",
+    "Keyboard and serial port device drivers: hardware interrupts enqueue arriving bytes into a small ring buffer while the OS dequeues them."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "A circular queue stores items in a circular linked list in memory.",
+      "correction": "CircularQueue uses a plain linear array indexed 0 through n − 1. Only the index arithmetic wraps around via (index + 1) mod n; the ring on screen is a picture of that wrap-around."
+    },
+    {
+      "mistake": "When rear is smaller than front, the queue is corrupted or inverted.",
+      "correction": "Having rear < front is normal after rear wraps around to 0 while front is still ahead. In a 3-slot ring with front = 1 and rear = 0, the queue holds index 1 followed by index 0."
+    },
+    {
+      "mistake": "A circular queue never overflows because it wraps around.",
+      "correction": "Wrapping reuses freed slots, not occupied ones. When every slot holds a value, (rear + 1) mod n equals front, and enqueue is refused with overflow so it does not overwrite the front value."
+    },
+    {
+      "mistake": "You must always sacrifice one slot in a circular array to tell full from empty.",
+      "correction": "Reserving one empty slot is one textbook technique, not the only one. This implementation uses front = −1 to mean empty, so all n allocated slots hold values when full."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Fill the ring and hit overflow",
+      "action": "Type 3 in the Capacity box and press “Allocate Ring”. Then type 10, 20, 30 and 40 one at a time in the enqueue box, pressing “Enqueue” after each.",
+      "input": "3, 10, 20, 30, 40",
+      "expect": "You see “Ring allocated with 3 slots (indices 0–2). Empty: front = rear = −1.” After 30, it prints “rear = (1 + 1) mod 3 = 2. Stored 30 there. The ring is now full.” Enqueuing 40 fails with “Queue overflow: all 3 slots are used, so 40 cannot be enqueued.”"
+    },
+    {
+      "label": "Reuse slot 0 by wrapping rear around",
+      "action": "With 10, 20, 30 in the 3-slot ring, type 10 in the dequeue box and press “Dequeue”. Then type 40 in the enqueue box and press “Enqueue”.",
+      "input": "10, 40",
+      "expect": "Dequeue prints “Dequeued 10 from index 0. front = (0 + 1) mod 3 = 1.” Unlike a regular queue, enqueue succeeds with “rear = (2 + 1) mod 3 = 0 (wrapped around to the start). Stored 40 there. The ring is now full.”"
+    },
+    {
+      "label": "Replay the wrap-around step by step",
+      "action": "Right after enqueuing 40, press “⏮ Reset”, then press “Step ▶” twice while watching slot [0] and the step message.",
+      "input": "",
+      "expect": "Step 1 / 3 says “(rear + 1) mod 3 = (2 + 1) mod 3 = 0, which is not front (1): not full.” Step 2 says “rear ← (2 + 1) mod 3 = 0 (wrapped around to the start).” Step 3 says “Q[0] ← 40. Stored 40 at index 0.”"
+    },
+    {
+      "label": "Wrap front around and empty the ring",
+      "action": "Type 20, 30 and 40 one at a time in the dequeue box, pressing “Dequeue” after each.",
+      "input": "20, 30, 40",
+      "expect": "Dequeuing 30 wraps front with “Dequeued 30 from index 2. front = (2 + 1) mod 3 = 0 (wrapped around).”, leaving 40 labeled Front & Rear. Dequeuing 40 prints “Dequeued 40. That was the only element, so front = rear = −1 (empty).”"
+    },
+    {
+      "label": "Trigger underflow and query the empty ring",
+      "action": "With the ring now empty, press “Dequeue”, then press “Queue Size” and “IsEmpty?”.",
+      "input": "",
+      "expect": "Dequeue reports “Queue underflow: the queue is empty, so there is nothing to dequeue.” Queue Size prints “Queue size: 0 of 3”, and IsEmpty? prints “TRUE (Queue is empty)” with step message “front = -1, so front == −1 is true.”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 10, Elementary Data Structures.",
+    "Weiss, M. A. Data Structures and Algorithm Analysis in Java, 3rd ed. Pearson, 2012. Section 3.7, The Queue ADT."
+  ],
+  "reviewed": null
+}

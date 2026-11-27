@@ -1,0 +1,212 @@
+{
+  "id": "regular-queue",
+  "title": "Regular Queue (FIFO)",
+  "page": "regular-queue.html",
+  "module": "src/structures/queue.js",
+  "controller": "src/pages/regular-queue-page.js",
+  "summary": "A regular queue adds values at the rear and removes them from the front (FIFO). This page uses a fixed-size array of 1 to 100 slots whose pointers only move forward.",
+  "prerequisites": ["arrays"],
+  "objectives": [
+    "Students can explain the FIFO rule and predict which value the next Dequeue removes.",
+    "Students can trace enqueue and dequeue on a linear array queue and give front, rear and count after each step.",
+    "Students can identify false overflow when rear reaches capacity − 1 while freed slots remain before front.",
+    "Students can state the time complexity of enqueue, dequeue, peek, rear, isEmpty and isFull and explain why each is O(1).",
+    "Students can choose a queue for problems such as print spooling, CPU scheduling and breadth-first search."
+  ],
+  "levels": {
+    "beginner": [
+      "A queue is a list where new items join at one end, called the rear (or tail), and leave from the other end, called the front (or head). Think of a cashier line at the canteen: the first person to line up is the first person served. This rule is called FIFO (First-In, First-Out).",
+      "Enqueue adds a value at the rear of the queue. Dequeue removes and returns the value at the front. Peek looks at the front value, and Rear looks at the back value, without removing anything. You cannot remove a value in the middle until everything ahead of it has left.",
+      "On this page you first set a maximum size from 1 to 100 slots and enter positive whole numbers (1 to 9999). Trying to enqueue when rear is already at the last slot is refused as overflow, even if earlier dequeues left empty slots at the front. Emptying the queue completely resets both pointers back to the start."
+    ],
+    "intermediate": [
+      "The page stores the queue in a fixed-size array Q with three variables: front (starts at 0), rear (starts at −1) and count (starts at 0). Each enqueue advances rear by one, writes Q[rear], and increments count. Each dequeue clears Q[front], decrements count, and advances front by one, leaving the old slot marked freed.",
+      "Because front and rear only move forward, slots before front are never reused while the queue still holds items. Once rear reaches capacity − 1, enqueue stops with false overflow if freed slots sit before front, or true overflow if count equals capacity. Only when count drops to 0 does dequeue reset front to 0 and rear to −1.",
+      "Enqueue, dequeue, peek and rear each read or write a single slot at front or rear, so all four run in O(1) constant time regardless of queue size. Testing isEmpty? checks count = 0 and isFull? checks count = capacity, both O(1). Clear All fills every slot with null, which takes O(n) where n is capacity.",
+      "Enqueue, dequeue, and the query buttons record their steps and replay them in Step-by-Step Execution while highlighting the matching pseudocode line. A successful enqueue records three steps (check rear, increment rear, write Q[rear] and count). A dequeue records four steps (check count, clear Q[front], reset pointers or increment front, then return the value)."
+    ],
+    "advanced": [
+      "A queue is an abstract data type (ADT) defined by FIFO behavior, not by one memory layout. A linear array could avoid false overflow by shifting every remaining item left after each dequeue, but that turns dequeue into O(n). To keep both enqueue and dequeue O(1) without wasting slots, real systems use a circular array or a linked list with head and tail pointers.",
+      "Some textbooks never reset pointers when a linear queue empties; LinearQueue includes the reset optimization (front ← 0, rear ← −1 when count reaches 0) so an emptied queue becomes usable again. Notice also that isFull() checks count = capacity while enqueue checks rear = capacity − 1, so during false overflow isFull? returns false even though enqueue is blocked.",
+      "In LinearQueue, peek() and peekRear() return null on an empty queue and dequeue() returns an underflow error (trying to remove from an empty queue). On this page, Dequeue (Front), Peek (Front), Rear (Tail) and Clear All are disabled when empty, and Dequeue (Front) requires typing the front value as a FIFO check. The module also offers size(); the page shows count in the state bar."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "enqueue(x)",
+      "lines": [
+        "if rear == capacity − 1: overflow, stop",
+        "rear ← rear + 1",
+        "Q[rear] ← x; count ← count + 1"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.enqueue"
+    },
+    {
+      "name": "dequeue()",
+      "lines": [
+        "if count == 0: underflow, stop",
+        "x ← Q[front]; Q[front] ← empty; count ← count − 1",
+        "if count == 0: front ← 0; rear ← −1",
+        "else: front ← front + 1",
+        "return x"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.dequeue"
+    },
+    {
+      "name": "peek()",
+      "lines": [
+        "if count == 0: return null",
+        "return Q[front]"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.peek"
+    },
+    {
+      "name": "rear()",
+      "lines": [
+        "if count == 0: return null",
+        "return Q[rear]"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.rear"
+    },
+    {
+      "name": "isEmpty()",
+      "lines": [
+        "return count == 0"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.isEmpty"
+    },
+    {
+      "name": "isFull()",
+      "lines": [
+        "return count == capacity"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.isFull"
+    },
+    {
+      "name": "size()",
+      "lines": [
+        "return count"
+      ],
+      "registry": "QUEUE_INFO.linear.pseudocode.size"
+    }
+  ],
+  "complexity": {
+    "enqueue": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Checks rear = capacity − 1, increments rear, and writes Q[rear]. Never resizes; blocks on true overflow or false overflow."
+    },
+    "dequeue": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Clears Q[front] and increments front without shifting remaining items. Resets front to 0 and rear to −1 when count reaches 0."
+    },
+    "peek": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads Q[front] without modifying the queue. Returns null when empty; the button is disabled while empty."
+    },
+    "rear": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads Q[rear] without modifying the queue. Returns null when empty; the button is disabled while empty."
+    },
+    "isEmpty": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Compares count with 0 without scanning the backing array."
+    },
+    "isFull": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Compares count with capacity. Returns false during false overflow even though rear = capacity − 1 blocks enqueue."
+    },
+    "size": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Returns the stored count. Displayed live in the state bar on this page rather than through a dedicated Size button."
+    },
+    "clear": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Here n is capacity: fills every slot in the backing array with null, then resets front to 0, rear to −1 and count to 0."
+    }
+  },
+  "applications": [
+    "Print spooling: documents wait in a FIFO queue so pages print in the order users submitted them.",
+    "CPU ready queues in operating systems: round-robin schedulers take the next waiting process from the front and place returning processes at the rear.",
+    "Breadth-first search (BFS) on graphs and trees: each newly discovered neighbor is enqueued so vertices are visited level by level.",
+    "I/O and keyboard input buffers: incoming keystrokes or bytes wait in arrival order until a program reads them."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "A queue removes the newest value first, just like a stack.",
+      "correction": "A stack is LIFO (last in, first out), while a queue is FIFO (first in, first out). After enqueuing 10, 20 and 30, 10 sits at FRONT [0] and must leave before 20 or 30."
+    },
+    {
+      "mistake": "After dequeuing from a full linear queue, you can always enqueue one more value.",
+      "correction": "In a linear array queue, rear only moves forward. Once rear reaches capacity − 1, enqueue is blocked even when freed slots sit before front. That is false overflow; only emptying the queue or using a circular queue reclaims those slots."
+    },
+    {
+      "mistake": "When isFull? returns false, enqueue is guaranteed to succeed.",
+      "correction": "On this page isFull() checks count = capacity, whereas enqueue checks rear = capacity − 1. After filling a 3-slot queue and dequeuing once, isFull? prints false and notes that enqueue is still blocked by false overflow."
+    },
+    {
+      "mistake": "Peek (Front) or Rear (Tail) removes the element it displays.",
+      "correction": "Both are read-only inspections. Pressing Peek (Front) or Rear (Tail) highlights the slot and prints its value while front, rear and the element count stay unchanged."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Fill the queue and hit true overflow",
+      "action": "Type 3 in the Max size box and press “Set Queue Size”. Then type 10, 20, 30 and 40 one at a time in the Value box, pressing “Enqueue (Rear)” after each.",
+      "input": "3, 10, 20, 30, 40",
+      "expect": "You see “Allocated an array of 3 slots. front = 0, rear = −1.” The first three enqueues succeed, ending with “Enqueued 30 at index 2. rear = 2.” Enqueuing 40 fails with “Queue overflow: all 3 slots are used, so 40 cannot be enqueued.”"
+    },
+    {
+      "label": "FIFO rule: only the front can leave",
+      "action": "With 10, 20, 30 in the 3-slot queue, type 30 in the Value box and press “Dequeue (Front)”. Then type 10 in the Value box and press “Dequeue (Front)” again.",
+      "input": "30, 10",
+      "expect": "The first attempt is refused with “Only the front can leave a queue. The front is 10. Type 10 to dequeue it.” Typing 10 succeeds with “Dequeued 10 from index 0. front moves to 1.” and slot [0] is labeled freed."
+    },
+    {
+      "label": "Replay the dequeue step by step",
+      "action": "Right after dequeuing 10, press “⏮ Reset”, then press “Step ▶” three times while reading the message under the stage.",
+      "input": "",
+      "expect": "Step 1 / 4 says “count = 3, not 0: the front element is at index 0.” Step 2 clears Q[0] and drops count to 2. Step 3 says “front ← 0 + 1 = 1. Index 0 is now freed, and a linear queue never reuses it.” Step 4 returns 10."
+    },
+    {
+      "label": "Trigger false overflow and test isFull?",
+      "action": "With 20 and 30 left (index 0 freed, rear = 2), type 40 in the Value box and press “Enqueue (Rear)”. Then press “isFull?”.",
+      "input": "40",
+      "expect": "Enqueue fails with “Cannot enqueue 40: rear is already at the last index (2). 1 slot at the front is free, but a linear queue never moves rear back to it. This \"false overflow\" is why circular queues exist.” Then “isFull() → false (but rear is at the last index, so enqueue is blocked: false overflow)” appears."
+    },
+    {
+      "label": "Empty the queue to reset pointers",
+      "action": "Type 20 in the Value box and press “Dequeue (Front)”, then type 30 and press “Dequeue (Front)”. Press “isEmpty?”, then type 40 and press “Enqueue (Rear)”.",
+      "input": "20, 30, 40",
+      "expect": "Dequeuing 30 prints “Dequeued 30 from index 2. The queue is now empty, so front and rear reset to the start.” Then isEmpty? prints “isEmpty() → true”, and enqueuing 40 now succeeds with “Enqueued 40 at index 0. rear = 0.”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 10, Elementary Data Structures.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 1.3, Bags, Queues, and Stacks."
+  ],
+  "reviewed": null
+}

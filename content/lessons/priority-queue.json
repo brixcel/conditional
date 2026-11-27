@@ -1,0 +1,178 @@
+{
+  "id": "priority-queue",
+  "title": "Priority Queue (Binary Heap)",
+  "page": "priority-queue.html",
+  "module": "src/structures/queue.js",
+  "controller": "src/pages/priority-queue-page.js",
+  "summary": "A priority queue serves the highest-priority item first instead of strict arrival order. This page backs it with a binary max-heap and uses an arrival counter to keep equal priorities FIFO.",
+  "prerequisites": ["arrays", "regular-queue"],
+  "objectives": [
+    "Students can explain how a priority queue orders items by priority and breaks ties in FIFO arrival order.",
+    "Students can trace sift-up during enqueue and sift-down during dequeue on a binary max-heap array.",
+    "Students can compute parent and child array indices for any node i in a 0-indexed binary heap.",
+    "Students can compare the O(log n) enqueue and dequeue cost of a binary heap against O(n) array alternatives.",
+    "Students can choose a priority queue for tasks such as shortest-path routing, emergency triage and OS job scheduling."
+  ],
+  "levels": {
+    "beginner": [
+      "A priority queue is a waiting line where more urgent items move ahead of less urgent ones instead of waiting strictly by arrival time. Think of a hospital emergency room: a critical patient is treated before someone with a mild sprain, even if the sprain arrived earlier. Among patients with the same urgency, the one who arrived first is still seen first.",
+      "On this page you choose a maximum size from 1 to 50 and enqueue positive whole numbers from 1 to 9999. Checking High Priority (P) gives an item priority 1 (marked with a P badge); leaving it unchecked gives normal priority 0. Duplicate values are refused on this page, and dequeuing requires typing the current front value to confirm.",
+      "The page shows two views of the same queue. The Priority Order Pipeline lists items from FRONT (Highest) to BACK (Lowest) in the exact order Dequeue Front will remove them. Below it, the Binary Heap Array shows how the queue is actually stored in memory, with the next item to leave always sitting at index 0 ([0] ROOT)."
+    ],
+    "intermediate": [
+      "PriorityQueue stores items in a compact 0-indexed array that represents a complete binary max-heap (every level filled left to right with no gaps). For any item at index i, its parent sits at ⌊(i − 1) / 2⌋ and its left and right children sit at 2i + 1 and 2i + 2. The heap property guarantees every parent outranks both children, so the highest-ranked item is always at index 0.",
+      "A plain binary heap is not stable: swaps during sift-up and sift-down can reorder items that share the same priority. To keep equal priorities FIFO, PriorityQueue assigns each enqueued item a unique, strictly increasing arrival number (#1, #2, …). Item a outranks item b when a has a higher priority, or when priorities tie and a has a smaller arrival number.",
+      "Enqueue appends the new item at the end of the heap array and sifts it up, swapping with its parent until the parent outranks it or it reaches index 0. Dequeue removes index 0, moves the last item into index 0 to keep the tree complete, and sifts it down by swapping with its higher-ranked child. Because a heap of n items has height ⌊log₂ n⌋, both operations take O(log n) worst-case time.",
+      "Peek (Front) reads index 0 in O(1), while isEmpty?, isFull? and Size check the heap length in O(1). Duplicate detection uses a value-to-count map for O(1) lookup. Rear (Back) scans the whole heap in O(n) because the lowest-ranked item can sit at any leaf (a node with no children), and Display List sorts a copy in O(n log n) to print the full service order."
+    ],
+    "advanced": [
+      "A priority queue is an abstract data type with several possible implementations. An unsorted array gives O(1) enqueue but O(n) dequeue and peek; a sorted array gives O(1) peek and O(1) dequeue from one end, but O(n) enqueue to shift elements. A binary heap balances both mutations at O(log n) while keeping peek O(1) and avoiding node pointers.",
+      "PriorityQueue supports any finite numeric priority (including negative numbers) and allows duplicates by default, fitting multi-level algorithms such as Dijkstra's shortest path. This page runs it in two-level mode (priority 1 for High Priority, 0 for normal) with allowDuplicates set to false and values in 1–9999. Calling clear() empties the heap without resetting the arrival counter.",
+      "In Heap Step-by-Step Execution, only enqueue and dequeue record steps; the six query buttons update the output banner directly without changing the replay. Enqueue finishes in O(1) best-case time when the parent already outranks the new item, and dequeue finishes in O(1) best-case time when the queue becomes empty or the moved leaf stops at the root. Full-queue overflow is checked before duplicate rejection."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "enqueue(x, priority)",
+      "lines": [
+        "if size == capacity or x is a rejected duplicate: stop",
+        "i ← size; A[i] ← item; size ← size + 1",
+        "while i > 0: compare A[i] with A[parent(i)]",
+        "    if A[i] outranks its parent: swap them; i ← parent(i), else stop",
+        "A[i] is in place: heap property holds"
+      ],
+      "registry": "QUEUE_INFO.priority.pseudocode.enqueue"
+    },
+    {
+      "name": "dequeue()",
+      "lines": [
+        "if size == 0: underflow, stop",
+        "top ← A[0]",
+        "A[0] ← A[size − 1]; size ← size − 1; i ← 0",
+        "compare A[i] with its higher-ranked child c",
+        "    if c outranks A[i]: swap them; i ← c, else stop",
+        "heap property holds; return top"
+      ],
+      "registry": "QUEUE_INFO.priority.pseudocode.dequeue"
+    }
+  ],
+  "complexity": {
+    "enqueue": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Appends at index size and sifts up; O(1) when the parent already outranks it. Duplicate lookup uses a hash map in O(1)."
+    },
+    "dequeue": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Removes index 0, moves the last item into the root, and sifts down; O(1) when the heap becomes empty or the moved item stays at index 0."
+    },
+    "peek": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Returns a copy of heap[0] (the root) or null when empty without modifying the heap."
+    },
+    "peekRear": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Scans all n heap elements to find the lowest-ranked item, because a binary max-heap does not track which leaf is worst."
+    },
+    "isEmpty": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Checks whether heap.length equals 0 without scanning items."
+    },
+    "isFull": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Checks whether heap.length equals capacity."
+    },
+    "size": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Returns heap.length directly in constant time."
+    },
+    "toArray": {
+      "best": "O(n log n)",
+      "average": "O(n log n)",
+      "worst": "O(n log n)",
+      "space": "O(n)",
+      "note": "Used by Display List and the pipeline view: copies all n heap items and sorts them into full service order."
+    }
+  },
+  "applications": [
+    "Dijkstra's shortest-path algorithm and A* search: a priority queue repeatedly extracts the unvisited vertex with the best path estimate.",
+    "Prim's minimum spanning tree algorithm: always selects the cheapest edge connecting the growing tree to a new vertex.",
+    "Operating system process and interrupt schedulers: high-priority system or real-time tasks preempt background jobs.",
+    "Network router Quality of Service (QoS) and discrete-event simulation: urgent traffic or the earliest scheduled event is processed first."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "The Binary Heap Array is kept completely sorted from front to back.",
+      "correction": "Only the heap property holds: every parent outranks its children, so index 0 is always the front. Siblings and different branches need not be sorted; compare the Binary Heap Array with Display List to see the difference."
+    },
+    {
+      "mistake": "Items with the same priority can come out in arbitrary order after heap swaps.",
+      "correction": "A plain heap is unstable, so this implementation attaches an increasing arrival number (#1, #2, …) to every item. Equal priorities compare arrival numbers, guaranteeing FIFO order within each priority level."
+    },
+    {
+      "mistake": "Finding the rear (lowest-priority) element in a max-heap is O(1), just like peek.",
+      "correction": "Only the maximum sits at a fixed index (index 0). The lowest-ranked item can sit at any leaf in the second half of the array, so Rear (Back) scans all n items in O(n) time."
+    },
+    {
+      "mistake": "Checking High Priority (P) stays active for the next enqueue automatically.",
+      "correction": "After every successful enqueue, the page clears both the value box and the High Priority (P) checkbox. Check it again whenever you want the next item to have priority 1."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "High Priority jumps ahead of normal items",
+      "action": "Type 4 in the max size box and press “Allocate Queue”. Enqueue 10 and 20 via “Enqueue Item” without checking High Priority, then type 30, check High Priority (P), and press “Enqueue Item”.",
+      "input": "4, 10, 20, 30",
+      "expect": "You see “Queue initialized with max size: 4”. After 30, the output says “Enqueued 30 (High Priority) at position 0: no other high-priority item is waiting, so it goes to the front, ahead of 2 normal items.” and 30 sits at [0] ROOT."
+    },
+    {
+      "label": "Replay sift-up step by step",
+      "action": "Right after enqueuing 30, press “⏮ Reset”, then press “Step ▶” twice while watching the Binary Heap Array.",
+      "input": "",
+      "expect": "Step 1 / 3 says “Place 30 (priority 1, #3) at the next free slot, index 2. Now sift it up.” Step 2 swaps 30 at index 2 with parent 10 at index 0 because priority 1 beats 0. Step 3 says “30 (priority 1, #3) is at the root, so it is the next to leave.”"
+    },
+    {
+      "label": "Reject duplicates, break ties FIFO, then overflow",
+      "action": "Type 10 and press “Enqueue Item” (duplicate). Next type 40, check High Priority (P), and press “Enqueue Item”. Press “Display List” and “Rear (Back)”. Finally type 50 and press “Enqueue Item”.",
+      "input": "10, 40, 50",
+      "expect": "10 is refused: “Error: 10 is already in the queue. This queue does not allow duplicate values.” 40 lands behind 30: Display List shows “Queue Items: 30 (P), 40 (P), 10, 20” and Rear shows “Rear of queue: 20”. 50 hits “Error: Queue overflow: all 4 slots are used, so 50 cannot be enqueued.”"
+    },
+    {
+      "label": "Confirm front and dequeue the root",
+      "action": "Type 40 in the dequeue box and press “Dequeue Front”. Then type 30 in the dequeue box and press “Dequeue Front” again.",
+      "input": "40, 30",
+      "expect": "40 is refused with “Error: You can only dequeue the front element. Type 30 to dequeue it.” Typing 30 succeeds with “Dequeued: 30 (P)”, promoting 40 (P) to [0] ROOT."
+    },
+    {
+      "label": "Replay sift-down after dequeuing 30",
+      "action": "Right after dequeuing 30, press “⏮ Reset”, then press “Step ▶” three times to inspect all four sift-down steps.",
+      "input": "",
+      "expect": "Step 1 / 4 removes root 30. Step 2 moves last item 20 (#2) from index 3 into index 0. Step 3 compares children 40 (#4) and 10 (#1), picks 40 (priority 1 beats 0), and swaps 20 with 40. Step 4 says “20 (priority 0, #2) at index 1 is a leaf, so it stops here.”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 6, Heapsort (Section 6.5, Priority Queues).",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 2.4, Priority Queues."
+  ],
+  "reviewed": null
+}

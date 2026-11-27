@@ -1,0 +1,174 @@
+{
+  "id": "heap",
+  "title": "Binary Heap",
+  "page": "heap.html",
+  "module": "src/structures/heap.js",
+  "controller": "src/pages/heap-page.js",
+  "summary": "A binary heap is a complete binary tree stored in an array where every parent is ≤ its children (min-heap) or ≥ them (max-heap), keeping the smallest or largest value at index 0.",
+  "prerequisites": ["arrays"],
+  "objectives": [
+    "Students can compute parent, left child, and right child indices for any node in a 0-indexed binary heap array.",
+    "Students can distinguish a min-heap from a max-heap and verify whether an array satisfies the heap property.",
+    "Students can trace insert (sift up) and extract root (sift down) in both the tree view and the array view.",
+    "Students can trace bottom-up Build Heap and explain why it runs in O(n) time instead of O(n log n).",
+    "Students can state the time and space complexity of peek, insert, extract root, and build heap."
+  ],
+  "levels": {
+    "beginner": [
+      "Think of a hospital emergency room where the most urgent patient is always seen next, without lining up everyone else in strict order. A binary heap works the same way: it keeps the smallest value (in a min-heap) or the largest value (in a max-heap) right at the root so you can find it in one step.",
+      "A binary heap has two rules. First, shape: it is a complete binary tree, meaning every level is full from left to right except possibly the last level, which fills from the left with no gaps. Second, order (the heap property): every parent is ≤ its children in a min-heap, or ≥ its children in a max-heap. Siblings have no left-to-right order.",
+      "Peek reads the root without changing the heap. Insert places the new value in the leftmost open spot on the bottom level, then sifts it up by swapping with its parent until the heap property holds. Extract Root removes the root, moves the last leaf into the root to keep the tree complete, and sifts it down toward the better child.",
+      "On this page you can switch between Min-Heap and Max-Heap, store up to 31 integers from −99 to 999, and watch the tree view and the array view update together on every comparison and swap."
+    ],
+    "intermediate": [
+      "Because a binary heap is complete, it fits tightly in a 0-indexed array A[0..n − 1] with no pointers. Index 0 is the root. For any node at index i, parent(i) = ⌊(i − 1) / 2⌋, left(i) = 2i + 1, and right(i) = 2i + 2. The array view below the tree shows the exact same nodes in level order, taking O(n) space.",
+      "Insert appends the new value at index n and runs siftUp, swapping with parent(i) while the child strictly beats the parent (equal values never swap). A complete binary tree of n nodes has height ⌊log₂ n⌋, so insert makes at most ⌊log₂ n⌋ swaps: O(log n) worst-case time, or O(1) when the value already satisfies its parent.",
+      "Extract Root saves A[0], moves the last element A[n − 1] into A[0], and runs siftDown from index 0. At each level it picks the child that belongs higher (left wins ties) and swaps if that child beats the current value. Walking down at most the tree height costs O(log n). Peek reads A[0] in O(1).",
+      "Build Heap uses Floyd's bottom-up algorithm: copy all n values into A, skip all leaves (indices parent(n − 1) + 1 to n − 1, which are already valid 1-node heaps), and call siftDown on each internal node from parent(n − 1) = ⌊(n − 2) / 2⌋ down to 0. Because most nodes sit near the bottom and sift only a short distance, total work is O(n)."
+    ],
+    "advanced": [
+      "Why Build Heap is O(n): at most ⌈n / 2ʰ⁺¹⌉ nodes sit at height h above the leaves, and each sifts down at most h levels. Summing h / 2ʰ⁺¹ over all heights converges to a constant, giving O(n) total work. By contrast, building a heap by calling insert n times from an empty heap takes O(n log n) in the worst case.",
+      "A heap is not a binary search tree (BST). Because siblings are unordered, finding an arbitrary key takes O(n) linear scanning rather than O(log n). Deleting or changing the priority of an arbitrary node is O(log n) only if you already know its array index, which typically requires a separate hash map from key to index.",
+      "Module details: BinaryHeap in src/structures/heap.js allows capacities up to 63, while heap.html caps the stage at 31 nodes (5 levels) so the tree fits cleanly on narrow screens. Switching Heap Kind rebuilds from the current values using bottom-up Build Heap. Strict comparison avoids redundant swaps on equal values, and siftDown breaks child ties to the left.",
+      "Variants: a d-ary heap gives each node up to d children, shortening tree height to log base d of n and speeding up insert and decreaseKey at the cost of checking up to d children during siftDown. Binary heaps also back Heap Sort (in-place O(n log n) with O(1) extra space) and standard priority queue implementations."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "insert(value)",
+      "lines": [
+        "A[n] ← value;  i ← n;  n ← n + 1",
+        "while i > 0 and A[i] beats A[parent(i)]",
+        "    swap A[i], A[parent(i)]",
+        "    i ← parent(i)"
+      ],
+      "registry": "HEAP_INFO.pseudocode.insert"
+    },
+    {
+      "name": "extract()",
+      "lines": [
+        "root ← A[0];  n ← n − 1",
+        "A[0] ← A[n]",
+        "siftDown(0)",
+        "return root"
+      ],
+      "registry": "HEAP_INFO.pseudocode.extract"
+    },
+    {
+      "name": "siftDown(i)",
+      "lines": [
+        "loop",
+        "    c ← the child of i that beats the other (left if tie)",
+        "    if no child or A[c] does not beat A[i]: stop",
+        "    swap A[i], A[c];  i ← c"
+      ],
+      "registry": "HEAP_INFO.pseudocode.siftDown"
+    },
+    {
+      "name": "build(values)",
+      "lines": [
+        "copy values into A",
+        "for i ← parent(n − 1) down to 0",
+        "    siftDown(i)"
+      ],
+      "registry": "HEAP_INFO.pseudocode.build"
+    }
+  ],
+  "complexity": {
+    "peek": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads A[0] without modifying the heap. Returns null when the heap is empty."
+    },
+    "insert": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Appends at index n and sifts up. O(1) average for random keys and best case (1 comparison); worst case climbs the full height ⌊log₂ n⌋. Page table summarizes insert as O(log n)."
+    },
+    "extract": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Moves A[n − 1] to index 0 and sifts down. Best case occurs when n = 1 or equal keys stop at the root; typical and worst cases sift down O(log n) levels."
+    },
+    "build": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Bottom-up Floyd heapify sifts down internal nodes from parent(n − 1) down to 0 in place. Storing the n heap items themselves takes O(n) space."
+    }
+  },
+  "applications": [
+    "Priority queues in operating system job schedulers and event-driven simulators, which always dispatch the next highest-priority task or earliest event.",
+    "Dijkstra's shortest-path algorithm and Prim's minimum spanning tree algorithm, which repeatedly extract the unvisited vertex with the smallest key.",
+    "Heap Sort, which builds a max-heap in place in O(n) time and repeatedly extracts the root to sort an array in O(n log n) time with O(1) extra space.",
+    "Maintaining the top k largest or smallest elements in a stream with a bounded heap of size k, costing O(n log k) time and O(k) memory."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "A binary heap array is sorted from index 0 to n − 1.",
+      "correction": "Only parent-child pairs are ordered. The default min-heap built from 42, 18, 27, 9, 35, 14, 51, 3 produces array [3, 9, 14, 18, 35, 27, 51, 42]: 35 appears before 27, yet every parent is ≤ its children."
+    },
+    {
+      "mistake": "In a min-heap, the left child is always smaller than the right child.",
+      "correction": "A binary heap has no ordering rule between siblings, unlike a binary search tree. Both children simply must be ≥ their parent in a min-heap (or ≤ in a max-heap)."
+    },
+    {
+      "mistake": "Build Heap takes O(n log n) time because it runs siftDown across the array.",
+      "correction": "Bottom-up Build Heap skips all leaves and sifts down only internal nodes from parent(n − 1) down to 0. Most internal nodes sit near the bottom and sift only 1 or 2 steps, so total work is O(n)."
+    },
+    {
+      "mistake": "Insert can place a new value directly at the root if it is smaller than the current root.",
+      "correction": "Insert always places the new value at index n (the bottom level's leftmost gap) to preserve completeness, then sifts it up along its parent chain until it reaches the root or stops."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Bottom-up Build Heap in O(n)",
+      "action": "Select “Min-Heap (parent ≤ children)” in “Heap Kind”, enter the values in “Values (1–31 whole numbers, −99 to 999)”, and press “Build Heap”. Press “⏮ Reset” and advance with “Step ▶”.",
+      "input": "42, 18, 27, 9, 35, 14, 51, 3",
+      "expect": "Step 1 says “Copied 8 values in their original order. Leaves (index 4 to 7) are already heaps; sift down each parent from index 3 back to 0.” The final step says “Built a valid min-heap of 8 elements with 11 comparisons and 7 swaps.” Root is 3."
+    },
+    {
+      "label": "Insert a new minimum and sift up",
+      "action": "With that 8-element min-heap built, type 1 in “Value (−99 to 999)” and press “Insert”. Watch the tree and array views update together.",
+      "input": "1",
+      "expect": "Step 1 places 1 at index 8. It swaps with parent 18 (index 3), 9 (index 1), and 3 (index 0), ending with “1 reached the root. Heap property holds.” after 3 comparisons and 3 swaps. Banner shows “Inserted 1 into the min-heap (size 9/31).”"
+    },
+    {
+      "label": "Extract the root and sift down",
+      "action": "Right after inserting 1, press “Extract Root” (labeled Extract Min in Min-Heap mode). Press “⏮ Reset” and use “Step ▶” to trace the sift-down.",
+      "input": "",
+      "expect": "Step 1 removes root 1; Step 2 says “Move the last element 18 (index 8) into the root, so the tree stays complete. Now sift it down.” 18 swaps with 3, then 9, and stops at index 3 above 42 after 5 comparisons and 2 swaps. Banner shows “Extracted minimum root 1.”"
+    },
+    {
+      "label": "Switch from Min-Heap to Max-Heap",
+      "action": "In “Min-Heap (parent ≤ children)”, enter the values in “Values (1–31 whole numbers, −99 to 999)” and press “Build Heap”. Then switch “Heap Kind” to “Max-Heap (parent ≥ children)” and press “Peek” (labeled Peek Max).",
+      "input": "10, 40, 20, 50, 30",
+      "expect": "Switching rebuilds from the 5 current items: “Switched to max-heap and rebuilt from 5 current values.” The final step reads “Built a valid max-heap of 5 elements with 6 comparisons and 3 swaps.” Peek shows “Peek: maximum root is 50 at index 0.”"
+    },
+    {
+      "label": "Best-case insert and negative values",
+      "action": "Select “Min-Heap (parent ≤ children)” in “Heap Kind” and press “Clear”. Type 10, 20, and −5 one at a time in “Value (−99 to 999)”, pressing “Insert” after each.",
+      "input": "10, 20, -5",
+      "expect": "10 becomes the root (index 0). 20 stops at index 1 with 1 comparison and 0 swaps: “20 is not smaller, so it stays. Heap property holds.” Inserting −5 swaps once with 10 and ends with “-5 reached the root. Heap property holds.”"
+    },
+    {
+      "label": "Underflow on an empty heap",
+      "action": "Select “Min-Heap (parent ≤ children)” in “Heap Kind”, press “Clear”, and then press “Extract Root” (labeled Extract Min).",
+      "input": "",
+      "expect": "The page refuses the extraction with “Heap underflow: the heap is empty, so there is no minimum to extract.” Size / Capacity stays 0 / 31 and Root (Min) shows “— (empty)”."
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 6, Heapsort.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 2.4, Priority Queues."
+  ],
+  "reviewed": null
+}

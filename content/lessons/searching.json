@@ -1,0 +1,168 @@
+{
+  "id": "searching",
+  "title": "Searching Algorithms",
+  "page": "searching.html",
+  "module": "src/algorithms/searching.js",
+  "controller": "src/pages/searching-page.js",
+  "summary": "Three ways to locate a target value in an array: Linear Search on any array, iterative Binary Search by halving a sorted range, and Interpolation Search by estimating the position.",
+  "prerequisites": ["arrays", "sorting"],
+  "objectives": [
+    "Students can trace Linear Search, iterative Binary Search, and Interpolation Search and track low, mid, and high at each step.",
+    "Students can state the best, average, worst time and extra space complexity of all three searching algorithms.",
+    "Students can explain why Binary Search and Interpolation Search require sorted input while Linear Search does not.",
+    "Students can compute the Interpolation Search probe index and explain why uniform data is fast while skewed data degrades to O(n).",
+    "Students can choose an appropriate searching algorithm based on whether data is sorted, its distribution, and search frequency."
+  ],
+  "levels": {
+    "beginner": [
+      "Searching finds whether a target value is inside an array and returns its index. Imagine looking for your paper in an unsorted stack versus finding a word in a dictionary. In an unsorted stack you must check one paper at a time from the top; in a sorted book you can skip huge sections in one step.",
+      "Linear Search checks elements from index 0 to n − 1 and stops as soon as it sees the target. It works on any array, sorted or unsorted, because it never assumes anything about the order of values.",
+      "Binary Search requires a sorted array. It always checks the exact middle element of the active range. If the middle value is smaller than the target, the entire left half is ruled out; if larger, the right half is ruled out. Each comparison cuts the remaining range in half.",
+      "Interpolation Search also requires a sorted array, but instead of always picking the middle, it estimates where the target should sit based on the smallest and largest values in the range — like opening a dictionary near the back for a word starting with W. On this page, faded bars show eliminated values, and L, M, and H below the bars mark low, mid (or probe), and high."
+    ],
+    "intermediate": [
+      "Linear Search takes O(1) best-case time when A[0] matches the target, and O(n) average and worst-case time because an absent target requires checking all n elements. It uses O(1) extra space and returns the leftmost match when duplicates appear.",
+      "Iterative Binary Search initializes low ← 0 and high ← n − 1, then repeats while low ≤ high: compute mid ← ⌊(low + high) / 2⌋, compare A[mid] with target, and move either low ← mid + 1 or high ← mid − 1. Because each mismatch halves the window, it finishes in at most ⌊log₂ n⌋ + 1 comparisons: O(log n) average and worst time, O(1) extra space.",
+      "Interpolation Search loops while low ≤ high and A[low] ≤ target ≤ A[high]. It estimates pos ← low + ⌊((target − A[low]) · (high − low)) / (A[high] − A[low])⌋. When A[high] = A[low], the code sets pos ← low to avoid dividing by zero. If target lies outside [A[low]..A[high]], the loop exits immediately with 0 comparisons.",
+      "On uniformly spaced sorted data, Interpolation Search lands on or near the target in O(log log n) average probes. On highly skewed data, however, the linear estimate can hug one end and discard only a single element per step, degrading to O(n). On this page, if you pass unsorted values to Binary or Interpolation Search, the module sorts a copy first and announces it in Step 1."
+    ],
+    "advanced": [
+      "Sorting cost trade-off: if you have an unsorted array and only search it once, sorting first in O(n log n) before Binary Search costs more than a single O(n) Linear Search. Sorting pays off when you run many searches against the same data or maintain the array in sorted order.",
+      "Iterative vs recursive Binary Search: this page uses an iterative loop, so auxiliary space is O(1); a recursive version uses O(log n) call-stack space. In fixed-width integer languages, writing low + ⌊(high − low) / 2⌋ avoids signed overflow in low + high; JavaScript numbers stay exact up to 2⁵³ − 1, so Math.floor((low + high) / 2) is safe for array indices here.",
+      "Duplicates and boundaries: Linear Search always returns the first matching index. Standard Binary Search and Interpolation Search stop at whichever match they probe first, which may be any copy in a run of duplicates. Finding the first or last occurrence in O(log n) requires lower-bound or upper-bound Binary Search variants that keep narrowing even after seeing the target.",
+      "Practical performance: Interpolation Search pays multiplication and division per probe and jumps unpredictably across memory, hurting CPU cache locality compared with Binary Search. Unless the dataset is large, numeric, and reliably uniform, Binary Search is usually the safer choice."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "Linear Search",
+      "lines": [
+        "for i ← 0 to n − 1",
+        "    if A[i] = target",
+        "        return i   (found)",
+        "return not found"
+      ],
+      "registry": "SEARCHING_ALGORITHMS.linear.pseudocode"
+    },
+    {
+      "name": "Binary Search",
+      "lines": [
+        "low ← 0;  high ← n − 1",
+        "while low ≤ high",
+        "    mid ← ⌊(low + high) / 2⌋",
+        "    if A[mid] = target: return mid   (found)",
+        "    else if A[mid] < target: low ← mid + 1",
+        "    else: high ← mid − 1",
+        "return not found"
+      ],
+      "registry": "SEARCHING_ALGORITHMS.binary.pseudocode"
+    },
+    {
+      "name": "Interpolation Search",
+      "lines": [
+        "low ← 0;  high ← n − 1",
+        "while low ≤ high and A[low] ≤ target ≤ A[high]",
+        "    if A[high] = A[low]:  pos ← low   (avoid ÷ 0)",
+        "    else: pos ← low + ⌊((target − A[low]) · (high − low)) / (A[high] − A[low])⌋",
+        "    if A[pos] = target: return pos   (found)",
+        "    else if A[pos] < target: low ← pos + 1",
+        "    else: high ← pos − 1",
+        "return not found"
+      ],
+      "registry": "SEARCHING_ALGORITHMS.interpolation.pseudocode"
+    }
+  ],
+  "complexity": {
+    "linear": {
+      "best": "O(1)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Works on unsorted arrays with no preprocessing. Always finds the leftmost occurrence when duplicates exist.",
+      "registry": "SEARCHING_ALGORITHMS.linear.complexity"
+    },
+    "binary": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Iterative version on sorted input (auto-sorted in Step 1 if unsorted). Auxiliary space is O(1); a recursive version uses O(log n) stack space.",
+      "registry": "SEARCHING_ALGORITHMS.binary.complexity"
+    },
+    "interpolation": {
+      "best": "O(1)",
+      "average": "O(log log n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Requires sorted input (auto-sorted in Step 1 if unsorted). Averages O(log log n) on uniformly distributed data and degrades to O(n) on skewed data.",
+      "registry": "SEARCHING_ALGORITHMS.interpolation.complexity"
+    }
+  },
+  "applications": [
+    "Linear Search scans small arrays, unsorted records, or singly linked lists where sorting is not worth the cost or random access is unavailable.",
+    "Binary Search powers sorted array and index lookups in standard libraries (such as C++ std::binary_search and Java Arrays.binarySearch) and git bisect when locating a bug across commits.",
+    "Binary Search on the answer solves monotonic optimization problems, such as finding the smallest capacity or earliest time that meets a constraint.",
+    "Interpolation Search speeds up lookups in large, sorted, nearly uniform numeric tables such as evenly spaced timestamps or ID ranges."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "Binary Search is always faster than Linear Search.",
+      "correction": "Binary Search requires sorted input. If an array is unsorted and searched only once, sorting in O(n log n) costs more than a single O(n) Linear Search."
+    },
+    {
+      "mistake": "Giving unsorted values to Binary Search on this page makes it return the wrong answer.",
+      "correction": "In raw code, Binary Search on unsorted data can miss an existing target. This page prevents that by sorting a copy first and stating it in Step 1, as you can verify by switching from Linear Search to Binary Search."
+    },
+    {
+      "mistake": "Interpolation Search is always faster than Binary Search because O(log log n) beats O(log n).",
+      "correction": "O(log log n) assumes roughly uniform spacing. On the skewed array 1, 2, 3, 4, 5, 6, 7, 8, 9, 900 with target 9, Interpolation Search takes 9 comparisons while Binary Search takes 3."
+    },
+    {
+      "mistake": "Binary Search always returns the first index when duplicates are present.",
+      "correction": "Standard Binary Search stops as soon as A[mid] = target, which may land in the middle of equal values. Only Linear Search or a lower-bound Binary Search variant guarantees the leftmost index."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Binary Search halving a sorted range",
+      "action": "Choose “Binary Search (Iterative)” in “Algorithm”, enter the values in “Values (1–16 whole numbers, −99 to 999)” and 56 in “Target (−99 to 999)”, then press “Run Search” and “▶ Play”.",
+      "input": "4, 11, 18, 25, 34, 42, 56, 63, 78, 91",
+      "expect": "It probes mid = 4 (34), narrows to A[5..9], probes 7 (63), narrows to A[5..6], probes 5 (42), then matches at 6. The last step reads “Done: target 56 found at index 6 (A[6] = 56) in 4 comparisons.”"
+    },
+    {
+      "label": "Unsorted input: Linear Search vs auto-sorted Binary Search",
+      "action": "Enter the unsorted values in “Values (1–16 whole numbers, −99 to 999)” and 19 in “Target (−99 to 999)”. Choose “Linear Search” in “Algorithm”, press “Run Search”, and press “▶ Play”. Then switch “Algorithm” to “Binary Search (Iterative)” and press “▶ Play”.",
+      "input": "40, 12, 19, 5, 31",
+      "expect": "Linear Search finishes with “Done: target 19 found at index 2 (A[2] = 19) in 3 comparisons.” Switching to Binary Search announces “Binary Search requires sorted input. Sorted the array ascending to [5, 12, 19, 31, 40] before searching for target 19.” and finds 19 in 1 comparison."
+    },
+    {
+      "label": "Interpolation Search hits uniform data in 1 probe",
+      "action": "Choose “Interpolation Search” in “Algorithm”, enter the evenly spaced values in “Values (1–16 whole numbers, −99 to 999)” and 70 in “Target (−99 to 999)”, then press “Run Search” and press “Step ▶” three times.",
+      "input": "10, 20, 30, 40, 50, 60, 70, 80, 90, 100",
+      "expect": "Step 2 shows “Interpolate pos = 0 + ⌊(70 − 10) × (9 − 0) / (100 − 10)⌋ = 6. Compare A[6] = 70 with target 70: 70 = 70 (match!).” The final step reads “Done: target 70 found at index 6 (A[6] = 70) in 1 comparison.”"
+    },
+    {
+      "label": "Skewed data: Interpolation Search degrades to O(n)",
+      "action": "Enter the skewed values in “Values (1–16 whole numbers, −99 to 999)” and 9 in “Target (−99 to 999)”. Choose “Interpolation Search” in “Algorithm”, press “Run Search”, and press “▶ Play”. Then switch “Algorithm” to “Binary Search (Iterative)” and press “▶ Play”.",
+      "input": "1, 2, 3, 4, 5, 6, 7, 8, 9, 900",
+      "expect": "Because 900 skews the linear estimate, Interpolation Search creeps one slot at a time and finishes with “Done: target 9 found at index 8 (A[8] = 9) in 9 comparisons.” Binary Search finishes with “in 3 comparisons.”"
+    },
+    {
+      "label": "Out-of-bounds target: 0 probes vs O(log n)",
+      "action": "Enter the evenly spaced values in “Values (1–16 whole numbers, −99 to 999)” and 150 in “Target (−99 to 999)”. Choose “Interpolation Search” in “Algorithm”, press “Run Search”, and press “▶ Play”. Then switch “Algorithm” to “Binary Search (Iterative)” and press “▶ Play”.",
+      "input": "10, 20, 30, 40, 50, 60, 70, 80, 90, 100",
+      "expect": "Interpolation Search stops immediately: “Target 150 is outside the remaining sorted bounds [10..100]: target 150 is not in the array.” and “Done: target 150 was not found after 0 comparisons.” Binary Search finishes with “after 4 comparisons.”"
+    },
+    {
+      "label": "All-equal array guards against division by zero",
+      "action": "Choose “Interpolation Search” in “Algorithm”, enter the repeated values in “Values (1–16 whole numbers, −99 to 999)” and 5 in “Target (−99 to 999)”, then press “Run Search” and press “Step ▶” three times.",
+      "input": "5, 5, 5, 5, 5",
+      "expect": "Step 2 highlights line 3 and says “A[4] = A[0] = 5 (avoid ÷ 0), so probe pos = low = 0. Compare A[0] = 5 with target 5: 5 = 5 (match!).” It finishes with “Done: target 5 found at index 0 (A[0] = 5) in 1 comparison.”"
+    }
+  ],
+  "references": [
+    "Knuth, D. E. The Art of Computer Programming, Vol. 3: Sorting and Searching, 2nd ed. Addison-Wesley, 1998. Sections 6.1 and 6.2.1.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 3.1, Elementary Symbol Tables."
+  ],
+  "reviewed": null
+}

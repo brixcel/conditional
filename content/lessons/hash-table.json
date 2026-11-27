@@ -1,0 +1,271 @@
+{
+  "id": "hash-table",
+  "title": "Hash Table",
+  "page": "hash-table.html",
+  "module": "src/structures/hash-table.js",
+  "controller": "src/pages/hash-table-page.js",
+  "summary": "A hash table maps integer keys to array indices with a hash function for fast insert, search, and delete. Compare Separate Chaining, Linear Probing, and Quadratic Probing step by step.",
+  "prerequisites": ["arrays", "singly-linked-list"],
+  "objectives": [
+    "Students can compute h(k) = ((k mod m) + m) mod m for positive, zero, and negative integer keys.",
+    "Students can trace insert, update, search, and delete under Separate Chaining, Linear Probing, and Quadratic Probing.",
+    "Students can compute the load factor α = n / m and explain how it affects chain lengths and probe counts.",
+    "Students can explain why open addressing marks deleted slots with DELETED tombstones instead of EMPTY.",
+    "Students can distinguish primary clustering in Linear Probing from secondary clustering in Quadratic Probing.",
+    "Students can justify why Quadratic Probing here requires a prime table size m and enforces α ≤ 0.5."
+  ],
+  "levels": {
+    "beginner": [
+      "Think of numbered storage lockers where a simple formula turns an ID number directly into a locker number. Instead of checking lockers from 0 upward, you walk straight to the computed slot. A hash table stores key-value pairs the same way, using a hash function to turn each key into an array index called a bucket or home slot.",
+      "Two different keys can hash to the same index, which is called a collision. For example, when the table size m is 7, keys 10 and 24 both map to index 3 because both leave remainder 3 when divided by 7. How a hash table handles collisions is its collision-resolution strategy.",
+      "This page shows three strategies. Separate Chaining hangs a linked list (chain) from each bucket so colliding keys sit together in that bucket. Linear Probing and Quadratic Probing use open addressing: every entry stays inside the flat slot array, and a colliding key probes other slots until it finds an open one.",
+      "The load factor α = n / m measures how full the table is (n entries divided by m slots). As α rises, chains or probe runs get longer. Rehashing creates a fresh table with a new size m and re-inserts every live key under the new hash function."
+    ],
+    "intermediate": [
+      "Every strategy on this page uses h(k) = ((k mod m) + m) mod m for integer keys from −9999 to 9999. In JavaScript, raw k % m keeps the sign of k (so −4 % 7 gives −4). Adding m and taking mod m again guarantees a non-negative index in 0..m − 1 for every key, including negative integers.",
+      "Separate Chaining appends new colliding keys to buckets[h(k)] and updates the value in place if the key already exists. Under uniform hashing, the expected chain length is α = n / m, giving O(1 + α) average time for insert, search, and delete, and O(n + m) space. Because chains can grow, α may exceed 1 without fixed-slot overflow.",
+      "Linear Probing checks slots (home + i) mod m for i = 0, 1, …, m − 1, wrapping from m − 1 back to 0. Occupied neighbors merge into long contiguous runs called primary clustering: any key hashing into a run must walk to the end of it, making the cluster longer and slowing later operations.",
+      "In Linear and Quadratic Probing, Delete writes a DELETED tombstone instead of EMPTY. Resetting a slot to EMPTY would break search chains for keys placed past that slot after an earlier collision. Search and Delete skip DELETED and stop at EMPTY. Insert remembers the first DELETED slot it meets, keeps probing until EMPTY (or the probe limit) so it never duplicates an existing key, and then reuses that tombstone.",
+      "Quadratic Probing probes (home + i²) mod m (offsets 0, 1, 4, 9, …) so occupied runs do not merge into primary clusters. However, two keys with the same home slot still follow the exact same probe sequence, which is called secondary clustering. Rehash collects all live entries, drops all tombstones, and re-inserts them into a fresh array."
+    ],
+    "advanced": [
+      "Why Quadratic Probing needs prime m and α ≤ 0.5: for a prime m, the offsets i² mod m for i = 0..⌊m / 2⌋ are all distinct, because i² ≡ j² (mod m) implies m divides (i − j)(i + j), impossible when 0 ≤ j < i ≤ ⌊m / 2⌋. Beyond ⌊m / 2⌋, (m − i)² ≡ i² (mod m) only repeats earlier slots. Before any new insert, n < ⌊m / 2⌋, strictly fewer than the ⌊m / 2⌋ + 1 distinct probe slots, so a free slot always exists.",
+      "Implementation details in this repo: table size m is bounded to 3–19. Quadratic Probing accepts only the primes 3, 5, 7, 11, 13, 17, 19 and refuses a new key once n = ⌊m / 2⌋ (updating an existing key at the limit still succeeds, and tombstones do not count toward the limit). Switching strategies carries over live entries and automatically adjusts m if needed.",
+      "Worst-case behavior: if all keys collide, Separate Chaining degrades to O(n). In Linear Probing, tombstones can force an absent-key search to scan all m slots even when n is small (the page table lists O(n) for Linear and O(m) for Quadratic, which stops after ⌊m / 2⌋ + 1 probes). Production tables auto-rehash around α = 0.7 (linear), 0.5 (quadratic), or 1.0 (chaining) for amortized O(1) insert.",
+      "Further open-addressing designs: double hashing uses a second hash function h₂(k) as the probe step, (h₁(k) + i · h₂(k)) mod m, eliminating secondary clustering as well. Modern hash maps also use Robin Hood hashing or SwissTable metadata probing to keep probe lengths short and cache-friendly."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "Chaining: insert(key, value)",
+      "lines": [
+        "idx ← ((key mod m) + m) mod m",
+        "for node in buckets[idx]",
+        "    if node.key = key:  node.value ← value;  return updated",
+        "append (key, value) to buckets[idx];  size ← size + 1"
+      ],
+      "registry": "HASH_STRATEGIES.chaining.pseudocode.insert"
+    },
+    {
+      "name": "Chaining: search(key)",
+      "lines": [
+        "idx ← ((key mod m) + m) mod m",
+        "for node in buckets[idx]",
+        "    if node.key = key:  return found (node)",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.chaining.pseudocode.search"
+    },
+    {
+      "name": "Chaining: delete(key)",
+      "lines": [
+        "idx ← ((key mod m) + m) mod m",
+        "for node in buckets[idx]",
+        "    if node.key = key:  remove node;  size ← size − 1;  return removed",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.chaining.pseudocode.delete"
+    },
+    {
+      "name": "Chaining: rehash(newM)",
+      "lines": [
+        "entries ← collect all live (key, value) pairs",
+        "buckets ← array of newM empty chains;  size ← 0",
+        "for (key, value) in entries",
+        "    idx ← ((key mod newM) + newM) mod newM;  append to buckets[idx]"
+      ],
+      "registry": "HASH_STRATEGIES.chaining.pseudocode.rehash"
+    },
+    {
+      "name": "Linear Probing: insert(key, value)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m;  firstDel ← null",
+        "for i ← 0 to m − 1:  idx ← (home + i) mod m",
+        "    if slot[idx] is OCCUPIED and slot[idx].key = key:  update value;  return",
+        "    if slot[idx] is DELETED and firstDel = null:  firstDel ← idx",
+        "    if slot[idx] is EMPTY:  break",
+        "target ← firstDel ?? emptyIdx;  if target ≠ null:  place at target;  return",
+        "return table full (overflow)"
+      ],
+      "registry": "HASH_STRATEGIES.linear.pseudocode.insert"
+    },
+    {
+      "name": "Linear Probing: search(key)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m",
+        "for i ← 0 to m − 1:  idx ← (home + i) mod m",
+        "    if slot[idx] is EMPTY:  return not found",
+        "    if slot[idx] is DELETED:  continue   (skip tombstone)",
+        "    if slot[idx].key = key:  return found (idx)",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.linear.pseudocode.search"
+    },
+    {
+      "name": "Linear Probing: delete(key)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m",
+        "for i ← 0 to m − 1:  idx ← (home + i) mod m",
+        "    if slot[idx] is EMPTY:  return not found",
+        "    if slot[idx] is DELETED:  continue   (skip tombstone)",
+        "    if slot[idx].key = key:  slot[idx] ← DELETED;  size ← size − 1;  return",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.linear.pseudocode.delete"
+    },
+    {
+      "name": "Linear Probing: rehash(newM)",
+      "lines": [
+        "entries ← collect all OCCUPIED (key, value) pairs (discard tombstones)",
+        "slots ← array of newM EMPTY slots;  size ← 0;  tombstones ← 0",
+        "for (key, value) in entries",
+        "    probe from ((key mod newM) + newM) mod newM and place (key, value)"
+      ],
+      "registry": "HASH_STRATEGIES.linear.pseudocode.rehash"
+    },
+    {
+      "name": "Quadratic Probing: insert(key, value)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m;  firstDel ← null",
+        "for i ← 0 to ⌊m/2⌋:  idx ← (home + i²) mod m",
+        "    if slot[idx] is OCCUPIED and slot[idx].key = key:  update value;  return",
+        "    if slot[idx] is DELETED and firstDel = null:  firstDel ← idx",
+        "    if slot[idx] is EMPTY:  break",
+        "target ← firstDel ?? emptyIdx;  if size + 1 ≤ ⌊m/2⌋:  place at target;  return",
+        "return load limit reached (α would exceed 0.5)"
+      ],
+      "registry": "HASH_STRATEGIES.quadratic.pseudocode.insert"
+    },
+    {
+      "name": "Quadratic Probing: search(key)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m",
+        "for i ← 0 to ⌊m/2⌋:  idx ← (home + i²) mod m",
+        "    if slot[idx] is EMPTY:  return not found",
+        "    if slot[idx] is DELETED:  continue   (skip tombstone)",
+        "    if slot[idx].key = key:  return found (idx)",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.quadratic.pseudocode.search"
+    },
+    {
+      "name": "Quadratic Probing: delete(key)",
+      "lines": [
+        "home ← ((key mod m) + m) mod m",
+        "for i ← 0 to ⌊m/2⌋:  idx ← (home + i²) mod m",
+        "    if slot[idx] is EMPTY:  return not found",
+        "    if slot[idx] is DELETED:  continue   (skip tombstone)",
+        "    if slot[idx].key = key:  slot[idx] ← DELETED;  size ← size − 1;  return",
+        "return not found"
+      ],
+      "registry": "HASH_STRATEGIES.quadratic.pseudocode.delete"
+    },
+    {
+      "name": "Quadratic Probing: rehash(newM)",
+      "lines": [
+        "entries ← collect all OCCUPIED (key, value) pairs (discard tombstones)",
+        "slots ← array of newM EMPTY slots (newM prime, n ≤ ⌊newM/2⌋);  size ← 0",
+        "for (key, value) in entries",
+        "    probe (home + i²) mod newM for i = 0, 1, … and place at the first EMPTY slot"
+      ],
+      "registry": "HASH_STRATEGIES.quadratic.pseudocode.rehash"
+    }
+  ],
+  "complexity": {
+    "chaining": {
+      "best": "O(1)",
+      "average": "O(1 + α)",
+      "worst": "O(n)",
+      "space": "O(n + m)",
+      "note": "Insert, search, and delete under Separate Chaining, where α = n / m. Worst case occurs when all n keys collide into one bucket."
+    },
+    "linear": {
+      "best": "O(1)",
+      "average": "O(1 / (1 − α))",
+      "worst": "O(n)",
+      "space": "O(m)",
+      "note": "Insert, search, and delete under Linear Probing (α = n / m ≤ 1). Page summary lists O(n) worst case; with tombstones an absent key can probe all m slots."
+    },
+    "quadratic": {
+      "best": "O(1)",
+      "average": "O(1 / (1 − α))",
+      "worst": "O(m)",
+      "space": "O(m)",
+      "note": "Insert, search, and delete under Quadratic Probing. Prime m and α ≤ 0.5 cap every probe loop at ⌊m / 2⌋ + 1 steps."
+    },
+    "rehash": {
+      "best": "O(n + m)",
+      "average": "O(n + m)",
+      "worst": "O(n² + m)",
+      "space": "O(n + m)",
+      "note": "Collects n live entries and allocates size m, then re-inserts each entry: O(n + m) for chaining or expected open addressing, and O(n² + m) worst case if all keys collide under probing."
+    }
+  },
+  "applications": [
+    "Built-in dictionaries and maps such as Python dict, JavaScript Map, and Java HashMap for O(1) expected key-value lookup.",
+    "Database hash indexes and hash joins, which match rows by key without scanning the entire table.",
+    "Compiler symbol tables, which map variable and function identifiers to their types and scopes during translation.",
+    "In-memory caches and deduplication sets, which check in O(1) expected time whether a value has already been computed or seen."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "A hash table always gives O(1) worst-case lookup time.",
+      "correction": "O(1) is the expected time under uniform hashing with a controlled load factor. If many keys collide into one bucket or cluster, lookup degrades to O(n) or O(m)."
+    },
+    {
+      "mistake": "Deleting a key in open addressing just sets its slot back to EMPTY.",
+      "correction": "Setting the slot to EMPTY would stop Search early and hide keys that collided past that slot. Delete writes a DELETED tombstone so later probe chains remain reachable."
+    },
+    {
+      "mistake": "Negative integer keys cannot be hashed with modulo.",
+      "correction": "Raw k % m in JavaScript keeps the minus sign, but h(k) = ((k mod m) + m) mod m always lands in 0..m − 1. On this page with m = 7, key −4 hashes cleanly to bucket 3."
+    },
+    {
+      "mistake": "Quadratic Probing checks every slot in the table before giving up.",
+      "correction": "For prime m, (home + i²) mod m visits only ⌊m / 2⌋ + 1 distinct slots before repeating. That is why this page requires prime m and refuses new inserts once α would exceed 0.5."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Separate Chaining collision and negative key",
+      "action": "Choose “Separate Chaining (Buckets + Chains)” in “Collision Resolution”, enter 7 in “Table Size m (3–19)”, press “Rehash / Resize”, then press “Clear Table”. Insert 10, 24, and −4 one at a time in “Integer Key (−9999 to 9999)” using “Insert / Update”.",
+      "input": "10, 24, -4",
+      "expect": "All three hash to bucket 3. Inserting −4 computes “h(-4) = ((-4 mod 7) + 7) mod 7 = 3” and ends with “Collision at bucket 3: appended -4 to chain (now 3 nodes). Load factor α = 3/7 = 0.43.”"
+    },
+    {
+      "label": "Update an existing key in place",
+      "action": "In that same Separate Chaining table containing 10, 24, and −4, type 24 in “Integer Key (−9999 to 9999)” and Ada in “Value (optional, max 24 chars)”, then press “Insert / Update”.",
+      "input": "24, Ada",
+      "expect": "After 2 probes along bucket 3, the table updates instead of duplicating: “Updated key 24 in bucket 3 (node 1): 24 → 24: \"Ada\". Size stays 3.” Banner shows “Updated key 24 at index 3.”"
+    },
+    {
+      "label": "Linear Probing wrap-around and tombstones",
+      "action": "Choose “Linear Probing (Open Addressing)” in “Collision Resolution”, press “Clear Table”, set “Table Size m (3–19)” to 7 with “Rehash / Resize”, and insert 5, 12, and 19 one at a time with “Insert / Update”. Next enter 12 and press “Delete Key”, then enter 19 and press “Search Key”.",
+      "input": "5, 12, 19",
+      "expect": "19 wraps around to slot 0. Deleting 12 leaves a tombstone at slot 6: “Size = 2, tombstones = 1.” Searching 19 skips slot 6 (“Slot 6 is a DELETED tombstone — do not stop!”) and reports “Found 19 at slot 0 after 3 probes.”"
+    },
+    {
+      "label": "Recycle a tombstone and clear tombstones on Rehash",
+      "action": "Right after the previous scenario (slot 6 is DELETED), enter 26 in “Integer Key (−9999 to 9999)” and press “Insert / Update”. Then enter 5 and press “Delete Key”, type 11 in “Table Size m (3–19)”, and press “Rehash / Resize”.",
+      "input": "26, 5, 11",
+      "expect": "26 probes through slot 0 to EMPTY slot 1, then reuses slot 6: “Placed 26 into recycled tombstone slot 6 (offset +1 from home 5). α = 3/7 = 0.43.” Rehashing to 11 reports “Rehashed table to size m = 11 (2 entries re-inserted, 1 tombstones cleared).”"
+    },
+    {
+      "label": "Quadratic Probing jumps by i² and enforces α ≤ 0.5",
+      "action": "Choose “Quadratic Probing (Open Addressing, prime m)” in “Collision Resolution”, press “Clear Table”, type 7 in “Table Size m (3–19)” (whose hint shows the prime sizes) and press “Rehash / Resize”. Insert 3, 10, 17, and 24 one at a time in “Integer Key (−9999 to 9999)” using “Insert / Update”.",
+      "input": "3, 10, 17, 24",
+      "expect": "3 lands at slot 3 (i = 0), 10 at slot 4 (i = 1), and 17 jumps to slot 0: “Placed 17 at slot 0 = (h + i²) mod m = (3 + 2²) mod 7 = 0. α = 3/7 = 0.43.” Key 24 is refused because size 7 holds at most 3 entries: “Rehash to a prime size of at least 11 first.”"
+    },
+    {
+      "label": "Non-prime table size refused in Quadratic Probing",
+      "action": "While in “Quadratic Probing (Open Addressing, prime m)”, type 8 in “Table Size m (3–19)” (whose hint shows the prime sizes) and press “Rehash / Resize”.",
+      "input": "8",
+      "expect": "The page refuses the resize with “Quadratic Probing needs a prime table size so the probe sequence reaches enough distinct slots: choose one of 3, 5, 7, 11, 13, 17, 19 (got 8).”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 11, Hash Tables.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 3.4, Hash Tables."
+  ],
+  "reviewed": null
+}
