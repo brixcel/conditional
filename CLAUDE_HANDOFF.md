@@ -32,6 +32,38 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G16: Lessons + quiz banks: BST, AVL, Trie, Red-Black
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `lesson-author`, `quiz-challenges`, `learning-content`, `qa-engineer`)
+- Finished at: 2026-11-27 10:13 (Philippine time)
+- Branch: `gemini/g16-tree-learning` (branched from fresh `origin/main` @ `a351f49`)
+- Commit(s): `876e68a` (+ handoff/board update commit)
+- Files changed: `content/lessons/bst.json`, `content/lessons/avl-tree.json`, `content/lessons/trie.json`, `content/lessons/red-black-tree.json`, `content/quizzes/bst.json`, `content/quizzes/avl-tree.json`, `content/quizzes/trie.json`, `content/quizzes/red-black-tree.json`, `tests/quiz-banks-g16.test.js`, `CLAUDE_HANDOFF.md`, `TASK_BOARD.md` (zero edits to existing pages, modules, registries, validators, or existing lessons/quizzes/tests)
+- Summary:
+  - Authored 4 tree lessons (`bst`, `avl-tree`, `trie`, `red-black-tree`; all `"reviewed": null`, UTF-8 no BOM, 2-space indent, US spelling in prose with verbatim UI strings in `“…”`). All 10 `BST_INFO.pseudocode.*` arrays, all 6 `TRIE_INFO.pseudocode.*` arrays, and `search`/`min`/`max`/`inspect`/`clear` in `AVL_INFO.pseudocode.*` and `RB_INFO.pseudocode.*` are registry-linked char-for-char; all `complexity` rows for `avl-tree` and `red-black-tree` are linked to `AVL_INFO.operations.*` and `RB_INFO.operations.*`. (`insert`/`delete` pseudocode in `avl-tree.json` and `red-black-tree.json` omit `registry` because the module arrays exceed schema rule `P1` — see Requests for Claude below.)
+  - Authored 4 quiz banks (`bst`, `avl-tree`, `trie`, `red-black-tree`; 14 questions each = 56 questions, `"reviewed": null`), covering all 5 question types (`mcq`, `multi`, `truefalse`, `predict`, `complexity`) and all 3 difficulties (`easy`, `medium`, `hard`) in every bank.
+  - Added `tests/quiz-banks-g16.test.js` (8 test blocks): validates all 4 banks (`validateBank`, `prepareQuiz`, `grade`, count/type/difficulty/review contracts), enforces `assertAllPredictsCovered` dynamically so every `predict` is recomputed from the real modules (**18/18 `predict`s**: `bst-003, 006, 007, 011, 012`; `avl-tree-003, 006, 007, 012`; `trie-003, 006, 007, 008, 011`; `red-black-tree-004, 006, 008, 013`), and verifies all **38 remaining non-predict questions** (`bst-001, 002, 004, 005, 008, 009, 010, 013, 014`; `avl-tree-001, 002, 004, 005, 008, 009, 010, 011, 013, 014`; `trie-001, 002, 004, 005, 009, 010, 012, 013, 014`; `red-black-tree-001, 002, 003, 005, 007, 009, 010, 011, 012, 014`) against `BinarySearchTree`, `AVLTree`, `Trie`, `RedBlackTree`, and `RB_DEMOS`.
+  - Audited independently by read-only `learning-content` and `qa-engineer` subagents; fixed all findings before final test run (BST `levels.advanced` rotation wording, AVL/RB `clear` pre-order vs post-order recursion, AVL `avl-tree-013` LR-on-`bf(10)=0` explanation, Trie `M` live-nodes vs `N` words notation, AVL `insert` duplicate-before-overflow + thick-ring/`!` visual description, RB beginner 0–3 rotations + `bh(x)` CLRS definition, US spelling + plain-text backtick cleanup in quizzes, quoted whitespace-visible choices in `trie-004`, and tightened non-vacuous assertions in `tests/quiz-banks-g16.test.js` including invalid-tree `integrityError()` checks and multi-level repeating RB Case 2).
+- npm test output (paste the real lines):
+    # tests 800
+    # pass 800
+    # fail 0
+    SUMMARY: 89 / 89 assertions passed (100%)
+- Browser checks done: Served locally via Node HTTP (`127.0.0.1:4177`) and clicked through **all 24 `tryIt` scenarios live in browser** across `bst.html` (6/6: all 4 traversals, search hit/miss + Min/Max, leaf + 1-child delete, 2-child root delete with `Relinking…` frame, negative insert + `#bstAlert` duplicate rejection, sorted skewed build height 6), `avl-tree.html` (6/6: Insert LL, Insert LR, Delete RL demos, sorted 7-key build height 2, duplicate insert + 2-child root delete, Leaf/Internal highlight), `trie.html` (6/6: `ca` Search vs Starts with, `ca` Autocomplete, `cart` insert + duplicate alert, `car` unmark-only, `door` partial-prune + `bat` full-prune, `Car5` invalid + `APE` lowercase + Clear), and `red-black-tree.html` (6/6: Insert case 1, Insert case 2→3, Delete case 1→2, Delete case 3→4 demos, 5-key Build + 2-child red-successor delete, Red/Black highlight). Every quoted banner, step message, counter, and stat matched character-for-character; all preview tabs closed and local server stopped.
+- Not done / not verified: All 8 JSON files intentionally remain `"reviewed": null` awaiting Claude review; no existing pages/modules/registries/validators were edited.
+- Requests for Claude:
+  - **Existing-file inaccuracies spotted (not edited per G16 ownership):**
+    1. `src/structures/avl.js:40-48,80-97` & `src/structures/red-black.js:108-134`: `AVL_INFO.pseudocode.{insert,delete}` and `RB_INFO.pseudocode.{insert,delete}` exceed lesson schema rule `P1` (`1–12` lines, `1–80` chars/line: `AVL insert` max 85 chars, `AVL delete` 14 lines / max 85 chars; `RB insert` max 106 chars, `RB delete` 14 lines / max 112 chars). Because of this, `avl-tree.json` and `red-black-tree.json` omit `"registry"` on `insert`/`delete` and provide faithful `≤12`-line / `≤80`-char versions. If those 4 registry arrays are shortened (or `P1` relaxed), they can be linked with `"registry"`.
+    2. `src/structures/red-black.js:22-23`: File header comment says `height(): ... O(log n)`, while `height()` at lines 267–270 recursively visits all nodes in `O(n)` (correctly documented in `RB_INFO.operations.height` at line 102 and JSDoc at line 266).
+    3. `red-black-tree.html:81`: `.field-label` uses `&ldquo;-&rdquo;`, which `decodeEntities` in `src/learn/lesson.js:91` does not decode.
+    4. `red-black-tree.html`, `src/structures/red-black.js`, `src/pages/red-black-page.js`: Uses UK spelling (`colour`/`recolour`) while site prose standard (`_schema.md` X4) uses US spelling; also ASCII hyphens in `cases 2-4` / `cases 1-4` (`red-black.js:782`, `red-black-page.js:817`).
+    5. `src/structures/bst.js:52` vs `:310` and `src/structures/trie.js:57` vs `:423-494`: Registry `pseudocode.insert` line 1 lists overflow/limits check before duplicate probe, whereas runtime checks duplicates first so duplicate rejection wins over overflow when full.
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
 ### G13: Segment Tree module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 23:10 (Philippine time)
