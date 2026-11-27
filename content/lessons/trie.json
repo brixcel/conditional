@@ -1,0 +1,217 @@
+{
+  "id": "trie",
+  "title": "Trie (Prefix Tree)",
+  "page": "trie.html",
+  "module": "src/structures/trie.js",
+  "controller": "src/pages/trie-page.js",
+  "summary": "A trie (prefix tree) stores lowercase words by placing one letter on each downward edge so words with the same start share a path. Word and prefix lookups take O(L) time for string length L.",
+  "prerequisites": ["bst", "hash-table"],
+  "objectives": [
+    "Students can trace insert, search and startsWith on a trie one character at a time from the root.",
+    "Students can explain why isEnd markers distinguish a stored word from a prefix of a longer word.",
+    "Students can trace alphabetical autocomplete (wordsWithPrefix) from a prefix node using depth-first search.",
+    "Students can predict which of the three delete outcomes (unmark-only, partial-prune or full-prune) occurs for a given word.",
+    "Students can state why lookup and insert run in O(L) time independent of how many words are stored.",
+    "Students can compare tries with hash tables and binary search trees for prefix queries and memory trade-offs."
+  ],
+  "levels": {
+    "beginner": [
+      "A trie (pronounced try, from retrieval) is a tree for storing words. Imagine thumb tabs in a dictionary: all words starting with c share the c tab, and within it car, card and care all share the path c → a → r before branching to d or e.",
+      "The root node at the top stands for the empty prefix ∅ (no letters yet). Every downward edge carries one lowercase letter from a to z, sorted alphabetically from left to right. Walking down from the root spells a prefix one character per edge.",
+      "Reaching a node only tells you that some stored word starts with those letters. To tell a real stored word apart from an unfinished prefix, the final node of each inserted word gets a word-end marker (isEnd), drawn here as a double ring with a ★ symbol.",
+      "When you type a prefix into Autocomplete, the trie walks down to that prefix node and collects every ★ word in its subtree in alphabetical order. Deleting a word removes its ★ marker and then trims away any leftover nodes that no other word needs."
+    ],
+    "intermediate": [
+      "Each TrieNode stores a stable numeric id, its incoming edge letter char, a JavaScript Map of children keyed by single lowercase letters (a–z), and a boolean isEnd flag. Inputs are trimmed and lowercased and must contain 1–12 letters a–z. The page caps storage at 20 words and 120 nodes, where nodeCount includes the root (so an empty trie has 0 words and 1 node).",
+      "Because each node maps at most 26 letters, checking or following the next edge takes O(1) time. Insert, search and startsWith each walk at most L edges for a word or prefix of length L, giving O(L) time independent of how many words N are in the trie. Search requires the final node to have isEnd = true, whereas startsWith succeeds as soon as all L edges exist.",
+      "Autocomplete (wordsWithPrefix) first walks L prefix edges in O(L) time, then runs a depth-first search (DFS) over that subtree, sorting each node's child keys alphabetically so words are collected in sorted order. Because deletion removes dangling branches, every node below the prefix leads to at least one match, giving O(L + K) time where K is the total characters in all matched words.",
+      "Delete walks down L edges while pushing each step onto a path stack, clears isEnd on the target node, and then walks bottom-up to prune unused nodes. Pruning stops as soon as a node still has another child or another word's isEnd marker, yielding three outcomes: unmark-only (0 nodes pruned), partial-prune (some suffix nodes removed), or full-prune (all L nodes removed back to the root)."
+    ],
+    "advanced": [
+      "Unlike a classic textbook trie that allocates a fixed 26-element array per node (O(26·M) pointers across M nodes, mostly null), this module stores children in a Map per node. That keeps memory proportional to actual edges (O(total characters)) while still giving O(1) edge lookup over the 26-letter alphabet, at the cost of sorting a node's existing keys during alphabetical DFS.",
+      "Insert pre-probes the word before allocating any node so two invariants hold strictly: first, duplicate rejection wins over word-limit and node-limit overflow (inserting an existing word into a full trie reports a duplicate, not overflow); second, the maxNodes check is atomic, so a word that would exceed 120 nodes creates zero partial nodes.",
+      "The module's integrityError() enforces that no non-root leaf ever has isEnd = false (no dangling unpruned branches). That invariant is why startsWith() needs only to verify the prefix path exists without scanning below it, and why deletion must prune bottom-up instead of leaving unmarked dead ends behind.",
+      "Compared with a hash table, a trie never suffers hash collisions and supports O(L) prefix checks and sorted autocomplete, which a hash table cannot answer without scanning all keys. Compared with a BST on strings, a trie avoids comparing whole strings at each node (O(L) vs O(L log N)), though tries use more memory per character unless compressed into a radix tree (Patricia trie) that merges single-child chains."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "insert(word)",
+      "lines": [
+        "check limits (maxWords, maxNodes)",
+        "curr ← root",
+        "for each char ch in word:",
+        "    if ch not in curr.children: create child node(ch)",
+        "    curr ← curr.children[ch]",
+        "if curr.isEnd: reject duplicate word",
+        "curr.isEnd ← true;  size ← size + 1"
+      ],
+      "registry": "TRIE_INFO.pseudocode.insert"
+    },
+    {
+      "name": "search(word)",
+      "lines": [
+        "curr ← root",
+        "for each char ch in word:",
+        "    if ch not in curr.children: return not found",
+        "    curr ← curr.children[ch]",
+        "return curr.isEnd  // must be marked word end"
+      ],
+      "registry": "TRIE_INFO.pseudocode.search"
+    },
+    {
+      "name": "startsWith(prefix)",
+      "lines": [
+        "curr ← root",
+        "for each char ch in prefix:",
+        "    if ch not in curr.children: return not found",
+        "    curr ← curr.children[ch]",
+        "return found (prefix exists in trie)"
+      ],
+      "registry": "TRIE_INFO.pseudocode.startsWith"
+    },
+    {
+      "name": "wordsWithPrefix(prefix)",
+      "lines": [
+        "curr ← root;  walk prefix edges",
+        "if prefix edge missing: return []",
+        "dfs(node, prefix) in alphabetical child order:",
+        "    if node.isEnd: collect(prefix)",
+        "    for each (ch, child) sorted: dfs(child, prefix + ch)",
+        "return collected words"
+      ],
+      "registry": "TRIE_INFO.pseudocode.wordsWithPrefix"
+    },
+    {
+      "name": "delete(word)",
+      "lines": [
+        "curr ← root;  walk word edges (recording path)",
+        "if missing edge or !curr.isEnd: return not found",
+        "curr.isEnd ← false;  size ← size - 1",
+        "walk path bottom-up while node != root:",
+        "    if node.children.size > 0 or node.isEnd: stop pruning and return",
+        "    unlink node from parent.children (prune)",
+        "return deleted"
+      ],
+      "registry": "TRIE_INFO.pseudocode.delete"
+    },
+    {
+      "name": "clear()",
+      "lines": [
+        "unlink all children from root;  size ← 0;  nodeCount ← 1"
+      ],
+      "registry": "TRIE_INFO.pseudocode.clear"
+    }
+  ],
+  "complexity": {
+    "insert": {
+      "best": "O(L)",
+      "average": "O(L)",
+      "worst": "O(L)",
+      "space": "O(L) new nodes",
+      "note": "L is the word length (1–12 letters a–z). Follows existing shared prefix edges and allocates at most L new nodes (capped at 20 words and 120 nodes)."
+    },
+    "search": {
+      "best": "O(1)",
+      "average": "O(L)",
+      "worst": "O(L)",
+      "space": "O(1)",
+      "note": "L is the word length. Stops in O(1) if the first letter has no edge from root; hits walk all L edges and require isEnd = true."
+    },
+    "startsWith": {
+      "best": "O(1)",
+      "average": "O(L)",
+      "worst": "O(L)",
+      "space": "O(1)",
+      "note": "L is the prefix length. Stops early on a missing edge (O(1) at root) and succeeds once all L edges exist, regardless of isEnd."
+    },
+    "wordsWithPrefix": {
+      "best": "O(1)",
+      "average": "O(L + K)",
+      "worst": "O(L + K)",
+      "space": "O(L + K)",
+      "note": "L is prefix length and K is total characters in all matched words. Stops in O(1) if the first prefix edge is missing; otherwise DFS collects matches in alphabetical order."
+    },
+    "delete": {
+      "best": "O(1)",
+      "average": "O(L)",
+      "worst": "O(L)",
+      "space": "O(L) path stack",
+      "note": "O(1) if the trie is empty or the first edge is missing. Otherwise walks down L edges (storing the path stack) and prunes unused nodes bottom-up in O(L) time."
+    },
+    "clear": {
+      "best": "O(M)",
+      "average": "O(M)",
+      "worst": "O(M)",
+      "space": "O(L) recursion stack",
+      "note": "M is the total live nodes (up to 120) and L is the longest stored word (up to 12). Recursively clears every child Map and resets nodeCount to 1."
+    }
+  },
+  "applications": [
+    "Search-bar autocomplete: typing a prefix walks directly to its node and lists every matching completion in alphabetical order.",
+    "Spell checkers and word-game dictionaries: a trie rejects impossible letter prefixes on the first missing edge instead of testing every word.",
+    "IP routing tables (longest-prefix matching): binary and compressed tries match packet destination addresses against the longest stored network prefix.",
+    "Phonebook and contact lookup: T9 and name-prefix search narrow matching entries after each keystroke in time proportional to the typed letters."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "If a word's letters exist along a path from the root, then that word is stored in the trie.",
+      "correction": "A path only proves the letters form a prefix. On the starter trie, the path c → a exists for car and cat, yet Search on ca fails because node a has no ★ (isEnd = false), while Starts with succeeds."
+    },
+    {
+      "mistake": "Deleting a word always removes every node along its path.",
+      "correction": "Nodes shared with other words must stay. Deleting car on the starter trie only removes its ★ marker (0 nodes pruned) because card and care still branch below node r."
+    },
+    {
+      "mistake": "A trie's lookup time grows as you insert more words into the dictionary.",
+      "correction": "Search follows one edge per character of the query word, so lookup time is O(L) for word length L, whether the trie holds 7 words or 1,000,000 words."
+    },
+    {
+      "mistake": "Each node in a trie stores a complete word.",
+      "correction": "Each node stores only a single character label (empty ∅ at the root) and an isEnd flag. The word is spelled by the sequence of edges from the root to that node."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Search vs. Starts with (why isEnd matters)",
+      "action": "On the starter trie (7 words, 15 nodes), type ca in “Word or Prefix (1–12 letters, a–z)” and press “Search”. With ca still in the field, press “Starts with”.",
+      "input": "ca",
+      "expect": "Search warns “Word \"ca\" is not stored in the trie.” and ends at step 3 / 3 with “Reached node #3 for \"ca\", but isEnd is false: \"ca\" is only a prefix of longer word(s), not a stored word.” Starts with succeeds with “Prefix \"ca\" exists in the trie.”"
+    },
+    {
+      "label": "Alphabetical autocomplete on a shared prefix",
+      "action": "With ca in “Word or Prefix (1–12 letters, a–z)”, press “Autocomplete”. Watch the Autocomplete Matches strip fill as the DFS visits child edges.",
+      "input": "ca",
+      "expect": "Banner shows “Autocomplete for \"ca\" found 4 words: car, card, care, cat.” Even though cat was built before car, child edges are explored alphabetically, ending at step 11 / 11 with “Autocomplete for \"ca\" found 4 words: [car, card, care, cat].”"
+    },
+    {
+      "label": "Prefix sharing on insert and duplicate check",
+      "action": "On the starter trie, type cart in “Word or Prefix (1–12 letters, a–z)” and press “Insert”. Then type cart again in “Word or Prefix (1–12 letters, a–z)” and press “Insert”.",
+      "input": "cart, cart",
+      "expect": "First insert reuses c → a → r and creates only 1 new node (t): “Inserted \"cart\" (1 new node; 8/20 words).” Nodes becomes 16 / 120. The second insert is rejected with “Word \"cart\" is already in the trie.” and counts do not change."
+    },
+    {
+      "label": "Delete case 1: unmark-only (shared prefix word)",
+      "action": "Press “Build” to restore the starter trie, type car in “Word or Prefix (1–12 letters, a–z)” and press “Delete”.",
+      "input": "car",
+      "expect": "Banner reads “Deleted \"car\": unmark-only (0 nodes pruned — still a prefix of longer word(s)).” The ★ ring disappears from node r while Words drops to 6 / 20 and Nodes stays 15 / 120 because card and care still branch below r."
+    },
+    {
+      "label": "Delete cases 2 and 3: partial-prune and full-prune",
+      "action": "Continuing from the previous trie (or after pressing “Build”), type door in “Word or Prefix (1–12 letters, a–z)” and press “Delete”. Then type bat in “Word or Prefix (1–12 letters, a–z)” and press “Delete”.",
+      "input": "door, bat",
+      "expect": "Deleting door reports “Deleted \"door\": partial-prune (2 unused nodes pruned).” (prunes r and the second o, stopping at the o shared with dog). Deleting bat reports “Deleted \"bat\": full-prune (3 nodes pruned back to root).” leaving 10 / 120 nodes."
+    },
+    {
+      "label": "Validation, case normalization, and Clear",
+      "action": "Type Car5 in “Word or Prefix (1–12 letters, a–z)” and press “Insert”. Next type APE in “Word or Prefix (1–12 letters, a–z)” and press “Insert”. Finally press “Clear”.",
+      "input": "Car5, APE",
+      "expect": "Car5 is rejected with “Word \"car5\" must contain only letters a–z (no spaces, digits, or symbols).” APE is lowercased and inserted as “ape” with 3 new nodes. Clear empties the stored words and leaves Words 0 / 20 and Nodes 1 / 120 (root only)."
+    }
+  ],
+  "references": [
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 5.2, Tries.",
+    "Knuth, D. E. The Art of Computer Programming, Vol. 3: Sorting and Searching, 2nd ed. Addison-Wesley, 1998. Section 6.3, Digital Searching."
+  ],
+  "reviewed": null
+}

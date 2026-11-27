@@ -1,0 +1,217 @@
+{
+  "id": "red-black-tree",
+  "title": "Red-Black Tree (CLRS)",
+  "topic": "red-black-tree",
+  "description": "The five red-black properties, height bound, insert fix-up cases 1–3, double-black delete fix-up cases 1–4, and O(log n) guarantees on the red-black tree used by red-black-tree.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "red-black-tree-001",
+      "type": "multi",
+      "difficulty": "easy",
+      "prompt": "Which of the following are among the five red-black tree properties? Select all that apply.",
+      "choices": [
+        "Every node is colored either red or black",
+        "The root is always black",
+        "Every NIL leaf (empty child pointer) counts as black",
+        "A red node cannot have a red child",
+        "All paths from any node down to a NIL leaf pass the same number of black nodes",
+        "Every red node must have two non-empty black children"
+      ],
+      "answer": [
+        "Every node is colored either red or black",
+        "The root is always black",
+        "Every NIL leaf (empty child pointer) counts as black",
+        "A red node cannot have a red child",
+        "All paths from any node down to a NIL leaf pass the same number of black nodes"
+      ],
+      "explanation": "Those five rules define every valid red-black tree and force the longest root-to-NIL path to be at most twice the shortest. The sixth statement is false because a red node's children can be empty NIL pointers (which count as black)—for example, inserting 20 then 10 leaves 10 as a valid red leaf with two NIL children.",
+      "tags": ["properties", "invariants"],
+      "page": "On red-black-tree.html: read 'The five red-black properties' in the concept card."
+    },
+    {
+      "id": "red-black-tree-002",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "When inserting a new key into a red-black tree, what color is the new leaf given initially, and why?",
+      "choices": [
+        "Red, so no root-to-NIL path gains an extra black node and the black-height rule stays intact",
+        "Black, so it can never create a red-red violation with its parent",
+        "The opposite color of its parent, so fix-up is never needed",
+        "The same color as the root, which is always black"
+      ],
+      "answer": "Red, so no root-to-NIL path gains an extra black node and the black-height rule stays intact",
+      "explanation": "Attaching a new node as red preserves the black count on every path immediately; the only rule that might break is the local red-red rule (or root-black if the tree was empty), which is easy to repair. Inserting a black leaf would immediately break the equal black-height property on every non-empty tree.",
+      "tags": ["insert", "coloring"],
+      "page": "On red-black-tree.html: insert any key and pause on the attach step to see the new node start red."
+    },
+    {
+      "id": "red-black-tree-003",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "When you insert the first key into an empty red-black tree, it starts red and is immediately recolored black as the root, giving a black height of 1.",
+      "answer": true,
+      "explanation": "Every new node begins red, then insert fix-up enforces rule 2 by coloring the root black (root-black step). Because blackHeight() counts black nodes on a root-to-NIL path including the root and excluding NIL, a single black root has black height 1. Saying false confuses an empty tree (black height 0) with a one-node tree (black height 1).",
+      "tags": ["insert", "root", "black-height"],
+      "page": "On red-black-tree.html: press Clear, insert 10, and step through attach → root-black."
+    },
+    {
+      "id": "red-black-tree-004",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Start with the red-black tree 20B(10R,30R) (black root 20, red children 10 and 30, black height 1) and insert 5. After Insert Case 1 recoloring and enforcing the black-root rule, what is the tree's black height?",
+      "answer": "2",
+      "hint": "Case 1 turns parent 10 and uncle 30 black, turns grandparent 20 red, and then the root rule turns 20 black again.",
+      "explanation": "Node 5 attaches as a red child of red 10 while uncle 30 is red (Insert Case 1). Recoloring flips 10 and 30 to black and grandparent 20 to red, and then rule 2 recolors root 20 back to black. Now every root-to-NIL path passes two black nodes (20 and 10, or 20 and 30), so the black height increases from 1 to 2. Answering 1 forgets that recoloring a red root black adds one black node to every path.",
+      "tags": ["insert", "case-1", "black-height", "trace"],
+      "page": "On red-black-tree.html: run the Insert case 1, uncle red (left) demo and check Black Height on the final step."
+    },
+    {
+      "id": "red-black-tree-005",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "Because a red-black tree with n keys has height at most 2·log₂(n + 1), what is the worst-case time complexity of search, insert, and delete?",
+      "choices": [
+        "O(log n)",
+        "O(1)",
+        "O(n)",
+        "O(n log n)"
+      ],
+      "answer": "O(log n)",
+      "explanation": "The height bound h ≤ 2·log₂(n + 1) guarantees that descending from root to leaf and walking back up during recoloring take at most O(log n) steps, and rotations take O(1) each. O(n) is tempting if you think red-black trees are less balanced than AVL trees, but a constant factor of 2 in height still yields O(log n) worst-case time.",
+      "tags": ["complexity", "height-bound"],
+      "page": "On red-black-tree.html: inspect the Search, Insert, and Delete rows in the complexity table."
+    },
+    {
+      "id": "red-black-tree-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Starting from an empty red-black tree, insert 20, then 30, then 25 (triggering Insert Case 2 triangle, then Case 3 line). List the final tree's keys in pre-order (root, left, right).",
+      "format": "list",
+      "answer": "25, 20, 30",
+      "hint": "25 attaches as the left child of red 30 (a triangle with a black NIL uncle): Case 2 rotates right at 30, then Case 3 rotates left at 20.",
+      "explanation": "After inserting 20 (black root) and 30 (red right child), inserting red 25 as 30's left child creates a red-red triangle with a black NIL uncle. Case 2 rotates right around 30 so 25 and 30 form a right-leaning line; Case 3 rotates left around 20 and swaps the colors of 25 (now black root) and 20 (now red left child), giving pre-order 25, 20, 30. Answering 20, 25, 30 gives the in-order traversal instead of pre-order; answering 30, 20, 25 assumes a single left rotation at 20 without fixing the triangle first.",
+      "tags": ["insert", "case-2", "case-3", "trace"],
+      "page": "On red-black-tree.html: run the Insert case 2 triangle → case 3 (right) demo."
+    },
+    {
+      "id": "red-black-tree-007",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "During red-black insertion, a red node z has a red parent p. What determines whether the fix-up only recolors (Case 1) versus performing rotations (Cases 2 and 3)?",
+      "choices": [
+        "The color of z's uncle (p's sibling): red triggers Case 1 recoloring; black (or NIL) triggers Cases 2 or 3 rotations",
+        "The color of z's grandparent: red triggers Case 1; black triggers Cases 2 or 3",
+        "Whether z is smaller or larger than the root",
+        "Whether the tree's black height is currently even or odd"
+      ],
+      "answer": "The color of z's uncle (p's sibling): red triggers Case 1 recoloring; black (or NIL) triggers Cases 2 or 3 rotations",
+      "explanation": "Because p is red, the grandparent g is guaranteed to be black, so checking g's color tells you nothing. Only when the uncle is also red can you push blackness down from g to both p and the uncle without changing black heights (Case 1); when the uncle is black or NIL, rotations (Case 2 if triangle, then Case 3 line) are required.",
+      "tags": ["insert", "case-1", "case-2", "case-3"],
+      "page": "On red-black-tree.html: compare the Insert case 1, uncle red demo with the Insert case 3, line demo."
+    },
+    {
+      "id": "red-black-tree-008",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Start with the red-black tree 10B(5B, 20R(15B, 25B)) and delete 5 (Delete Case 1 red sibling, then Case 2 black nephews). What key becomes the new root of the tree?",
+      "answer": "20",
+      "hint": "Deleting 5 puts a double black on 10's empty left child with red sibling 20, so Case 1 rotates parent 10 to the left.",
+      "explanation": "Removing black leaf 5 creates a double black at 10's empty left child while sibling 20 is red (Delete Case 1). Case 1 recolors 20 black and 10 red, then rotates left around 10, lifting 20 to the root. Then Case 2 colors the new black sibling 15 red and pushes the extra black up to red parent 10, which turns black and ends the fix-up with root 20. Answering 10 forgets the Case 1 left rotation; answering 15 confuses the new sibling with the promoted root.",
+      "tags": ["delete", "case-1", "case-2", "trace"],
+      "page": "On red-black-tree.html: run the Delete case 1, sibling red → case 2 (left) demo."
+    },
+    {
+      "id": "red-black-tree-009",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "At most how many rotations can a single insertion and a single deletion perform in a red-black tree, regardless of the number of nodes n?",
+      "choices": [
+        "At most 2 rotations for insert and at most 3 rotations for delete",
+        "At most 1 rotation for insert and at most 2 rotations for delete",
+        "At most 2 rotations for insert and O(log n) rotations for delete",
+        "O(log n) rotations for both insert and delete"
+      ],
+      "answer": "At most 2 rotations for insert and at most 3 rotations for delete",
+      "explanation": "Insert fix-up only rotates in Case 2 (1 rotation) followed by Case 3 (1 rotation), which terminates the loop, giving at most 2 rotations. Delete fix-up only rotates in Case 1 (1), Case 3 (1), and terminating Case 4 (1), giving at most 3 rotations. Choosing O(log n) rotations for delete mixes up red-black trees with AVL trees, where delete rotations can cascade to the root.",
+      "tags": ["rotations", "insert", "delete", "comparison"],
+      "page": "On red-black-tree.html: check the Insert and Delete boxes in the concept card."
+    },
+    {
+      "id": "red-black-tree-010",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "In the worst case, how much time can the repeating recoloring step (Insert Case 1 or Delete Case 2) take as it moves up a red-black tree of n nodes?",
+      "choices": [
+        "O(log n)",
+        "O(1)",
+        "O(n)",
+        "O(log² n)"
+      ],
+      "answer": "O(log n)",
+      "explanation": "Although rotations are bounded by O(1) (at most 2 for insert, 3 for delete), recoloring in Insert Case 1 moves z up two levels per iteration and Delete Case 2 moves x up one level per iteration, so the loop can repeat up to the height of the tree, O(log n). O(1) is tempting because the number of rotations is O(1), but recoloring can still climb all the way to the root.",
+      "tags": ["complexity", "recolor", "case-1", "case-2"]
+    },
+    {
+      "id": "red-black-tree-011",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "Deleting a red leaf—or deleting a two-child node whose in-order successor is red—never requires the double-black delete fix-up.",
+      "answer": true,
+      "explanation": "In CLRS RB-DELETE, the only color lost from the tree is the removed node's color (or the moved in-order successor's original color when deleting a two-child node, since the successor adopts the deleted node's color). When that lost color is red, every root-to-NIL path keeps its exact black count and no red-red pair is created, so zero fix-up cases run. Answering false assumes deleting a black two-child node always triggers double black even when its moved successor was red.",
+      "tags": ["delete", "two-children", "double-black"],
+      "page": "On red-black-tree.html: check pseudocode line 7 of Delete ('if removed is red: done')."
+    },
+    {
+      "id": "red-black-tree-012",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "During red-black delete fix-up, the double-black node x has a RED sibling w (Delete Case 1). What does Case 1 accomplish?",
+      "choices": [
+        "It recolors w black and the parent red, then rotates the parent toward x so x gets a black sibling and Cases 2, 3, or 4 can follow",
+        "It immediately absorbs the double black and terminates the fix-up without any further cases",
+        "It colors w black and moves the double black straight up to the grandparent",
+        "It swaps keys between x and w so x becomes red"
+      ],
+      "answer": "It recolors w black and the parent red, then rotates the parent toward x so x gets a black sibling and Cases 2, 3, or 4 can follow",
+      "explanation": "Because w is red, both of w's children must be black. Recoloring w black and the parent red, then rotating the parent toward x, brings one of w's black children over as x's new sibling without breaking black heights, converting the situation into Case 2, 3, or 4. Thinking Case 1 terminates immediately misses that x is still double black after the rotation.",
+      "tags": ["delete", "case-1", "double-black"],
+      "page": "On red-black-tree.html: run the Delete case 1, sibling red → case 2 (left) demo and step through Case 1."
+    },
+    {
+      "id": "red-black-tree-013",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Start with the red-black tree 10B(5B, 20B(15R, -)) and delete 5 (triggering Delete Case 3 near red nephew, then Case 4 far red nephew). List the final tree's keys in pre-order (root, left, right).",
+      "format": "list",
+      "answer": "15, 10, 20",
+      "hint": "Case 3 swaps the colors of 20 and 15 and rotates right at 20; Case 4 then rotates left at 10.",
+      "explanation": "Deleting black leaf 5 leaves a double black at 10's empty left child with black sibling 20, red near child 15, and black NIL far child (Delete Case 3). Case 3 swaps 20 (red) and 15 (black) and rotates right around 20, making 15 the black sibling with far red child 20 (Case 4). Case 4 gives 15 parent 10's color (black), colors 10 and 20 black, and rotates left around 10, leaving 15B(10B, 20B) with pre-order 15, 10, 20. Answering 10, 15, 20 gives in-order instead of pre-order; answering 20, 10, 15 skips the Case 3 rotation.",
+      "tags": ["delete", "case-3", "case-4", "double-black", "trace"],
+      "page": "On red-black-tree.html: run the Delete case 3 near child red → case 4 (left) demo."
+    },
+    {
+      "id": "red-black-tree-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Which of the following statements about red-black delete fix-up (CLRS Cases 1–4) are true? Select all that apply.",
+      "choices": [
+        "Case 2 (black sibling with two black children) is the only case that can repeat up the tree",
+        "Case 4 (black sibling with a red far child) always terminates the fix-up after one rotation",
+        "Case 3 (black sibling with a red near child and black far child) transforms the tree into Case 4",
+        "If the replacement node x is red when a black node is removed, coloring x black fixes the deficit with zero rotations",
+        "Every double-black delete fix-up requires at least one rotation"
+      ],
+      "answer": [
+        "Case 2 (black sibling with two black children) is the only case that can repeat up the tree",
+        "Case 4 (black sibling with a red far child) always terminates the fix-up after one rotation",
+        "Case 3 (black sibling with a red near child and black far child) transforms the tree into Case 4",
+        "If the replacement node x is red when a black node is removed, coloring x black fixes the deficit with zero rotations"
+      ],
+      "explanation": "Only Case 2 moves the double black upward and can loop; Case 3 rotates the red nephew into the far position to produce Case 4; Case 4 rotates the parent once and terminates; and a red replacement x simply turns black with no rotation. The fifth statement is false because Case 2 alone (such as deleting 5 from 10B(5B, 15B)) resolves the double black with recoloring only and zero rotations.",
+      "tags": ["delete", "case-1", "case-2", "case-3", "case-4", "double-black"],
+      "page": "On red-black-tree.html: compare the Delete case 2, Delete case 3 → case 4, and Delete red child demos."
+    }
+  ]
+}

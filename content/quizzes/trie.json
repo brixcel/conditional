@@ -1,0 +1,186 @@
+{
+  "id": "trie",
+  "title": "Trie (Prefix Tree)",
+  "topic": "trie",
+  "description": "Shared-prefix nodes, word-end markers, search vs. startsWith, alphabetical autocomplete, bottom-up delete pruning, atomic limits, and O(L) complexity on trie.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "trie-001",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "An empty Trie in this visualizer has size 0 and nodeCount 1 because the root node represents the empty prefix.",
+      "answer": true,
+      "explanation": "Even when no words are stored (size = 0), the root node always exists to represent the empty prefix ∅ (with isEnd = false), so nodeCount starts at 1. Answering False is the common mistake of confusing the number of stored words (0) with the number of live tree nodes (1).",
+      "tags": ["root", "nodeCount", "empty"],
+      "page": "On trie.html: press Clear and check Words (0 / 20) and Nodes (1 / 120) in Trie State."
+    },
+    {
+      "id": "trie-002",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "You insert \"card\" into an empty trie. What do search(\"car\") and startsWith(\"car\") return?",
+      "choices": [
+        "search(\"car\") returns found: false, while startsWith(\"car\") returns found: true",
+        "Both search(\"car\") and startsWith(\"car\") return found: true",
+        "Both search(\"car\") and startsWith(\"car\") return found: false",
+        "search(\"car\") returns found: true, while startsWith(\"car\") returns found: false"
+      ],
+      "answer": "search(\"car\") returns found: false, while startsWith(\"car\") returns found: true",
+      "explanation": "The edges c → a → r exist because of \"card\", so startsWith(\"car\") succeeds, but node 'r' has isEnd = false, so search(\"car\") returns found: false because \"car\" is only a prefix and not a stored word. Saying both return true is the classic trie mistake of ignoring the word-end (isEnd) marker.",
+      "tags": ["search", "startsWith", "isEnd"],
+      "page": "On trie.html: Clear, insert card, then test Search and Starts with on car."
+    },
+    {
+      "id": "trie-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Starting from an empty trie (nodeCount = 1 for the root), you insert \"cat\" and \"car\". What is nodeCount afterwards?",
+      "answer": "5",
+      "hint": "Count the root plus each node created along the shared prefix c → a and the two branches t and r.",
+      "explanation": "Inserting \"cat\" creates 3 nodes (c, a, t) for 4 total. Inserting \"car\" reuses the existing c → a path and creates only 1 new node (r), giving 1 + 3 + 1 = 5 nodes. Answering 7 forgets that \"cat\" and \"car\" share prefix \"ca\", and answering 4 forgets to count the root node.",
+      "tags": ["insert", "shared-prefix", "nodeCount", "trace"],
+      "page": "On trie.html: Clear, insert cat, insert car, and read Nodes in Trie State."
+    },
+    {
+      "id": "trie-004",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "In this Trie (validateWord and trie.html), which input is ACCEPTED and normalized by insert()?",
+      "choices": [
+        "\"  Tree  \"",
+        "\"cat2\"",
+        "\"ice-cream\"",
+        "\"abcdefghijklm\""
+      ],
+      "answer": "\"  Tree  \"",
+      "explanation": "validateWord trims outer whitespace, lowercases the string, and requires 1 to 12 ASCII letters a–z, so \"  Tree  \" is accepted and stored as \"tree\". \"cat2\" contains a digit, \"ice-cream\" contains a hyphen, and \"abcdefghijklm\" has 13 letters (exceeding the 12-letter maximum), so all three are rejected.",
+      "tags": ["validation", "limits", "page"],
+      "page": "On trie.html: insert \"  Tree  \" (stored as \"tree\"), then try \"cat2\" or a 13-letter string."
+    },
+    {
+      "id": "trie-005",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the time complexity of insert, search, startsWith, and delete on a Trie for a word or prefix of length L, when the trie stores N words over a fixed 26-letter alphabet?",
+      "choices": ["O(L)", "O(N)", "O(log N)", "O(N · L)"],
+      "answer": "O(L)",
+      "explanation": "Each of these operations walks at most L downward character edges (plus up to L upward pruning steps for delete), and each edge lookup over the fixed 26-letter alphabet takes O(1) time, giving O(L) independent of dictionary size N. O(log N) is tempting from binary search or balanced BSTs, which compare whole strings against other stored words instead of stepping character by character.",
+      "tags": ["complexity", "search", "insert", "delete"]
+    },
+    {
+      "id": "trie-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Starting from an empty trie, you insert \"care\", \"cat\", \"car\", \"dog\", and \"card\" in that order. List the words returned by wordsWithPrefix(\"ca\").",
+      "format": "list",
+      "answer": "car, card, care, cat",
+      "hint": "wordsWithPrefix traverses child edges in alphabetical order, regardless of insertion order.",
+      "explanation": "After walking c → a, DFS explores child edges sorted alphabetically ('r' before 't', and under 'r' it collects \"car\" before exploring 'd' and 'e'), yielding car, card, care, cat (while excluding \"dog\"). Answering \"care, cat, car, card\" wrongly assumes results come back in insertion order rather than alphabetical DFS order.",
+      "tags": ["autocomplete", "wordsWithPrefix", "trace"],
+      "page": "On trie.html: build care, cat, car, dog, card, type ca, and press Autocomplete."
+    },
+    {
+      "id": "trie-007",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "A trie stores \"car\" and \"card\" (nodeCount = 5: root, c, a, r, d). You call delete(\"car\"). What is nodeCount afterwards?",
+      "answer": "5",
+      "hint": "Can node 'r' be removed while \"card\" still passes through it?",
+      "explanation": "Deleting \"car\" clears isEnd on node 'r', then checks bottom-up pruning. Because 'r' still has child edge 'd' for \"card\", pruning stops immediately (unmark-only, 0 nodes pruned), so nodeCount stays 5. Answering 2 or 4 mistakenly deletes nodes that are still part of \"card\".",
+      "tags": ["delete", "unmark-only", "nodeCount", "trace"],
+      "page": "On trie.html: build car, card, delete car, and check Nodes (5 / 120)."
+    },
+    {
+      "id": "trie-008",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "A trie stores \"dog\" and \"door\" (nodeCount = 6: root, d, o, g, o, r). You call delete(\"door\"). What is nodeCount afterwards?",
+      "answer": "4",
+      "hint": "Prune bottom-up from 'r' until you reach a node that another stored word still needs.",
+      "explanation": "\"door\" shares d → o with \"dog\" and branches into a second 'o' → 'r'. Deleting \"door\" unmarks 'r', prunes 'r' and the second 'o' (partial-prune: 2 nodes removed), and stops at the first 'o' because it still has child 'g', leaving 6 − 2 = 4 nodes (root, d, o, g). Answering 5 forgets to continue pruning upward to the second 'o', while answering 2 wrongly prunes the shared \"do\" prefix.",
+      "tags": ["delete", "partial-prune", "nodeCount", "trace"],
+      "page": "On trie.html: build dog, door, delete door, and check Nodes (4 / 120)."
+    },
+    {
+      "id": "trie-009",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Starting fresh from the default trie on trie.html (\"cat\", \"car\", \"card\", \"care\", \"dog\", \"door\", \"bat\") each time, which single deletions match their actual pruning outcome? Select all that apply.",
+      "choices": [
+        "delete(\"car\") → unmark-only (0 nodes pruned)",
+        "delete(\"door\") → partial-prune (2 nodes pruned)",
+        "delete(\"bat\") → full-prune (3 nodes pruned back to root)",
+        "delete(\"cat\") → full-prune (3 nodes pruned back to root)"
+      ],
+      "answer": [
+        "delete(\"car\") → unmark-only (0 nodes pruned)",
+        "delete(\"door\") → partial-prune (2 nodes pruned)",
+        "delete(\"bat\") → full-prune (3 nodes pruned back to root)"
+      ],
+      "explanation": "\"car\" is a prefix of \"card\" and \"care\" (unmark-only, 0 pruned); \"door\" shares \"do\" with \"dog\" (partial-prune, 2 pruned); and \"bat\" shares no edges with any other word (full-prune, all 3 nodes pruned back to root). Choosing \"cat\" as full-prune is the tempting trap—\"cat\" shares \"ca\" with \"car\", \"card\", and \"care\", so deleting \"cat\" only prunes 't' (partial-prune, 1 node).",
+      "tags": ["delete", "unmark-only", "partial-prune", "full-prune"],
+      "page": "On trie.html: keep the default list and test deleting car, door, bat, and cat (rebuilding between tries)."
+    },
+    {
+      "id": "trie-010",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "What is the worst-case space complexity of a Trie storing a dictionary of words (assuming a fixed alphabet size)?",
+      "choices": ["O(total characters)", "O(1)", "O(log n)", "O(L)"],
+      "answer": "O(total characters)",
+      "explanation": "When stored words share no common prefixes, every character across every stored word allocates its own node, so space grows with the sum of all word lengths: O(total characters). O(L) is the tempting wrong answer because it is the time complexity of a single word operation, not the memory held by the whole trie.",
+      "tags": ["complexity", "space"]
+    },
+    {
+      "id": "trie-011",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Starting from an empty trie, you insert \"bat\", \"car\", \"card\", and \"cart\", then call delete(\"bat\") and delete(\"card\"). What is nodeCount afterwards?",
+      "answer": "5",
+      "hint": "Count nodes after all four inserts (remembering the root), then subtract what each delete prunes.",
+      "explanation": "After the four inserts, nodeCount is 9: root (1) + b, a, t (3) + c, a, r (3) + d (1) + t (1). delete(\"bat\") performs a full-prune removing 3 nodes (leaving 6), and delete(\"card\") prunes only 'd' (partial-prune: 1 node) because 'r' is both a word end (\"car\") and still has child 't' (\"cart\"), leaving 5 nodes (root, c, a, r, t). Answering 4 forgets the root node, while answering 2 wrongly prunes \"car\".",
+      "tags": ["delete", "full-prune", "partial-prune", "nodeCount", "trace"],
+      "page": "On trie.html: Clear, insert bat, car, card, cart, delete bat, delete card, and read Nodes."
+    },
+    {
+      "id": "trie-012",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "Suppose a Trie has maxNodes = 6 and currently stores \"cat\" (nodeCount = 4). When you call insert(\"dog\"), it creates nodes 'd' and 'o' before failing with an overflow error.",
+      "answer": false,
+      "explanation": "insert() performs an atomic pre-probe before allocating any nodes: inserting \"dog\" needs 3 new nodes and 4 + 3 = 7 > 6, so it fails immediately with an overflow step while leaving nodeCount at 4 and creating zero partial nodes. Answering True assumes eager node allocation, which would leave dangling non-word-end branches and break trie integrity.",
+      "tags": ["overflow", "atomic", "limits", "invariant"]
+    },
+    {
+      "id": "trie-013",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "In a Trie, what is the time complexity of wordsWithPrefix(prefix) where L is the prefix length and K is the total number of characters across all matched words?",
+      "choices": ["O(L + K)", "O(L)", "O(K)", "O(L · K)"],
+      "answer": "O(L + K)",
+      "explanation": "wordsWithPrefix first walks L edges from the root to the prefix node in O(L) time, then performs an alphabetical DFS over that subtree to collect and build every matching word in O(K) time, giving O(L + K) overall. O(L) is tempting because startsWith takes O(L), but startsWith stops at the prefix node instead of enumerating the matched words.",
+      "tags": ["complexity", "autocomplete", "wordsWithPrefix"]
+    },
+    {
+      "id": "trie-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Which statements are guaranteed invariants of this Trie implementation? Select all that apply.",
+      "choices": [
+        "Every non-root leaf node (a node with no children) has isEnd === true",
+        "Calling delete() on a string that is only a prefix of a longer stored word fails without modifying the trie",
+        "When nodeCount === maxNodes (and size < maxWords), inserting a word whose path already exists as a prefix still succeeds because it needs 0 new nodes",
+        "The root node's isEnd flag becomes true when a single-letter word like \"a\" is inserted"
+      ],
+      "answer": [
+        "Every non-root leaf node (a node with no children) has isEnd === true",
+        "Calling delete() on a string that is only a prefix of a longer stored word fails without modifying the trie",
+        "When nodeCount === maxNodes (and size < maxWords), inserting a word whose path already exists as a prefix still succeeds because it needs 0 new nodes"
+      ],
+      "explanation": "Bottom-up pruning guarantees no dangling non-root leaf ever remains without isEnd === true; delete() rejects prefix-only words when !curr.isEnd; and the atomic check tests nodeCount + newNodesNeeded <= maxNodes, so marking an existing prefix needs 0 new nodes and succeeds even at maxNodes. The fourth choice is wrong because a 1-letter word like \"a\" sets isEnd on the child node reached by edge 'a'—the root always represents the empty prefix with isEnd === false.",
+      "tags": ["invariant", "pruning", "limits", "root"]
+    }
+  ]
+}

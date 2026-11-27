@@ -1,0 +1,264 @@
+{
+  "id": "red-black-tree",
+  "title": "Red-Black Tree",
+  "page": "red-black-tree.html",
+  "module": "src/structures/red-black.js",
+  "controller": "src/pages/red-black-page.js",
+  "summary": "A red-black tree is a self-balancing binary search tree that colors each node red or black under five rules. Recoloring and at most a few rotations keep height ≤ 2·log₂(n + 1) and operations O(log n).",
+  "prerequisites": ["bst", "avl-tree"],
+  "objectives": [
+    "Students can state the five red-black tree properties and identify violations in a given tree.",
+    "Students can trace insert fix-up cases 1, 2, and 3 (red uncle, triangle, and line) on a small red-black tree.",
+    "Students can explain how removing a black node creates a double black and trace delete fix-up cases 1 through 4.",
+    "Students can compute the height and black height of a red-black tree and explain why height is at most 2·log₂(n + 1).",
+    "Students can compare red-black trees with AVL trees in rotation count, height bound, and update workload."
+  ],
+  "levels": {
+    "beginner": [
+      "A binary search tree stays fast only if no branch grows much longer than the others. A red-black tree prevents lopsided branches by painting every node either red or black and enforcing five simple color rules whenever keys are added or removed.",
+      "The five rules are: (1) every node is red or black, (2) the root is black, (3) every empty child pointer (called NIL) counts as black, (4) a red node cannot have a red child, and (5) every path from a node down to any NIL leaf passes the same number of black nodes.",
+      "Because two reds can never appear in a row, the longest path from the root to a NIL leaf can have at most twice as many nodes as the shortest path (which is all black). That rough balance keeps the tree short without forcing every branch to have identical height.",
+      "New keys always start out red so they do not change any path's black count. If a new red node lands under a red parent (a red-red violation), or if deleting a black node leaves a path one black short (a double black), the tree repairs itself by recoloring nodes and doing at most three rotations (sometimes zero)."
+    ],
+    "intermediate": [
+      "Each RBNode in src/structures/red-black.js stores id, value, color, left, right, and parent, with a capacity of 31 unique integers. Empty children are plain null values treated as black NIL leaves; during delete fix-up, the page renders a phantom NIL node with a double ring whenever a double black sits on an empty child.",
+      "Insert attaches a red leaf z. While z's parent is red, three CLRS cases apply: Case 1 (red uncle) recolors the parent and uncle black, colors the grandparent red, and moves z up. Case 2 (black uncle, triangle) rotates the parent into a straight line. Case 3 (black uncle, line) rotates the grandparent and swaps the parent and grandparent colors, ending fix-up. Finally, rule 2 forces the root black.",
+      "Delete removes a node with at most one child directly; for two children, it moves the in-order successor node itself into the deleted node's slot and gives it the deleted node's color. If the color that actually left the tree was red, all five rules still hold. If a black node was lost and its replacement x is red, coloring x black restores the missing black immediately.",
+      "Otherwise x carries a double black and four sibling (w) cases resolve it: Case 1 (red sibling) recolors and rotates the parent so x gets a black sibling. Case 2 (black sibling, two black children) colors w red and moves double black up to the parent. Case 3 (near nephew red, far black) rotates the red child to the far side. Case 4 (far nephew red) recolors and rotates the parent to absorb the extra black.",
+      "Every search, insert, delete, min, and max runs in O(log n) worst-case time. Insert performs at most 2 rotations (Cases 2 and 3) and delete at most 3 (Cases 1, 3, and 4); only Case 1 on insert and Case 2 on delete may repeat O(log n) times up to the root, and both only recolor."
+    ],
+    "advanced": [
+      "Let bh(x) be the CLRS black height of x (black nodes from x down to a NIL leaf, excluding x and including NIL, which equals blackHeight() at the black root). By induction, x's subtree holds at least 2 raised to bh(x), minus 1, internal nodes. Because rule 4 forbids adjacent reds, bh(root) ≥ h / 2, so n + 1 ≥ 2 raised to h / 2 gives h ≤ 2·log₂(n + 1).",
+      "Red-black trees trade slightly taller worst-case height (2·log₂(n + 1) vs AVL's 1.44·log₂(n + 2)) for stricter rotation bounds: O(1) rotations per insert (≤ 2) and per delete (≤ 3), plus only one extra bit per node for color. This makes them the default choice in general-purpose ordered containers where inserts and deletes are frequent.",
+      "Two subtle details distinguish src/structures/red-black.js from the CLRS sentinel implementation: first, empty children are plain null instead of a shared T.nil sentinel, so delete fix-up tracks x's parent (xp) explicitly when x is null. Second, two-child delete transplants the successor node itself (never copying keys between nodes) so every surviving key keeps its stable node id for SVG gliding.",
+      "Also note two query costs in this module: blackHeight() walks the leftmost spine in O(log n) time, counting the black root and excluding the null leaf (so an empty tree has black height 0 and a single black root has 1). Because nodes do not store subtree height, height() performs an O(n) recursive traversal."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "insert(key)",
+      "lines": [
+        "if tree is full and key is new: return overflow error",
+        "walk from root: key < node → left, key > node → right",
+        "    if key = node.value: reject duplicate",
+        "attach new red leaf z where walk ended (or as root if empty)",
+        "while z.parent is red (red-red violation):",
+        "    if uncle is red (case 1):",
+        "        parent, uncle ← black; grandparent ← red; z ← grandparent",
+        "    else:",
+        "        if z is inner child (case 2): rotate parent away; z ← parent",
+        "        rotate grandparent toward uncle (case 3, line)",
+        "        parent ← black; grandparent ← red",
+        "root.color ← black"
+      ]
+    },
+    {
+      "name": "delete(key)",
+      "lines": [
+        "if root = null: return empty error",
+        "walk from root to find z; if missing: return error",
+        "if z has ≤ 1 child: x ← child; transplant(z, x); removed ← z.color",
+        "else: y ← leftmost of z.right; removed ← y.color; x ← y.right",
+        "    transplant(y, x); move y into z's place with z.color",
+        "if removed = red or tree is empty: return",
+        "while x ≠ root and x is black (double black at x, sibling w):",
+        "    case 1 (w red): w ← black; parent ← red; rotate parent toward x",
+        "    case 2 (w, children black): w ← red; x ← parent",
+        "    case 3 (near red, far black): swap w, near colors; rotate w away",
+        "    case 4 (far red): w ← parent.color; parent, far ← black; rotate; stop",
+        "if x is red: x.color ← black"
+      ]
+    },
+    {
+      "name": "search(key)",
+      "lines": [
+        "curr ← root",
+        "while curr != null",
+        "    if key == curr.value: return found",
+        "    if key < curr.value: curr ← curr.left",
+        "    else: curr ← curr.right",
+        "return not found"
+      ],
+      "registry": "RB_INFO.pseudocode.search"
+    },
+    {
+      "name": "min()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.left != null: curr ← curr.left",
+        "return curr"
+      ],
+      "registry": "RB_INFO.pseudocode.min"
+    },
+    {
+      "name": "max()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.right != null: curr ← curr.right",
+        "return curr"
+      ],
+      "registry": "RB_INFO.pseudocode.max"
+    },
+    {
+      "name": "inspect(kind)",
+      "lines": [
+        "root: the one node with no parent",
+        "leaf: node.left == null and node.right == null",
+        "internal node: has at least one child",
+        "red nodes: node.color == red",
+        "black nodes: node.color == black"
+      ],
+      "registry": "RB_INFO.pseudocode.inspect"
+    },
+    {
+      "name": "clear()",
+      "lines": [
+        "unlink all nodes (O(n));  root ← null;  size ← 0"
+      ],
+      "registry": "RB_INFO.pseudocode.clear"
+    }
+  ],
+  "complexity": {
+    "insert": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Iterative walk plus parent-pointer fix-up: at most O(log n) recolorings and at most 2 rotations.",
+      "registry": "RB_INFO.operations.insert"
+    },
+    "delete": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "CLRS RB-DELETE using parent pointers: at most O(log n) case-2 recolorings and at most 3 rotations.",
+      "registry": "RB_INFO.operations.delete"
+    },
+    "search": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Height is at most 2·log₂(n + 1). Iterative walk uses O(1) extra space (the visualizer also tracks the path for display).",
+      "registry": "RB_INFO.operations.search"
+    },
+    "min": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Follows left pointers from the root to the leftmost node.",
+      "registry": "RB_INFO.operations.min"
+    },
+    "max": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Follows right pointers from the root to the rightmost node.",
+      "registry": "RB_INFO.operations.max"
+    },
+    "height": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(log n)",
+      "note": "Nodes do not store height, so height() recursively walks all n nodes with an O(log n) call stack.",
+      "registry": "RB_INFO.operations.height"
+    },
+    "blackHeight": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Walks the leftmost root-to-null path counting black nodes including the root (empty tree 0, single black root 1).",
+      "registry": "RB_INFO.operations.blackHeight"
+    },
+    "inspect": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(n)",
+      "note": "In-order traversal collecting all nodes matching root, leaves, internal, red, or black.",
+      "registry": "RB_INFO.operations.inspect"
+    },
+    "clear": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(log n)",
+      "note": "Pre-order recursion unlinks every node along an O(log n) call stack.",
+      "registry": "RB_INFO.operations.clear"
+    }
+  },
+  "applications": [
+    "Standard library ordered maps and sets, including C++ std::map and std::set and Java TreeMap and TreeSet.",
+    "Linux kernel internals such as the Completely Fair Scheduler (CFS) run queue and virtual memory area tracking via rbtree.",
+    "Ordered event queues and timers that require guaranteed O(log n) insertions, deletions, and minimum-key lookups.",
+    "Computational geometry sweep-line algorithms that maintain active segments in sorted order with fast predecessor and successor queries."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "New nodes should be inserted black so they never cause a red-red violation.",
+      "correction": "Inserting a black leaf immediately breaks rule 5 (black height) on its path every time. Inserting a red leaf preserves every black height and only causes a red-red violation when its parent happens to be red."
+    },
+    {
+      "mistake": "Red and black nodes must alternate strictly along every path.",
+      "correction": "Rule 4 only forbids two red nodes in a row. Two black nodes can freely be parent and child; in fact, a valid red-black tree can be completely black."
+    },
+    {
+      "mistake": "Removing a red node can break the black-height rule.",
+      "correction": "Deleting a red node (or moving a red in-order successor) removes no black node from any path and creates no adjacent reds. As the page shows, when the removed color is red, no delete fix-up case is needed."
+    },
+    {
+      "mistake": "Black height and tree height are the same number.",
+      "correction": "Tree height counts all edges on the longest root-to-leaf path, whereas black height counts only black nodes on a root-to-NIL path. Watch the Red-Black State panel: a tree with red nodes can have a higher Height than Black Height."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Insert case 1: red uncle (recolor only)",
+      "action": "Choose Insert case 1, uncle red (left) in the Case dropdown and press “Run Demo”. Then press “⏮ Reset” and step through with “Step ▶”.",
+      "input": "",
+      "expect": "Step 4 flags “[Insert case 1: uncle red (left)] 5 and its parent 10 are both red (red-red violation).” Step 5 recolors 10 and 30 black and 20 red, step 7 recolors root 20 black, and Black Height rises to 2 with zero rotations."
+    },
+    {
+      "label": "Insert case 2 (triangle) into case 3 (line)",
+      "action": "Choose Insert case 2 triangle → case 3 (left) in the Case dropdown and press “Run Demo”, then watch steps 4 through 10.",
+      "input": "",
+      "expect": "Step 5 rotates left around 10 to turn the triangle into a line, step 7 rotates right around 20, and step 8 swaps colors so 15 becomes the black root. Step 10 ends with “The tree has 3 nodes, height 1 and black height 1.”"
+    },
+    {
+      "label": "Delete case 1 (red sibling) into case 2",
+      "action": "Choose Delete case 1, sibling red → case 2 (left) in the Case dropdown and press “Run Demo”.",
+      "input": "",
+      "expect": "A phantom NIL carries the double black at 10's empty left child. Case 1 recolors and rotates 10 left so sibling 15 is black, then case 2 recolors 15 red and pushes double black onto red parent 10, which turns black at step 10."
+    },
+    {
+      "label": "Delete case 3 (near red) into case 4 (far red)",
+      "action": "Choose Delete case 3 near child red → case 4 (left) in the Case dropdown and press “Run Demo”.",
+      "input": "",
+      "expect": "Case 3 swaps colors of 20 and 15 and rotates 20 right so 15 becomes sibling with red far child 20. Case 4 recolors and rotates 10 left, ending with “The tree has 3 nodes, height 1 and black height 2.”"
+    },
+    {
+      "label": "Build a tree and delete a two-child root",
+      "action": "Type the input in “Values (1–31 unique whole numbers, −99 to 999)” and press “Build”. Then type 20 in “Value (−99 to 999)” and press “Delete”.",
+      "input": "10, 20, 30, 40, 50",
+      "expect": "Build shows “Built a red-black tree of 5 keys (height 2, black height 2, 2 rotations along the way).” Deleting 20 moves red successor 30 into the root's slot and reports “Deleted 20 (two children: successor 30 moved up); the removed colour was red. No double-black case was needed.”"
+    },
+    {
+      "label": "Highlight red nodes and black nodes",
+      "action": "Right after deleting 20, select “Red nodes” in “Highlight” and press “Highlight”, then select “Black nodes” and press “Highlight”.",
+      "input": "",
+      "expect": "Red nodes reports “Red nodes (1): 50.” and Black nodes reports “Black nodes (3): 10, 30, 40.” Valid Red-Black Tree reads “Yes (all 5 rules hold)”."
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 13, Red-Black Trees.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 3.3, Balanced Search Trees."
+  ],
+  "reviewed": null
+}

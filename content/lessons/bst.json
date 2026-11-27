@@ -1,0 +1,255 @@
+{
+  "id": "bst",
+  "title": "Binary Search Tree",
+  "page": "bst.html",
+  "module": "src/structures/bst.js",
+  "controller": "src/pages/bst-page.js",
+  "summary": "A binary search tree stores unique integer keys in linked nodes so every left subtree holds smaller keys and every right subtree holds larger keys. Path operations take O(h) time for height h.",
+  "prerequisites": ["singly-linked-list", "searching", "regular-queue"],
+  "objectives": [
+    "Students can trace insert, search, min and max on a binary search tree and state the path taken from the root.",
+    "Students can predict the output of In-Order, Pre-Order, Post-Order and Level-Order traversals on a given tree.",
+    "Students can apply all three deletion cases, including replacing a two-child node with its in-order successor.",
+    "Students can compute the height of a tree using the edge-count rule (empty = −1, single node = 0).",
+    "Students can distinguish balanced O(log n) height from skewed O(n) height and explain how insertion order causes skew.",
+    "Students can identify violations of the BST ancestor invariant, not only immediate parent-child order."
+  ],
+  "levels": {
+    "beginner": [
+      "A binary search tree (BST) organizes numbers like a guessing game. Start at the top node, called the root. If the number you want is smaller, move to the left child; if it is larger, move to the right child. Each node has at most two children: left and right.",
+      "Every node obeys one strict ordering rule: every key in its left subtree is smaller than the node, and every key in its right subtree is larger. A subtree is a node together with all descendants beneath it. On this page, keys must be unique whole numbers from −99 to 999.",
+      "Because smaller keys always sit to the left and larger keys to the right, finding the minimum walks left until there is no left child, and finding the maximum walks right until there is no right child. Reading the tree left, then node, then right (In-Order) always prints every key in sorted ascending order.",
+      "A leaf is a node with no children. Deleting a leaf simply disconnects it. Deleting a node with one child lets that child move up into its parent's place. Deleting a node with two children replaces its value with the smallest key in its right subtree, called the in-order successor, so the ordering rule never breaks."
+    ],
+    "intermediate": [
+      "Each node is an object holding four fields: a stable numeric id, value, left and right. The page fixes capacity at 31 nodes and uses the edge-count height convention: an empty tree has height −1, a single root node has height 0, and every other tree has height 1 + max(height(left), height(right)).",
+      "Search, insert, delete, min and max are all iterative loops that walk down one root-to-leaf path, so each uses O(1) extra space and O(h) time, where h is the tree height. When the tree stays roughly balanced, h is close to log₂ n and lookups take O(log n) comparisons. When keys arrive in sorted or reverse order, the tree collapses into a single chain of height n − 1, degrading every path operation to O(n).",
+      "Deletion splits cleanly into three structural cases. Case 1 (leaf) sets the parent pointer to null. Case 2 (one child) links the parent directly to the sole child, or promotes that child to root. Case 3 (two children) steps once right and then all the way left to find the in-order successor, copies that value into the target node, and relinks the successor's parent to successor.right.",
+      "Traversals visit every node once in O(n) time. In-Order (Left → Root → Right), Pre-Order (Root → Left → Right) and Post-Order (Left → Right → Root) are recursive depth-first searches (DFS) using O(h) call-stack space. Level-Order is a breadth-first search (BFS) that visits level by level using an index-head array queue in O(n) time and O(n) space."
+    ],
+    "advanced": [
+      "A BST's invariant is global across ancestors, not merely local to parent-child pairs: every key in a node's left subtree must stay below that node, even several levels down. The module's integrityError() checks strict (min, max) ancestor bounds recursively and verifies that the in-order walk is strictly increasing with no cycles or unreachable nodes.",
+      "This page makes several concrete choices compared with generic textbook sketches. First, keys are strictly unique integers; duplicates are rejected rather than sent left or counted. Second, in insert(), a duplicate key is rejected even when the tree is full (size = 31): the code probes for the key before reporting overflow, so duplicate wins over overflow.",
+      "Third, two-child deletion always uses the in-order successor (minimum of the right subtree), though the in-order predecessor (maximum of the left subtree) is symmetric and equally valid. During the copy-successor step, the copied value temporarily appears in both the target and the old successor node, so the BST Invariant readout displays Relinking… until the next step unlinks the old successor.",
+      "Because an unbalanced BST offers no O(log n) worst-case guarantee, production ordered maps and sets use self-balancing variants such as AVL trees or Red-Black trees, which rebalance with rotations after updates to keep h = O(log n). Also note that clear() here unlinks every node recursively in O(n) time and O(h) stack space instead of only setting root ← null."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "insert(value)",
+      "lines": [
+        "if size == capacity: return overflow error",
+        "if root == null: root ← new Node(value); return",
+        "curr ← root",
+        "loop: compare value with curr.value",
+        "    if value == curr.value: reject duplicate",
+        "    if value < curr.value: go left (or attach new node)",
+        "    if value > curr.value: go right (or attach new node)"
+      ],
+      "registry": "BST_INFO.pseudocode.insert"
+    },
+    {
+      "name": "search(target)",
+      "lines": [
+        "curr ← root",
+        "while curr != null",
+        "    if target == curr.value: return found",
+        "    if target < curr.value: curr ← curr.left",
+        "    else: curr ← curr.right",
+        "return not found"
+      ],
+      "registry": "BST_INFO.pseudocode.search"
+    },
+    {
+      "name": "delete(target)",
+      "lines": [
+        "search for target node (tracking parent)",
+        "if target not found: return error",
+        "if target is a leaf: unlink target from parent",
+        "else if target has 1 child: replace target with its child",
+        "else (2 children): find in-order successor (min of right)",
+        "    copy successor.value into target",
+        "    replace successor with successor.right"
+      ],
+      "registry": "BST_INFO.pseudocode.delete"
+    },
+    {
+      "name": "min()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.left != null: curr ← curr.left",
+        "return curr"
+      ],
+      "registry": "BST_INFO.pseudocode.min"
+    },
+    {
+      "name": "max()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.right != null: curr ← curr.right",
+        "return curr"
+      ],
+      "registry": "BST_INFO.pseudocode.max"
+    },
+    {
+      "name": "inorder(node)",
+      "lines": [
+        "inorder(node): if node == null: return",
+        "    inorder(node.left)",
+        "    visit(node)  // Left → Root → Right",
+        "    inorder(node.right)"
+      ],
+      "registry": "BST_INFO.pseudocode.inorder"
+    },
+    {
+      "name": "preorder(node)",
+      "lines": [
+        "preorder(node): if node == null: return",
+        "    visit(node)  // Root → Left → Right",
+        "    preorder(node.left)",
+        "    preorder(node.right)"
+      ],
+      "registry": "BST_INFO.pseudocode.preorder"
+    },
+    {
+      "name": "postorder(node)",
+      "lines": [
+        "postorder(node): if node == null: return",
+        "    postorder(node.left)",
+        "    postorder(node.right)",
+        "    visit(node)  // Left → Right → Root"
+      ],
+      "registry": "BST_INFO.pseudocode.postorder"
+    },
+    {
+      "name": "levelorder()",
+      "lines": [
+        "enqueue root (if not null)",
+        "while queue is not empty",
+        "    node ← dequeue();  visit(node)",
+        "    enqueue node.left and node.right (if not null)"
+      ],
+      "registry": "BST_INFO.pseudocode.levelorder"
+    },
+    {
+      "name": "clear()",
+      "lines": [
+        "unlink all nodes (O(n));  root ← null;  size ← 0"
+      ],
+      "registry": "BST_INFO.pseudocode.clear"
+    }
+  ],
+  "complexity": {
+    "search": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "O(h) time for height h: O(1) if target is at root, O(log n) balanced, O(n) skewed. Iterative loop uses O(1) extra space."
+    },
+    "insert": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "O(h) time; O(1) when inserting into an empty tree. Rejects duplicates and enforces capacity 1–31 (unique keys −99 to 999 on page)."
+    },
+    "delete": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "O(h) time across all three cases (leaf, 1 child, or 2-child in-order successor); O(1) at root with ≤ 1 child or direct right-child successor."
+    },
+    "minMax": {
+      "best": "O(1)",
+      "average": "O(log n)",
+      "worst": "O(n)",
+      "space": "O(1)",
+      "note": "Follows only left pointers (min) or right pointers (max) from root in O(h) time; O(1) when the root lacks a child on that side."
+    },
+    "traverse": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(n)",
+      "note": "Visits every node once across all four orders. Extra space is O(h) call stack for recursive DFS and O(n) index-head queue for BFS, plus O(n) output."
+    },
+    "clear": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(h) recursion stack",
+      "note": "Recursively unlinks left and right pointers of every node so no references linger, using O(h) call-stack space (O(log n) balanced, O(n) skewed)."
+    }
+  },
+  "applications": [
+    "Ordered maps and sets: a BST (typically self-balancing) maintains sorted keys while supporting lookup, insertion, deletion and predecessor/successor queries.",
+    "Range queries: finding all student scores between 75 and 90 walks directly to the start of the range and reads keys in ascending In-Order until passing 90.",
+    "Order statistics and leaderboards: querying the smallest or largest key walks the left or right spine without scanning every stored record.",
+    "Expression and syntax trees: Pre-Order, In-Order and Post-Order traversals produce prefix, infix and postfix forms of hierarchical expressions."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "A binary tree is a valid BST as long as every left child is smaller than its parent and every right child is larger.",
+      "correction": "The rule applies to entire subtrees, not only immediate children. Putting 55 as the right child of 40 under root 50 satisfies 55 > 40, yet breaks the BST because 55 sits in the left subtree of 50."
+    },
+    {
+      "mistake": "Search and insert in a BST are always O(log n).",
+      "correction": "Unbalanced BST operations take O(h) time, not O(log n). Building the tree from sorted keys 10, 20, 30, 40, 50, 60, 70 on this page gives height 6 and needs 7 comparisons to reach 70, which is O(n)."
+    },
+    {
+      "mistake": "Deleting a node with two children removes that node and re-inserts both subtrees.",
+      "correction": "Two-child deletion never rebuilds the subtrees. It copies the in-order successor (smallest key in the right subtree) into the target node and unlinks the old successor by promoting its right child."
+    },
+    {
+      "mistake": "A single-node tree has height 1 and an empty tree has height 0.",
+      "correction": "This page uses the standard edge-count height convention: an empty tree has height −1 and a single node has height 0. Check the Height readout right after clearing the tree or inserting one key."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Compare the four traversals",
+      "action": "On the starter tree (8 keys), keep “In-Order (Left → Root → Right)” in “Traversal Order” and press “Traverse”. Then choose “Pre-Order (Root → Left → Right)”, “Post-Order (Left → Right → Root)” and “Level-Order (Breadth-First / BFS)”, pressing “Traverse” each time.",
+      "input": "",
+      "expect": "In-Order prints sorted keys: “In-Order traversal: [20, 30, 40, 50, 60, 65, 70, 80].” Pre-Order gives “[50, 30, 20, 40, 70, 60, 65, 80]”, Post-Order gives “[20, 40, 30, 65, 60, 80, 70, 50]” and Level-Order gives “[50, 30, 70, 20, 40, 60, 80, 65]”."
+    },
+    {
+      "label": "Search hit, search miss, and Min / Max",
+      "action": "On the starter tree, type 65 in “Value (−99 to 999)” and press “Search”. Then replace it with 62 and press “Search”. Finally press “Min” and then “Max”.",
+      "input": "65, 62",
+      "expect": "Searching 65 ends at step 4 / 4 with “Found 65 at node #8 after 4 comparisons.” Searching 62 misses at step 5 / 5 with “Reached NULL after 4 comparisons: 62 is not in the BST.” Min reports “Minimum key is 20 (node #4).” and Max reports “Maximum key is 80 (node #7).”"
+    },
+    {
+      "label": "Delete a leaf and a one-child node",
+      "action": "On the starter tree, type 20 in “Value (−99 to 999)” and press “Delete”. Then type 60 in “Value (−99 to 999)” and press “Delete”.",
+      "input": "20, 60",
+      "expect": "Deleting leaf 20 shows “Deleted leaf 20.” and reduces Size / 31 to 7 / 31. Deleting 60 shows “Deleted 60 by promoting its sole child.”; 65 links directly under 70 and the final step reads “Deleted 60; 65 took its place. The BST now has 6 nodes.”"
+    },
+    {
+      "label": "Delete a two-child root (in-order successor)",
+      "action": "Press “Build” to restore the starter tree, type 50 in “Value (−99 to 999)” and press “Delete”. Wait for playback to finish, then press “⏮ Reset” and press “Step ▶” four times to inspect every frame.",
+      "input": "50",
+      "expect": "Banner reads “Deleted 50 using in-order successor 60.” Step 3 / 5 highlights TARGET (50) and SUCC (60). Step 4 / 5 copies 60 into node #1 while BST Invariant reads “Relinking…”. Step 5 / 5 attaches 65 under 70, leaving Root 60, Size 7 / 31, Height 2 and Valid."
+    },
+    {
+      "label": "Negative keys and duplicate rejection",
+      "action": "Press “Build” to restore the starter tree, type −10 in “Value (−99 to 999)” and press “Insert”. Then type −10 again in “Value (−99 to 999)” and press “Insert”.",
+      "input": "-10, -10",
+      "expect": "First insert attaches −10 as the left child of 20 with “Inserted -10 into the BST (size 9/31).” and Min updates to −10. The second insert is rejected with “Value -10 is already in the BST (keys must be unique).” and the tree size stays 9 / 31."
+    },
+    {
+      "label": "Sorted input creates an O(n) skewed chain",
+      "action": "Replace “Values (1–31 unique whole numbers, −99 to 999)” with 10, 20, 30, 40, 50, 60, 70 and press “Build”. When it finishes, type 70 in “Value (−99 to 999)” and press “Search”.",
+      "input": "10, 20, 30, 40, 50, 60, 70",
+      "expect": "Banner shows “Built BST with 7 unique keys (height 6).” Every node leans right in a single chain (compared with height 3 for the 8-key starter tree). Searching 70 visits all 7 nodes and ends with “Found 70 at node #7 after 7 comparisons.”"
+    }
+  ],
+  "references": [
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Chapter 12, Binary Search Trees.",
+    "Sedgewick, R., and Wayne, K. Algorithms, 4th ed. Addison-Wesley, 2011. Section 3.2, Binary Search Trees."
+  ],
+  "reviewed": null
+}

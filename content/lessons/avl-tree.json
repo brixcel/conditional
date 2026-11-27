@@ -1,0 +1,255 @@
+{
+  "id": "avl-tree",
+  "title": "AVL Tree",
+  "page": "avl-tree.html",
+  "module": "src/structures/avl.js",
+  "controller": "src/pages/avl-page.js",
+  "summary": "An AVL tree is a self-balancing binary search tree that keeps every node's balance factor within −1, 0, or +1. After each insert or delete, single or double rotations restore O(log n) height.",
+  "prerequisites": ["bst"],
+  "objectives": [
+    "Students can compute the height and balance factor of every node in a binary search tree.",
+    "Students can identify which of the four AVL rotation cases (LL, RR, LR, RL) repairs an unbalanced node.",
+    "Students can trace insert and delete on an AVL tree, including bottom-up height updates and rotations.",
+    "Students can explain why AVL trees guarantee O(log n) search, insert, and delete in the worst case.",
+    "Students can compare single rotations with double rotations and explain why delete may trigger more than one rotation."
+  ],
+  "levels": {
+    "beginner": [
+      "Think of a hanging mobile with weights on two arms: if one side grows much longer than the other, the mobile tips over. An AVL tree is a binary search tree that refuses to tip. It keeps every left subtree and right subtree nearly the same height so searches never degrade into a long chain.",
+      "Every node tracks its height: the number of edges on the longest path down to a leaf. A leaf has height 0, and an empty child counts as −1. Each node also has a balance factor: left subtree height minus right subtree height. In an AVL tree, every balance factor must stay −1, 0, or +1.",
+      "When you insert or delete a key, the tree first updates just like a regular binary search tree. Then it walks back up toward the root, updating heights. If any node reaches a balance factor of +2 or −2, the tree fixes that spot with a rotation: a quick pointer rearrangement that keeps all keys in sorted order.",
+      "Named after inventors Adelson-Velsky and Landis, an AVL tree handles four imbalance patterns: Left-Left (LL), Right-Right (RR), Left-Right (LR), and Right-Left (RL). LL and RR need one single rotation; LR and RL straighten a kink first, using two rotations."
+    ],
+    "intermediate": [
+      "Each AVLNode in src/structures/avl.js stores id, value, left, right, and height, with a default capacity of 31 unique integers. The page displays each node's height (h) and balance factor (bf = h(left) − h(right)) right under the circle and marks any node with |bf| = 2 with a thick ring and a ! suffix.",
+      "Insert checks that the key is not already present before reporting overflow, walks down from the root (rejecting duplicates), and attaches a new leaf with height 0. It then retraces the recorded ancestor path bottom-up. At each ancestor, height becomes 1 + max(h(left), h(right)) and bf is checked.",
+      "If bf = +2, the node is left-heavy: child bf ≥ 0 is an LL case (one right rotation around the node), while child bf < 0 is an LR case (rotate the left child left, then rotate the node right). Symmetrically, bf = −2 triggers RR (one left rotation) when right child bf ≤ 0, or RL (right on the child, left on the node) when right child bf > 0.",
+      "Delete removes a leaf or promotes a single child; for a node with two children, it copies the in-order successor's key into the target node and unlinks the successor. Retracing walks up from the removal point and stops early as soon as a subtree's height matches its old height, since no higher ancestor can be affected.",
+      "Every rotation re-links three pointers and recomputes two heights in O(1) time. Because strict balance keeps tree height logarithmic, search, insert, delete, min, and max all run in O(log n) worst-case time, while reading the root's stored height takes O(1)."
+    ],
+    "advanced": [
+      "The minimum number of nodes in an AVL tree of height h follows the Fibonacci-like recurrence N(h) = N(h − 1) + N(h − 2) + 1 with N(0) = 1 and N(1) = 2. Solving this yields h < 1.44·log₂(n + 2), tighter than a red-black tree's 2·log₂(n + 1) bound.",
+      "After an insert, the first single or double rotation always restores the unbalanced subtree to its pre-insert height, so at most one rotation case occurs per insert. After a delete, a rotation can reduce the subtree's height by 1, which can unbalance a higher ancestor and cause up to O(log n) rotations up to the root.",
+      "Compared with red-black trees, AVL trees give slightly faster lookups because they are shorter, at the cost of extra rotations during frequent insertions and deletions. They also store an integer height (or 2-bit balance factor) per node instead of a 1-bit color.",
+      "This implementation keeps no parent pointers: insert and delete record ancestors in a path array of O(log n) space. It uses the edge-count height convention (empty −1, leaf 0) rather than node-count (empty 0, leaf 1), and two-child deletion copies the successor's value into the existing node so node ids stay stable during SVG gliding."
+    ]
+  },
+  "pseudocode": [
+    {
+      "name": "insert(key)",
+      "lines": [
+        "if tree is full and key is new: return overflow error",
+        "if root = null: root ← new leaf(key, height 0); return",
+        "walk from root: key < node → left, key > node → right",
+        "    if key = node.value: reject duplicate",
+        "attach new leaf(key, height 0) where the walk ended",
+        "for each ancestor on the path, bottom-up:",
+        "    height ← 1 + max(h(left), h(right)); bf ← h(left) − h(right)",
+        "    if bf = +2 and bf(left) ≥ 0: LL → rotateRight(node)",
+        "    if bf = +2 and bf(left) < 0: LR → rotateLeft(left), rotateRight(node)",
+        "    if bf = −2 and bf(right) ≤ 0: RR → rotateLeft(node)",
+        "    if bf = −2 and bf(right) > 0: RL → rotateRight(right), rotateLeft(node)",
+        "    if subtree height did not change: stop"
+      ]
+    },
+    {
+      "name": "delete(key)",
+      "lines": [
+        "if root = null: return empty error",
+        "walk from root to find key; if missing: return error",
+        "if node has ≤ 1 child: link parent to that child (or null)",
+        "else: succ ← leftmost node of node.right (in-order successor)",
+        "    node.value ← succ.value; link succ's parent to succ.right",
+        "for each ancestor on the path, bottom-up:",
+        "    height ← 1 + max(h(left), h(right)); bf ← h(left) − h(right)",
+        "    if bf = +2 and bf(left) ≥ 0: LL → rotateRight(node)",
+        "    if bf = +2 and bf(left) < 0: LR → rotateLeft(left), rotateRight(node)",
+        "    if bf = −2 and bf(right) ≤ 0: RR → rotateLeft(node)",
+        "    if bf = −2 and bf(right) > 0: RL → rotateRight(right), rotateLeft(node)",
+        "    if subtree height did not change: stop"
+      ]
+    },
+    {
+      "name": "search(key)",
+      "lines": [
+        "curr ← root",
+        "while curr != null",
+        "    if key == curr.value: return found",
+        "    if key < curr.value: curr ← curr.left",
+        "    else: curr ← curr.right",
+        "return not found"
+      ],
+      "registry": "AVL_INFO.pseudocode.search"
+    },
+    {
+      "name": "min()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.left != null: curr ← curr.left",
+        "return curr"
+      ],
+      "registry": "AVL_INFO.pseudocode.min"
+    },
+    {
+      "name": "max()",
+      "lines": [
+        "if root == null: return empty error",
+        "curr ← root",
+        "while curr.right != null: curr ← curr.right",
+        "return curr"
+      ],
+      "registry": "AVL_INFO.pseudocode.max"
+    },
+    {
+      "name": "inspect(kind)",
+      "lines": [
+        "root: the one node with no parent",
+        "leaf: node.left == null and node.right == null",
+        "internal node: has at least one child"
+      ],
+      "registry": "AVL_INFO.pseudocode.inspect"
+    },
+    {
+      "name": "clear()",
+      "lines": [
+        "unlink all nodes (O(n));  root ← null;  size ← 0"
+      ],
+      "registry": "AVL_INFO.pseudocode.clear"
+    }
+  ],
+  "complexity": {
+    "insert": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(log n)",
+      "note": "BST insert plus bottom-up retracing using an O(log n) ancestor path array. At most one single or double rotation restores balance.",
+      "registry": "AVL_INFO.operations.insert"
+    },
+    "delete": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(log n)",
+      "note": "Uses the in-order successor for two-child nodes and retraces an O(log n) path array; up to O(log n) rotations may occur.",
+      "registry": "AVL_INFO.operations.delete"
+    },
+    "search": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Height stays below 1.44·log₂(n + 2). Iterative walk uses O(1) extra space (the visualizer also stores the visited path for display).",
+      "registry": "AVL_INFO.operations.search"
+    },
+    "min": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Follows left pointers from the root to the leftmost node.",
+      "registry": "AVL_INFO.operations.min"
+    },
+    "max": {
+      "best": "O(log n)",
+      "average": "O(log n)",
+      "worst": "O(log n)",
+      "space": "O(1)",
+      "note": "Follows right pointers from the root to the rightmost node.",
+      "registry": "AVL_INFO.operations.max"
+    },
+    "height": {
+      "best": "O(1)",
+      "average": "O(1)",
+      "worst": "O(1)",
+      "space": "O(1)",
+      "note": "Reads the height stored on the root node (−1 when empty, 0 for a single leaf).",
+      "registry": "AVL_INFO.operations.height"
+    },
+    "inspect": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(n)",
+      "note": "In-order traversal that collects all nodes matching root, leaves, or internal.",
+      "registry": "AVL_INFO.operations.inspect"
+    },
+    "clear": {
+      "best": "O(n)",
+      "average": "O(n)",
+      "worst": "O(n)",
+      "space": "O(log n)",
+      "note": "Pre-order recursion unlinks every node along an O(log n) call stack.",
+      "registry": "AVL_INFO.operations.clear"
+    }
+  },
+  "applications": [
+    "In-memory ordered dictionaries and sets where lookups vastly outnumber writes, benefiting from AVL's strict height bound.",
+    "Database and file-system indexes that need fast range queries, predecessor/successor lookups, and guaranteed O(log n) worst-case reads.",
+    "Memory allocators that index free blocks by size to find the best-fitting block in O(log n) time.",
+    "Leaderboards and order books that keep dynamic scores or prices sorted while answering min, max, and lookup queries quickly."
+  ],
+  "misconceptions": [
+    {
+      "mistake": "Rotations change the sorted in-order sequence of keys in the tree.",
+      "correction": "Every single or double rotation preserves the binary search tree invariant. Watch the In-Order Keys strip during any rotation demo: the sorted order of values never changes."
+    },
+    {
+      "mistake": "An AVL tree must be completely symmetric with balance factor 0 at every node.",
+      "correction": "AVL allows balance factors of −1, 0, and +1. A subtree may be 1 level deeper than its sibling without triggering any rotation; only |bf| = 2 is unbalanced."
+    },
+    {
+      "mistake": "Delete needs at most one rotation, just like insert.",
+      "correction": "Insert stops after its first rotation case because the subtree returns to its old height. Delete can shrink a rotated subtree's height by 1, causing imbalances higher up and up to O(log n) rotations."
+    },
+    {
+      "mistake": "An empty child has height 0, the same as a leaf.",
+      "correction": "In the edge-count convention used on this page, a leaf has height 0 and an empty child has height −1. That is why a node with one leaf on the left and nothing on the right has bf = 0 − (−1) = +1."
+    }
+  ],
+  "tryIt": [
+    {
+      "label": "Single rotation: Insert LL demo",
+      "action": "Choose “Insert LL: 30, 20 then insert 10” in “Case” and press “Run Demo”. Then press “⏮ Reset” and step through with “Step ▶”.",
+      "input": "",
+      "expect": "The banner reads “Demo: tree [30, 20], then insert 10. Rotations: LL at 30.” Step 6 flags “[LL case] 30 has balance factor +2 (left-heavy)” and step 7 rotates right around 30 so 20 becomes root with height 1 and bf 0."
+    },
+    {
+      "label": "Double rotation: Insert LR demo",
+      "action": "Choose “Insert LR: 30, 10 then insert 20” in “Case” and press “Run Demo”, then watch steps 6 through 9.",
+      "input": "",
+      "expect": "Step 6 detects “LR case: first rotate 10 left, then rotate 30 right.” Step 7 runs rotation 1 of 2 around 10, step 8 runs rotation 2 of 2 around 30, and step 9 ends with “Rebalanced with 1 rotation case: LR at 30 (20 moved up).”"
+    },
+    {
+      "label": "Delete triggers an RL double rotation",
+      "action": "Choose “Delete RL: 20, 10, 30, 25 then delete 10” in “Case” and press “Run Demo”.",
+      "input": "",
+      "expect": "Removing leaf 10 leaves 20 with balance factor −2 and right child 30 with +1. Steps 6 and 7 rotate 30 right then 20 left, ending with “Deleted 10. Rebalanced with 1 rotation case: RL at 20 (25 moved up). The tree has 3 nodes and height 1.”"
+    },
+    {
+      "label": "Build sorted keys without degenerating",
+      "action": "Type the input in “Values (1–31 unique whole numbers, −99 to 999)” and press “Build”.",
+      "input": "10, 20, 30, 40, 50, 60, 70",
+      "expect": "The banner shows “Built an AVL tree of 7 keys (height 2, 4 rotation cases along the way).” Instead of a height-6 chain like a plain BST, 40 becomes the root and Balanced reads “Yes (every |bf| ≤ 1)”."
+    },
+    {
+      "label": "Duplicate rejection and two-child delete",
+      "action": "With that 7-key tree loaded, type 40 in “Value (−99 to 999)” and press “Insert”. Then press “Delete” while 40 is still in the box.",
+      "input": "40",
+      "expect": "Insert is refused with “40 is already in the AVL tree (keys must be unique).” Delete succeeds with “Deleted 40 using in-order successor 50. No rotation needed.” and 50 becomes the new root of the 6-node tree."
+    },
+    {
+      "label": "Highlight leaves and internal nodes",
+      "action": "On the remaining 6-node tree, select “Leaf nodes” in “Highlight” and press “Highlight”, then select “Internal (parent) nodes” and press “Highlight”.",
+      "input": "",
+      "expect": "Leaf nodes reports “Leaves (3): 10, 30, 70.” and Internal nodes reports “Internal nodes (3): 20, 50, 60.” while highlighting each set on the tree stage."
+    }
+  ],
+  "references": [
+    "Knuth, D. E. The Art of Computer Programming, Volume 3: Sorting and Searching, 2nd ed. Addison-Wesley, 1998. Section 6.2.3, Balanced Trees.",
+    "Weiss, M. A. Data Structures and Algorithm Analysis in C++, 4th ed. Pearson, 2014. Section 4.4, AVL Trees.",
+    "Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. Introduction to Algorithms, 4th ed. MIT Press, 2022. Problem 13–3, AVL Trees."
+  ],
+  "reviewed": null
+}

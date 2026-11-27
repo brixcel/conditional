@@ -1,0 +1,214 @@
+{
+  "id": "avl-tree",
+  "title": "AVL Tree (Height-Balanced BST)",
+  "topic": "avl-tree",
+  "description": "Balance factors, LL/RR/LR/RL rotations, insert vs. delete rebalancing, and O(log n) guarantees on the AVL tree used by avl-tree.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "avl-tree-001",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On avl-tree.html, an empty subtree has height -1 and a leaf has height 0. Right before rebalancing after inserting 30, 20, then 10, node 30 has left subtree height 1 and an empty right subtree (height -1). What is node 30's balance factor?",
+      "choices": [
+        "+2 (unbalanced, left-heavy)",
+        "-2 (unbalanced, right-heavy)",
+        "+1 (balanced)",
+        "0 (balanced)"
+      ],
+      "answer": "+2 (unbalanced, left-heavy)",
+      "explanation": "In avl.js, balance factor is defined as height(left) − height(right), so for node 30 it is 1 − (−1) = +2, which is outside {−1, 0, +1} and therefore unbalanced (left-heavy). Answering −2 reverses the subtraction to height(right) − height(left), and answering +1 forgets that an empty subtree has height −1 rather than 0.",
+      "tags": ["balance-factor", "height", "ll-case"],
+      "page": "On avl-tree.html: run the Insert LL demo (30, 20 then insert 10) and pause on the unbalanced step."
+    },
+    {
+      "id": "avl-tree-002",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "In this AVL tree visualizer, a tree containing a single node has height 0, and an empty tree has height -1.",
+      "answer": true,
+      "explanation": "The visualizer uses the edge-count height convention: a leaf has height 0 (zero edges to a leaf), and an empty tree has height −1 so that 1 + max(−1, −1) = 0 gives every leaf height 0. Thinking a single-node tree has height 1 confuses node-count height with edge-count height.",
+      "tags": ["height", "definitions"],
+      "page": "On avl-tree.html: press Clear to see Height = -1, then insert one key to see Height = 0."
+    },
+    {
+      "id": "avl-tree-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Starting from an empty AVL tree, insert 30, then 20, then 10. What key becomes the new root after rebalancing?",
+      "answer": "20",
+      "hint": "Inserting 10 under 20 creates a Left-Left (LL) imbalance at 30, repaired by a single right rotation.",
+      "explanation": "After inserting 10 as the left child of 20, node 30 has balance factor +2 and its left child 20 has balance factor +1 (LL case). A single right rotation around 30 lifts 20 to the root with 10 on its left and 30 on its right. Answering 30 assumes no rotation happened; answering 10 moves the newly inserted leaf all the way to the root instead of the middle key.",
+      "tags": ["ll-case", "rotation", "insert", "trace"],
+      "page": "On avl-tree.html: run the Insert LL demo (30, 20 then insert 10)."
+    },
+    {
+      "id": "avl-tree-004",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the worst-case time complexity of searching for a key in an AVL tree with n nodes?",
+      "choices": [
+        "O(log n)",
+        "O(1)",
+        "O(n)",
+        "O(n log n)"
+      ],
+      "answer": "O(log n)",
+      "explanation": "Because every node's balance factor stays in {−1, 0, +1}, an AVL tree's height is strictly below 1.44·log₂(n + 2), so search follows at most O(log n) links from root to leaf. O(n) is the worst case for an unbalanced BST that degenerates into a linked list, which AVL rotations prevent.",
+      "tags": ["complexity", "search"],
+      "page": "On avl-tree.html: check the Search row in the complexity table."
+    },
+    {
+      "id": "avl-tree-005",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Starting from an empty AVL tree, you insert 10, then 20, then 30. Which rotation case occurs at node 10, and what rotation fixes it?",
+      "choices": [
+        "RR case: a single left rotation around 10",
+        "LL case: a single right rotation around 10",
+        "RL case: a right rotation on 20, then a left rotation on 10",
+        "No rotation: the tree stays balanced because every key was inserted in sorted order"
+      ],
+      "answer": "RR case: a single left rotation around 10",
+      "explanation": "Inserting 30 as the right child of 20 gives node 10 balance factor −2 (right-heavy) while its right child 20 has balance factor −1 (also right-heavy). That is the RR case, fixed by a single left rotation around 10 so 20 becomes the root. Choosing LL rotates in the wrong direction, and choosing RL mistakes a straight right-leaning chain for a zig-zag.",
+      "tags": ["rr-case", "rotation", "insert"],
+      "page": "On avl-tree.html: run the Insert RR demo (10, 20 then insert 30)."
+    },
+    {
+      "id": "avl-tree-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Starting from an empty AVL tree, insert 30, then 10, then 20. List the keys of the rebalanced tree in pre-order (root, left, right).",
+      "format": "list",
+      "answer": "20, 10, 30",
+      "hint": "30 → 10 → 20 bends left then right (LR case), so a left rotation on 10 is followed by a right rotation on 30.",
+      "explanation": "Node 30 has balance factor +2 while its left child 10 has balance factor −1 (LR case). Stage 1 rotates left around 10 so 20 moves above 10; Stage 2 rotates right around 30 so 20 becomes the root with left child 10 and right child 30, giving pre-order 20, 10, 30. Answering 10, 20, 30 gives the in-order sequence instead of pre-order; answering 10, 30, 20 results from doing only a single right rotation on 30, which leaves the tree unbalanced.",
+      "tags": ["lr-case", "double-rotation", "insert", "trace"],
+      "page": "On avl-tree.html: run the Insert LR demo (30, 10 then insert 20)."
+    },
+    {
+      "id": "avl-tree-007",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Build an AVL tree by inserting 10, 20, 30, 40, 50, 25 in that order (the default list on avl-tree.html). What key is at the root of the final tree?",
+      "answer": "30",
+      "hint": "After 10..50 the root is 20 with right child 40 (whose left child is 30). Inserting 25 under 30 triggers an RL double rotation at 20.",
+      "explanation": "Inserting 10, 20, 30 causes an RR rotation lifting 20 to the root. Inserting 40, 50 causes an RR rotation at 30 lifting 40, so the tree is 20(10, 40(30, 50)). Inserting 25 as the left child of 30 gives root 20 balance factor −2 while its right child 40 has balance factor +1 (RL case): rotating right at 40 and left at 20 lifts 30 to the root. Answering 20 forgets the final RL rotation at the root; answering 25 confuses the newly inserted key with the middle pivot 30.",
+      "tags": ["rl-case", "rr-case", "build", "trace"],
+      "page": "On avl-tree.html: press Build with the default list 10, 20, 30, 40, 50, 25 and step to the end."
+    },
+    {
+      "id": "avl-tree-008",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "After inserting 10, 30, then 20 into an AVL tree, node 10 has balance factor -2 and its right child 30 has balance factor +1. Which rotation sequence repairs this RL imbalance?",
+      "choices": [
+        "Rotate right around 30, then rotate left around 10",
+        "Rotate left around 30, then rotate right around 10",
+        "A single left rotation around 10",
+        "Rotate left around 10, then rotate right around 30"
+      ],
+      "answer": "Rotate right around 30, then rotate left around 10",
+      "explanation": "In an RL zig-zag, you first straighten the inner bend by rotating the right child (30) right so 20 becomes 10's right child (turning RL into RR), and then rotate the unbalanced ancestor (10) left so 20 becomes the new root. Performing only a single left rotation around 10 fails because 20 moves across to 10's right child and leaves the subtree just as unbalanced in the opposite direction.",
+      "tags": ["rl-case", "double-rotation", "rotation"],
+      "page": "On avl-tree.html: run the Insert RL demo (10, 30 then insert 20) and step through rotation 1 of 2 and rotation 2 of 2."
+    },
+    {
+      "id": "avl-tree-009",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these statements are true about every valid AVL tree in this visualizer? Select all that apply.",
+      "choices": [
+        "Every node's balance factor is -1, 0, or +1",
+        "An in-order traversal always visits the keys in strictly ascending order",
+        "The tree height is always strictly less than 1.44·log₂(n + 2)",
+        "Reading height() takes O(1) time because the root stores its height",
+        "Every leaf must sit at the exact same depth"
+      ],
+      "answer": [
+        "Every node's balance factor is -1, 0, or +1",
+        "An in-order traversal always visits the keys in strictly ascending order",
+        "The tree height is always strictly less than 1.44·log₂(n + 2)",
+        "Reading height() takes O(1) time because the root stores its height"
+      ],
+      "explanation": "Every AVL tree is a unique-key BST with |bf| ≤ 1 everywhere, which bounds height below 1.44·log₂(n + 2), and avl.js stores height on each node so height() returns the root's stored value in O(1). Leaves do NOT have to be at the same depth—for example, inserting 20, 10, 30, 5 produces a valid AVL tree with leaf 30 at depth 1 and leaf 5 at depth 2.",
+      "tags": ["invariants", "height", "balance-factor"]
+    },
+    {
+      "id": "avl-tree-010",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "What is the time complexity of performing a single AVL rotation (left or right) when each node stores its own height?",
+      "choices": [
+        "O(1)",
+        "O(log n)",
+        "O(n)",
+        "O(n log n)"
+      ],
+      "answer": "O(1)",
+      "explanation": "A single rotation only re-links three child/parent pointers and recomputes the heights of the two rotated nodes from their children's stored heights, regardless of how large the subtrees are. O(log n) is tempting because it is the cost of the full insert or delete walk, not of one rotation by itself.",
+      "tags": ["complexity", "rotation"],
+      "page": "On avl-tree.html: check the Rotation row in the complexity table."
+    },
+    {
+      "id": "avl-tree-011",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "Just like AVL insertion, deleting a key from an AVL tree always finishes rebalancing after at most one single or double rotation.",
+      "answer": false,
+      "explanation": "After an insertion, one single or double rotation restores the unbalanced subtree to its exact pre-insert height, so no higher ancestor's balance factor changes and retracing stops immediately. After a deletion, however, a rotation can reduce that subtree's height by 1, which can make an ancestor reach ±2 and trigger cascading rotations all the way up to the root—up to O(log n) rotations in the worst case.",
+      "tags": ["delete", "insert", "cascading-rotations"],
+      "page": "On avl-tree.html: compare the Insert and Delete notes in the complexity table, or build 50, 25, 75, 15, 35, 65, 85, 5, 20, 30, 60, 1 and delete 85 to see two LL rotations cascade."
+    },
+    {
+      "id": "avl-tree-012",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Build an AVL tree by inserting 20, 10, 30, 15 in that order, then delete 30. List the keys of the resulting tree in pre-order (root, left, right).",
+      "format": "list",
+      "answer": "15, 10, 20",
+      "hint": "Removing 30 makes root 20 left-heavy (bf = +2) while its left child 10 leans right (bf = -1): that is a Delete LR case.",
+      "explanation": "Before deletion, root 20 has left child 10 (with right child 15) and right child 30. Deleting leaf 30 gives node 20 balance factor +2 and left child 10 balance factor −1 (LR case). Rotating left around 10 lifts 15 above 10, then rotating right around 20 lifts 15 to the root with left child 10 and right child 20, giving pre-order 15, 10, 20. Answering 10, 15, 20 gives the in-order list, while answering 20, 10, 15 forgets to rebalance after the deletion.",
+      "tags": ["delete", "lr-case", "double-rotation", "trace"],
+      "page": "On avl-tree.html: run the Delete LR demo (20, 10, 30, 15 then delete 30)."
+    },
+    {
+      "id": "avl-tree-013",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "Build an AVL tree from 20, 10, 30, 5, 15 and then delete 30. Node 20 now has balance factor +2, and its left child 10 has balance factor 0 (both 5 and 15 exist). Which rotation case does avl.js apply?",
+      "choices": [
+        "LL case: a single right rotation around 20, leaving the subtree height unchanged",
+        "LR case: a left rotation on 10 followed by a right rotation on 20",
+        "RR case: a single left rotation around 20",
+        "No rotation is applied because child 10 has balance factor 0"
+      ],
+      "answer": "LL case: a single right rotation around 20, leaving the subtree height unchanged",
+      "explanation": "A child balance factor of 0 at a +2 ancestor can only happen during deletion, and avl.js treats bf(left) ≥ 0 as the LL case: one right rotation around 20 promotes 10 (with right child 20 and 15 moving across to 20's left). Because the subtree height remains 2, rebalancing stops immediately. Applying LR instead performs an unnecessary extra rotation (and in larger trees where 15 is right-heavy, an LR double rotation would leave node 10 unbalanced with bf = +2), whereas a single LL right rotation always restores balance in one step.",
+      "tags": ["delete", "ll-case", "edge-case"],
+      "page": "On avl-tree.html: build 20, 10, 30, 5, 15, then delete 30 and watch bf(10) = 0 trigger an LL right rotation."
+    },
+    {
+      "id": "avl-tree-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Which of the following statements are true about insertion and deletion in this AVL tree implementation? Select all that apply.",
+      "choices": [
+        "Inserting a key requires at most one single or double rotation to restore balance",
+        "Deleting a key can require O(log n) rotations in the worst case",
+        "Deleting a node with two children copies its in-order successor's key into that node",
+        "Inserting a key that is already present in a full tree reports a duplicate error rather than overflow",
+        "Rotations change the in-order sequence of keys in the tree"
+      ],
+      "answer": [
+        "Inserting a key requires at most one single or double rotation to restore balance",
+        "Deleting a key can require O(log n) rotations in the worst case",
+        "Deleting a node with two children copies its in-order successor's key into that node",
+        "Inserting a key that is already present in a full tree reports a duplicate error rather than overflow"
+      ],
+      "explanation": "In avl.js, insert needs at most one rebalancing step, delete can cascade up to O(log n) rotations, two-child delete copies the in-order successor's value into the target node before unlinking the successor, and overflow is only reported when the tree is full and the key is new (duplicates are caught first). Rotations NEVER change the in-order sequence—preserving BST sorted order is the whole reason rotations are valid.",
+      "tags": ["insert", "delete", "implementation", "invariants"]
+    }
+  ]
+}
