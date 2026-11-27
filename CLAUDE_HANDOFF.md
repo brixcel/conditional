@@ -32,6 +32,58 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G14: Lessons for six module pages
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `lesson-author`, `learning-content`, `qa-engineer`)
+- Finished at: 2026-11-27 09:30 (Philippine time)
+- Branch: `gemini/g14-lessons` (branched from fresh `origin/main` @ `7a2f4d2`)
+- Commit(s): `c32d26f`
+- Files changed: `content/lessons/regular-queue.json`, `content/lessons/circular-queue.json`, `content/lessons/priority-queue.json`, `content/lessons/heap.json`, `content/lessons/hash-table.json`, `content/lessons/searching.json` (zero existing files edited)
+- Summary:
+  - Authored six schema-valid, UTF-8 (no BOM), 2-space indented lesson files with `"reviewed": null` covering beginner, intermediate, and advanced levels, observable objectives (`O1`–`O4`), real-world applications, common misconceptions, textbook references, and verified `tryIt` walkthroughs:
+    - `content/lessons/regular-queue.json` (7 registry-backed `QUEUE_INFO.linear.pseudocode.*` blocks, fixed capacity 1–100, front-value dequeue confirm, false overflow vs true overflow, `isFull?` false-overflow nuance, pointer reset on emptying, 5 `tryIt` scenarios).
+    - `content/lessons/circular-queue.json` (7 registry-backed `QUEUE_INFO.circular.pseudocode.*` blocks, `(i + 1) mod n` wrap-around, `front = rear = −1` empty sentinel, `(rear + 1) mod n = front` full test, `size = (rear − front + n) mod n + 1`, 5 `tryIt` scenarios).
+    - `content/lessons/priority-queue.json` (2 registry-backed `QUEUE_INFO.priority.pseudocode.*` blocks, 0-indexed binary max-heap, arrival-id FIFO tie-breaking, two-level page mode `High Priority (P)` vs general numeric priorities, O(1) duplicate rejection, overflow-before-duplicate check, O(n) `peekRear`, O(n log n) `Display List`, 5 `tryIt` scenarios).
+    - `content/lessons/heap.json` (4 registry-backed `HEAP_INFO.pseudocode.*` blocks, Min-Heap vs Max-Heap, 0-indexed parent/child formulas, O(n) bottom-up Floyd `Build Heap`, page capacity 31 vs module max 63, strict comparison & left-child tie-breaking, 6 `tryIt` scenarios).
+    - `content/lessons/hash-table.json` (12 registry-backed `HASH_STRATEGIES.{chaining,linear,quadratic}.pseudocode.*` blocks, negative-safe `((k mod m) + m) mod m`, Separate Chaining, Linear Probing with primary clustering & tombstones, Quadratic Probing with prime `m` in `{3,5,7,11,13,17,19}` and `α ≤ 0.5` pigeonhole guarantee, `O(n² + m)` worst-case probing rehash, 6 `tryIt` scenarios).
+    - `content/lessons/searching.json` (3 registry-backed `SEARCHING_ALGORITHMS.{linear,binary,interpolation}.pseudocode` blocks AND 3 registry-backed `SEARCHING_ALGORITHMS.*.complexity` entries, unsorted Linear Search vs auto-sorted Binary/Interpolation Search, uniform `O(log log n)` vs skewed `O(n)` vs out-of-bounds 0-probe vs all-equal div-by-zero guard, 6 `tryIt` scenarios).
+  - Audited independently by `learning-content` and `qa-engineer` subagents; fixed all 3 Major and 7 Minor findings (corrected Quadratic Probing pigeonhole inequality in `hash-table.json`, updated `rehash` worst-case complexity to `O(n² + m)` under probing, added explicit `“▶ Play”` / three `“Step ▶”` playback actions in `searching.json` `tryIt[1]`–`tryIt[5]` since `searching-page.js` does not autoplay on load, plus minor definitions and phrasing polish) and re-verified `npm test` 100% green.
+- npm test output (paste the real lines):
+    # tests 666
+    # suites 0
+    # pass 666
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+    SUMMARY: 77 / 77 assertions passed (100%)
+  *(All 52 tests in `tests/lessons.test.js` pass with `skipped: []`, exact `P3` registry equality, and exact `T2` control-name validation across all 6 new lessons.)*
+- Browser checks done: Clicked through all **33 `tryIt` scenarios** live in the browser (`http://127.0.0.1:5514`) across all six pages (console clean: yes, 0 errors/dialogs):
+  - `regular-queue.html` (5/5 matched verbatim): (1) Fill 3-slot queue & true overflow (`40`), (2) FIFO front-confirm refusal (`30`) then dequeue (`10`), (3) 4-step dequeue replay, (4) false overflow (`40` with slot 0 freed) + `isFull?` false-overflow message, (5) dequeue `20`, `30` to empty/reset pointers + `isEmpty?` + enqueue `40` at index 0.
+  - `circular-queue.html` (5/5 matched verbatim): (1) Fill 3-slot ring & overflow (`40`), (2) dequeue `10` & enqueue `40` wrapping `rear` to `0`, (3) 3-step wrap-around replay, (4) dequeue `20`, `30` (wrapping `front` to `0`), `40` (emptying to `front = rear = −1`), (5) empty underflow + `Queue Size` (`0 of 3`) + `IsEmpty?` (`front = -1, so front == −1 is true.`).
+  - `priority-queue.html` (5/5 matched verbatim): (1) Allocate 4, enqueue normal `10`, `20`, then High Priority `30` jumping to `[0] ROOT`, (2) 3-step sift-up replay, (3) duplicate `10` rejection, High Priority `40` FIFO tie-break behind `30`, `Display List` (`30 (P), 40 (P), 10, 20`), `Rear (Back)` (`20`), overflow `50`, (4) wrong-front `40` refusal then dequeue `30 (P)`, (5) 4-step sift-down replay.
+  - `heap.html` (6/6 matched verbatim): (1) Bottom-up min-heap build `[42,18,27,9,35,14,51,3]` (`11` comparisons, `7` swaps, root `3`), (2) insert `1` (`3` comparisons, `3` swaps, size `9/31`), (3) extract min `1` (`5` comparisons, `2` swaps, `18` stops at index 3), (4) build `[10,40,20,50,30]` then switch to Max-Heap (`6` comparisons, `3` swaps) + `Peek` (`50`), (5) clear & insert `10`, `20` (0 swaps), `-5` (reaches root), (6) clear & empty underflow (`— (empty)`).
+  - `hash-table.html` (6/6 matched verbatim): (1) Separate Chaining `m=7`, insert `10, 24, -4` into bucket 3 (`α = 3/7 = 0.43`), (2) update key `24` → `"Ada"` in 2 probes, (3) Linear Probing `m=7`, insert `5, 12, 19` (wrap to 0), delete `12` (tombstone at 6), search `19` (skips tombstone, found in 3 probes), (4) insert `26` (recycles slot 6), delete `5`, rehash to `11` (`2 entries re-inserted, 1 tombstones cleared`), (5) Quadratic Probing `m=7`, insert `3, 10, 17` (slot 0), refuse `24` (`Rehash to a prime size of at least 11 first.`), (6) refuse non-prime `m=8`.
+  - `searching.html` (6/6 matched verbatim): (1) Binary Search `56` in 10 sorted values (`4` comparisons), (2) unsorted `[40,12,19,5,31]` target `19` in Linear (`3` comparisons) vs auto-sorted Binary (`1` comparison), (3) Interpolation uniform `10..100` target `70` (`1` comparison), (4) skewed `[1..9, 900]` target `9` in Interpolation (`9` comparisons) vs Binary (`3` comparisons), (5) out-of-bounds `150` in Interpolation (`0` comparisons) vs Binary (`4` comparisons), (6) all-equal `[5,5,5,5,5]` div-by-zero guard (`line 3`, `1` comparison).
+- Not done / not verified: Did not edit any existing page, module, registry, test, or `_schema.md`.
+- Requests for Claude (existing page/module inaccuracies noticed during audit — NOT edited in G14):
+  1. `src/structures/hash-table.js:19-20`: JSDoc states `"fewer than half of those ⌊m/2⌋ + 1 distinct probe slots can be OCCUPIED"`, which is false for primes `m ≥ 7` (e.g., `m = 11` has 6 probe slots and up to 4 live entries before the 5th insert). Should say `n < ⌊m/2⌋` before a new insert is strictly fewer than the `⌊m/2⌋ + 1` distinct probe slots (pigeonhole principle).
+  2. `src/structures/hash-table.js:88` vs `:133`: `HASH_STRATEGIES.linear.complexity.worst` is `"O(n)"` while `quadratic.complexity.worst` is `"O(m)"`; with tombstones present, an unsuccessful Linear Probing search/delete can probe all `m` slots even when `n` is small (`O(m)`).
+  3. `src/pages/hash-table-page.js:522`: Rehash banner prints hardcoded plural `"1 tombstones cleared"` when `clearedTombstones === 1`. (Note: `hash-table.json` matches the current runtime string; if singularized, update `hash-table.json:251` too.)
+  4. `src/structures/hash-table.js:1402` & `:1413`: Tense mismatch `"collected ... and discarding ..."` on line 1402; line 1413 (and `hash-table.html:132`) prints `"h(k) = k mod m"` rather than the negative-safe `"((k mod m) + m) mod m"`.
+  5. `regular-queue.html:138, 146`: Reference card says `"front index 0 or rear index n-1"` (inaccurate once dequeues advance `front`) and `"Fails if maximum allocated capacity is reached"` (omits false overflow when `rear == capacity - 1` and `count < capacity`).
+  6. `circular-queue.html:149`: Reference card writes `(rear + 1) % size == front` using `size` for `capacity` (should be `capacity`).
+  7. `src/structures/queue.js:143`: Dead ternary `this.capacity === 1` in `CircularQueue.enqueue` (`MIN_CAPACITY` is `2`).
+  8. `src/pages/heap-page.js:67-68`: `LINE_MAP.insert` never highlights line 4 (`i ← parent(i)`); `HEAP_INFO.pseudocode.siftDown` is never rendered on `heap.html`.
+  9. `searching.html:22, 142`: Static heading `"Linear Search"` while `<option value="binary" selected>` is default (overwritten at runtime); British spelling `"neighbourhood"` on line 142 (site uses US spelling).
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G10: Graph representation module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 19:18 (Philippine time)

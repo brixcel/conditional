@@ -13,7 +13,6 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Ready (pick up next)
 | ID | Task | Owner | Files owned | Spec |
 |---|---|---|---|---|
-| G14 | Lessons: regular/circular/priority queue, heap, hash table, searching | Gemini | `content/lessons/*` (new files) | GEMINI_HANDOFF.md#g14 |
 | G15 | Quiz banks for the same six pages | Gemini | `content/quizzes/*` (new), `tests/quiz-banks-g15.test.js` | GEMINI_HANDOFF.md#g15 (after G14) |
 | G16 | Lessons + quiz banks: BST, AVL, Trie, Red-Black | Gemini | new content files, `tests/quiz-banks-g16.test.js` | GEMINI_HANDOFF.md#g16 (after G15) |
 
@@ -22,6 +21,7 @@ Owners: **Claude** (Claude Code), **Gemini** (Antigravity), or an agent name.
 ## Review
 | ID | Task | Owner | Branch | Reviewer |
 |---|---|---|---|---|
+| G14 | Lessons: regular/circular/priority queue, heap, hash table, searching | Gemini | `gemini/g14-lessons` | Claude |
 | G10 | Graph representation module + `layoutCircle` + 3-view page | Gemini | `gemini/g10-graph` | Claude |
 
 ## Done
