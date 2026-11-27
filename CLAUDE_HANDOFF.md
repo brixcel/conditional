@@ -32,6 +32,43 @@ reviews each report before merging. The newest entries go at the top.
 
 ## Reports
 
+### G15: Quiz banks for six module pages
+- Author: Gemini (Antigravity, using `.claude/agents/` subagents: `quiz-challenges`, `learning-content`, `qa-engineer`)
+- Finished at: 2026-11-27 09:47 (Philippine time)
+- Branch: `gemini/g15-quizzes` (branched from fresh `origin/main` @ `a351f49`)
+- Commit(s): `e8a341c`
+- Files changed: `content/quizzes/regular-queue.json`, `content/quizzes/circular-queue.json`, `content/quizzes/priority-queue.json`, `content/quizzes/heap.json`, `content/quizzes/hash-table.json`, `content/quizzes/searching.json`, `tests/quiz-banks-g15.test.js` (zero existing files edited)
+- Summary:
+  - Authored six schema-valid quiz banks (`14` questions each = **84 questions total**), each with `"reviewed": null`, covering all five question types (`mcq`, `multi`, `truefalse`, `predict`, `complexity` — 4 `predict` questions per bank) and all three difficulties (`easy`, `medium`, `hard`), with specific explanations covering both why the answer is right and why the tempting distractor is wrong, plus actionable `page` hints.
+  - Created `tests/quiz-banks-g15.test.js` validating all 6 banks via `validateBank()` and recomputing **all 24 `predict` answers** (dynamically enforced via `assertAllPredictsCovered` so none can be missed) **plus 42 additional module-verified answers** (**66 answers recomputed directly from the real modules**):
+    - `regular-queue.json` (`LinearQueue`): predicts `003, 006, 009, 011`; additional `001, 002, 004, 007, 010, 014` (10 recomputed).
+    - `circular-queue.json` (`CircularQueue`): predicts `003, 006, 009, 011`; additional `002, 004, 005, 007, 010, 014` (10 recomputed).
+    - `priority-queue.json` (`PriorityQueue`): predicts `003, 006, 009, 011`; additional `001, 004, 005, 007, 012, 014` (10 recomputed).
+    - `heap.json` (`MinHeap` / `MaxHeap` / `BinaryHeap`): predicts `004, 007, 011, 012`; additional `001, 002, 003, 005, 006, 008, 009, 010, 014` (13 recomputed).
+    - `hash-table.json` (`HashTable` / `hashKey` / `capacityError` / `maxEntriesFor`): predicts `001, 005, 008, 011`; additional `002, 003, 004, 006, 009, 010, 012, 013, 014` (13 recomputed).
+    - `searching.json` (`traceSearch` / `SEARCHING_ALGORITHMS`): predicts `003, 006, 007, 011`; additional `001, 002, 004, 005, 009, 012, 013, 014` (12 recomputed).
+  - Audited independently by `learning-content` and `qa-engineer` subagents; fixed all findings (`searching-006` ceiling-rounding distractor trace `5, 8, 7, 6`, `searching-008` loop-guard vs recorded-comparison phrasing, `regular-queue-008` `O(capacity)` precision, `priority-queue-014` `clear()` phrasing, `hash-table-010`/`searching-010` explicit distractor rebuttals, `hash-table` `Clear Table`/`Rehash / Resize` page hints, and tightened all 13 non-predict assertions in `tests/quiz-banks-g15.test.js` to compare directly against stored `q.answer` using fresh instances).
+- npm test output (paste the real lines):
+    # tests 787
+    # suites 0
+    # pass 787
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+    SUMMARY: 89 / 89 assertions passed (100%)
+- Browser checks done: Not applicable (JSON quiz banks + Node verification tests only; no HTML/CSS/page JS modified; all referenced page behaviors were live-verified on the six pages in G14).
+- Not done / not verified: Did not edit any existing files (`src/quiz/*`, `tests/quiz.test.js`, existing banks, pages, or modules).
+- Requests for Claude: Existing page/module inaccuracies noticed across these six pages are already listed in the G14 report (`regular-queue.html:138, 146`, `circular-queue.html:149`, `src/structures/hash-table.js:19-20, 88, 1402, 1413`, `src/pages/hash-table-page.js:522`, `searching.html:22, 142`). No additional page text defects found in G15.
+
+#### Review (filled in by Claude)
+- Reviewed at:
+- Verdict:
+- Blocking issues:
+- Merged in:
+
+---
+
 ### G13: Segment Tree module + page
 - Author: Gemini (Antigravity, using `.claude/agents/` subagents: `data-structures`, `visualization-engineer`, `qa-engineer`, `accessibility-performance`, `learning-content`)
 - Finished at: 2026-11-26 23:10 (Philippine time)
