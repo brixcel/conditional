@@ -1,0 +1,266 @@
+{
+  "id": "hash-table",
+  "title": "Hash Table",
+  "topic": "hash-table",
+  "description": "Negative-safe modulo hashing, separate chaining, linear probing, quadratic probing, tombstones, load factor, and rehashing on hash-table.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "hash-table-001",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "This hash table computes h(k) = ((k mod m) + m) mod m. With table size m = 7, which bucket index does the negative key -4 map to?",
+      "answer": "3",
+      "hint": "Add m = 7 to the negative remainder so the index lands in 0..6.",
+      "explanation": "((-4 mod 7) + 7) mod 7 = (-4 + 7) mod 7 = 3, because -4 = (-1) × 7 + 3. Answering -4 uses raw JavaScript remainder (-4 % 7 = -4), which is an invalid array index, and answering 4 takes |-4| mod 7 instead of preserving congruence modulo 7.",
+      "tags": [
+        "hash-function",
+        "negative-keys",
+        "trace"
+      ],
+      "page": "On hash-table.html: keep Table Size m = 7, enter key -4, click Insert / Update, and read the hash step."
+    },
+    {
+      "id": "hash-table-002",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Which collision-resolution strategy in this visualizer allows the load factor α = n / m to exceed 1.0 without overflowing?",
+      "choices": [
+        "Separate Chaining",
+        "Linear Probing",
+        "Quadratic Probing",
+        "All three strategies"
+      ],
+      "answer": "Separate Chaining",
+      "explanation": "Separate Chaining stores a linked chain in every bucket, so any number of entries can share a bucket and α = n / m may exceed 1.0 (maxEntriesFor returns null). Linear Probing stores at most 1 entry per slot (α ≤ 1), and Quadratic Probing strictly caps live entries at ⌊m / 2⌋ (α ≤ 0.5), so choosing \"All three strategies\" ignores open addressing's slot limits.",
+      "tags": [
+        "chaining",
+        "load-factor"
+      ],
+      "page": "On hash-table.html: compare the Load Factor (α) property card across Separate Chaining, Linear Probing, and Quadratic Probing."
+    },
+    {
+      "id": "hash-table-003",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "Under uniform hashing, what is the average-case time complexity of searching a Separate Chaining hash table with load factor α = n / m?",
+      "choices": [
+        "O(1 + α)",
+        "O(n)",
+        "O(log n)",
+        "O(n + m)"
+      ],
+      "answer": "O(1 + α)",
+      "explanation": "Hashing the key to locate its bucket takes O(1), and scanning the bucket's chain of expected length α = n / m takes O(α), giving O(1 + α) average time. O(n) is the worst case when all keys collide in one bucket, while O(n + m) is the space complexity of the table.",
+      "tags": [
+        "chaining",
+        "complexity"
+      ],
+      "page": "On hash-table.html: check the Search (Avg) column for Separate Chaining in the Collision Resolution Comparison table."
+    },
+    {
+      "id": "hash-table-004",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "In Linear Probing, deleting a key simply sets its slot back to EMPTY.",
+      "answer": false,
+      "explanation": "Resetting a deleted slot to EMPTY would cause searches for keys placed later in the same probe run to stop early and falsely report \"not found\". Linear Probing instead marks the slot as a DELETED tombstone so search and delete keep probing past it while insert can recycle the slot.",
+      "tags": [
+        "linear-probing",
+        "tombstones",
+        "delete"
+      ],
+      "page": "On hash-table.html: switch to Linear Probing (m = 7), Clear Table, insert keys 1 and 8, delete 1, then search for 8."
+    },
+    {
+      "id": "hash-table-005",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "An empty Linear Probing hash table has size m = 7. You insert keys 5, 12, and 6 in that order. List the final slot indices where keys 5, 12, and 6 are stored, in that order.",
+      "format": "list",
+      "answer": "5, 6, 0",
+      "hint": "Linear probing checks (home + i) mod 7, wrapping from slot 6 back to slot 0.",
+      "explanation": "Key 5 hashes to 5 mod 7 = 5 (empty → slot 5). Key 12 hashes to 12 mod 7 = 5 (occupied by 5), so it probes (5 + 1) mod 7 = 6 (empty → slot 6). Key 6 hashes to 6 mod 7 = 6 (occupied by 12), so it probes (6 + 1) mod 7 = 0 (wrapped around → slot 0). Answering 5, 6, 7 forgets modulo wrap-around, since valid slots are 0 through 6.",
+      "tags": [
+        "linear-probing",
+        "wrap-around",
+        "trace"
+      ],
+      "page": "On hash-table.html: choose Linear Probing with m = 7, Clear Table, and insert 5, then 12, then 6."
+    },
+    {
+      "id": "hash-table-006",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "What is the worst-case time complexity of searching for a key in a Separate Chaining or Linear Probing hash table containing n keys?",
+      "choices": [
+        "O(n)",
+        "O(1)",
+        "O(log n)",
+        "O(n²)"
+      ],
+      "answer": "O(n)",
+      "explanation": "If every key hashes to the same bucket (Separate Chaining) or collides into one long contiguous run (Linear Probing), a search may inspect all n entries before finishing, which is O(n). O(1) is tempting because hash tables give constant expected time at low load factor, but that is an average-case result, not a worst-case guarantee.",
+      "tags": [
+        "complexity",
+        "worst-case"
+      ],
+      "page": "On hash-table.html: inspect the Worst Case column of the Collision Resolution Comparison table."
+    },
+    {
+      "id": "hash-table-007",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "How does Quadratic Probing improve on Linear Probing regarding clustering?",
+      "choices": [
+        "It eliminates primary clustering (merging adjacent runs), though keys with the same home slot still suffer secondary clustering",
+        "It eliminates all clustering completely, even for keys with the same home slot",
+        "It allows the table to store more than m entries without rehashing",
+        "It removes the need for DELETED tombstones during deletion"
+      ],
+      "answer": "It eliminates primary clustering (merging adjacent runs), though keys with the same home slot still suffer secondary clustering",
+      "explanation": "Quadratic Probing jumps by growing squares (home + i²) mod m (offsets 0, 1, 4, 9, …), preventing adjacent occupied runs from coalescing into primary clusters. However, two keys sharing the same home slot still follow the exact same probe sequence (secondary clustering). Eliminating secondary clustering too would require double hashing, and quadratic probing still needs DELETED tombstones.",
+      "tags": [
+        "quadratic-probing",
+        "clustering"
+      ],
+      "page": "On hash-table.html: read the \"Primary vs Secondary Clustering\" card at the bottom of the page."
+    },
+    {
+      "id": "hash-table-008",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "An empty Quadratic Probing hash table has prime size m = 11. You insert keys 3, 14, and 25 in that order (all hash to home slot 3). List the final slot indices where keys 3, 14, and 25 are stored, in that order.",
+      "format": "list",
+      "answer": "3, 4, 7",
+      "hint": "Use (home + i²) mod 11 for i = 0, 1, 2 (offsets +0, +1, +4).",
+      "explanation": "Key 3 lands at (3 + 0²) mod 11 = 3. Key 14 collides at 3 (i = 0) and lands at (3 + 1²) mod 11 = 4. Key 25 collides at 3 (i = 0) and 4 (i = 1), then lands at (3 + 2²) mod 11 = 7. Answering 3, 4, 5 uses linear probing (+1, +2) instead of squared offsets (+1, +4).",
+      "tags": [
+        "quadratic-probing",
+        "trace"
+      ],
+      "page": "On hash-table.html: choose Quadratic Probing, set m = 11, Clear Table, and insert 3, 14, and 25."
+    },
+    {
+      "id": "hash-table-009",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these table sizes m are accepted by Quadratic Probing on hash-table.html? Select all that apply.",
+      "choices": [
+        "7",
+        "9",
+        "11",
+        "15",
+        "19"
+      ],
+      "answer": [
+        "7",
+        "11",
+        "19"
+      ],
+      "explanation": "Quadratic Probing requires a prime table size in [3, 19]—specifically 3, 5, 7, 11, 13, 17, or 19—so that the first ⌊m / 2⌋ + 1 quadratic offsets are guaranteed distinct. 9 (3 × 3) and 15 (3 × 5) are odd but composite, which is a common trap because odd does not imply prime.",
+      "tags": [
+        "quadratic-probing",
+        "capacity",
+        "prime"
+      ],
+      "page": "On hash-table.html: select Quadratic Probing and try entering 9 or 15 in Table Size m and clicking Rehash / Resize."
+    },
+    {
+      "id": "hash-table-010",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "Rehashing an open-addressing hash table to the same capacity m keeps all existing DELETED tombstones in place.",
+      "answer": false,
+      "explanation": "rehash() collects only live OCCUPIED entries, allocates a brand-new array of EMPTY slots, and reinserts the live keys—discarding every DELETED tombstone so tombstones drops to 0. Even rehashing to the same size m cleans out tombstones and shortens future probes. Answering True mistakenly assumes rehashing to the same capacity is a no-op that leaves existing slot states untouched.",
+      "tags": [
+        "rehash",
+        "tombstones"
+      ],
+      "page": "On hash-table.html: in Linear Probing (m = 7), delete an entry to create a tombstone, then click Rehash / Resize with m = 7 and watch Tombstones reset to 0."
+    },
+    {
+      "id": "hash-table-011",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "In a Linear Probing hash table of size m = 7, you insert keys 2, 9, and 16 (slots 2, 3, 4), delete key 9 (leaving a DELETED tombstone at slot 3), and then insert key 23 (which also hashes to 2). Which slot index is key 23 placed into?",
+      "answer": "3",
+      "hint": "Linear insert remembers the first DELETED tombstone it sees, keeps probing until EMPTY to verify the key is not already stored, and then reuses that tombstone.",
+      "explanation": "Inserting 23 starts at home = 23 mod 7 = 2 (occupied by 2), sees DELETED at slot 3 and remembers firstDel = 3, checks slot 4 (occupied by 16 ≠ 23), and reaches EMPTY at slot 5—confirming 23 is not already in the table—so it recycles slot 3. Answering 5 assumes insert only writes into EMPTY slots and never reuses tombstones.",
+      "tags": [
+        "linear-probing",
+        "tombstones",
+        "insert",
+        "trace"
+      ],
+      "page": "On hash-table.html: choose Linear Probing (m = 7), Clear Table, insert 2, 9, 16, delete 9, then insert 23 and step through."
+    },
+    {
+      "id": "hash-table-012",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "In this visualizer's Quadratic Probing table of prime size m = 11, what is the maximum number of live entries allowed, and why does that guarantee every new insert finds a free slot?",
+      "choices": [
+        "5 entries (⌊11/2⌋): the first ⌊m/2⌋ + 1 = 6 probes hit 6 distinct slots, so while n < 5 at least one of those 6 slots must be free",
+        "6 entries (⌈11/2⌉): quadratic probing visits all 11 slots in a prime-sized table",
+        "5 entries (⌊11/2⌋): quadratic probing visits all 11 slots, so half the table is kept free only for speed",
+        "11 entries (m): any prime size guarantees every slot is visited before repeating"
+      ],
+      "answer": "5 entries (⌊11/2⌋): the first ⌊m/2⌋ + 1 = 6 probes hit 6 distinct slots, so while n < 5 at least one of those 6 slots must be free",
+      "explanation": "For prime m, (m − i)² ≡ i² (mod m), so quadratic probing only ever visits ⌊m / 2⌋ + 1 distinct slots (6 slots for m = 11), NOT all m slots. Enforcing n ≤ ⌊m / 2⌋ = 5 (α ≤ 0.5) means before any new insert there are at most 4 occupied slots, so by the pigeonhole principle at least one of the 6 reachable slots must be EMPTY or DELETED. Claiming quadratic probing visits all m slots is the classic misconception.",
+      "tags": [
+        "quadratic-probing",
+        "load-factor",
+        "prime"
+      ],
+      "page": "On hash-table.html: choose Quadratic Probing, enter 11 in Table Size m, click Rehash / Resize, and check Entries (n) showing \"max 5 (α ≤ 0.5)\"."
+    },
+    {
+      "id": "hash-table-013",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "What is the space complexity of a Separate Chaining hash table with m buckets storing n entries?",
+      "choices": [
+        "O(n + m)",
+        "O(m)",
+        "O(n)",
+        "O(n · m)"
+      ],
+      "answer": "O(n + m)",
+      "explanation": "Separate Chaining allocates the bucket array of length m plus one chain node per stored entry (n nodes), totaling O(n + m) space. O(m) is tempting because open addressing (Linear and Quadratic Probing) stores all entries directly inside the m slots with no external chain nodes; O(n) ignores the empty buckets when m > n.",
+      "tags": [
+        "chaining",
+        "space",
+        "complexity"
+      ],
+      "page": "On hash-table.html: compare the Space column for Separate Chaining versus Linear and Quadratic Probing."
+    },
+    {
+      "id": "hash-table-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "A Quadratic Probing hash table of size m = 7 currently holds 3 live entries (keys 1, 2, 3), which is its maximum of ⌊7/2⌋ = 3. Which of the following operations succeed without error? Select all that apply.",
+      "choices": [
+        "Inserting key 2 with a new value (updating an existing key)",
+        "Inserting a brand-new key 4",
+        "Deleting key 1 and then inserting key 4",
+        "Rehashing the table to size m = 9",
+        "Rehashing the table to size m = 11"
+      ],
+      "answer": [
+        "Inserting key 2 with a new value (updating an existing key)",
+        "Deleting key 1 and then inserting key 4",
+        "Rehashing the table to size m = 11"
+      ],
+      "explanation": "Updating existing key 2 does not increase size (stays 3 ≤ 3), so it succeeds; deleting key 1 drops live size to 2 (tombstones do not count toward the α ≤ 0.5 cap, because insert can reuse them), so inserting key 4 succeeds; and 11 is prime with ⌊11/2⌋ = 5 ≥ 3, so rehashing to 11 succeeds. Inserting new key 4 at size 3 overflows the α ≤ 0.5 limit, and rehashing to 9 fails because 9 is composite.",
+      "tags": [
+        "quadratic-probing",
+        "overflow",
+        "rehash",
+        "tombstones"
+      ],
+      "page": "On hash-table.html: select Quadratic Probing (m = 7), Clear Table, insert keys 1, 2, 3, and try each operation."
+    }
+  ]
+}

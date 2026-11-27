@@ -1,0 +1,189 @@
+{
+  "id": "circular-queue",
+  "title": "Circular Queue (Ring Buffer)",
+  "topic": "circular-queue",
+  "description": "Modulo wrap-around, front/rear sentinel -1, full vs. empty detection, and ring traces on the CircularQueue used by circular-queue.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "circular-queue-001",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Why does a circular queue advance rear using (rear + 1) mod capacity instead of rear + 1?",
+      "choices": [
+        "So rear wraps back to index 0 and reuses freed slots at the front, preventing false overflow",
+        "So elements stay sorted in ascending order inside the array",
+        "So the array automatically doubles its capacity when full",
+        "So dequeue can remove elements from the rear in O(1) time"
+      ],
+      "answer": "So rear wraps back to index 0 and reuses freed slots at the front, preventing false overflow",
+      "explanation": "Modulo arithmetic connects index capacity - 1 back to index 0 so new enqueues reuse slots vacated by earlier dequeues, eliminating linear-queue false overflow. Automatically doubling capacity is a tempting distractor from dynamic arrays, whereas a circular ring buffer keeps a fixed size.",
+      "tags": ["modulo", "wrap-around", "false-overflow"],
+      "page": "On circular-queue.html: allocate capacity 4, enqueue 4 values, dequeue the front value, then enqueue again to watch rear wrap to [0]."
+    },
+    {
+      "id": "circular-queue-002",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "In CircularQueue on circular-queue.html, an empty ring is represented by front = -1 and rear = -1.",
+      "answer": true,
+      "explanation": "CircularQueue reserves front = -1 (with rear = -1) as its empty sentinel, and sets front = rear = 0 on the first enqueue. Answering False is tempting if you recall LinearQueue's front = 0, rear = -1; in a circular queue that would make (-1 + 1) mod n == 0 == front, falsely triggering the full condition when empty.",
+      "tags": ["pointers", "empty", "sentinel"],
+      "page": "On circular-queue.html: allocate capacity 5 and read the status banner showing front = rear = -1."
+    },
+    {
+      "id": "circular-queue-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "A circular queue has capacity 4. You enqueue 10, 20, 30, 40, dequeue once (removing 10), and then enqueue 50. List the logical queue from front to rear.",
+      "format": "list",
+      "answer": "20, 30, 40, 50",
+      "hint": "50 wraps into array index 0, but which index is front?",
+      "explanation": "Dequeue removes 10 from index 0 and moves front to 1. Enqueue 50 wraps rear to (3 + 1) mod 4 = 0, so the backing array is [50, 20, 30, 40], but logical FIFO order starts at front = 1 and walks around: 20, 30, 40, 50. Answering \"50, 20, 30, 40\" reads physical index 0 first instead of starting at front.",
+      "tags": ["wrap-around", "fifo", "trace"],
+      "page": "On circular-queue.html: allocate capacity 4, enqueue 10, 20, 30, 40, dequeue 10, then enqueue 50."
+    },
+    {
+      "id": "circular-queue-004",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the time complexity of enqueue(x) and dequeue() on CircularQueue?",
+      "choices": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answer": "O(1)",
+      "explanation": "Both enqueue and dequeue perform a constant number of checks, one modulo index calculation (i + 1) mod n, and one array write, so both take O(1) time regardless of capacity. O(n) is tempting if you imagine shifting elements back to index 0 on wrap-around, which modulo indexing avoids.",
+      "tags": ["complexity", "enqueue", "dequeue"]
+    },
+    {
+      "id": "circular-queue-005",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On circular-queue.html, which capacity value is rejected by Allocate Ring?",
+      "choices": ["1", "2", "10", "100"],
+      "answer": "1",
+      "explanation": "CircularQueue.MIN_CAPACITY is 2 and MAX_CAPACITY is 100, so capacity 1 is rejected while 2, 10, and 100 are accepted. Picking 100 is tempting if you confuse this limit with stack.html (max 12) or priority-queue.html (max 50), and picking 2 forgets that 2 is the smallest valid ring size.",
+      "tags": ["capacity", "page"],
+      "page": "On circular-queue.html: type 1 into Capacity (2-100) and press Allocate Ring."
+    },
+    {
+      "id": "circular-queue-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "A circular queue has capacity 5 (indices 0 to 4). You enqueue 1, 2, 3, 4, 5, dequeue twice (removing 1 and 2), and then enqueue 6 and 7. What is the rear index afterwards?",
+      "answer": "1",
+      "hint": "Apply (rear + 1) mod 5 for each of the last two enqueues starting from rear = 4.",
+      "explanation": "After enqueuing 1 through 5, rear = 4. Two dequeues move front from 0 to 2 while rear stays 4. Enqueuing 6 wraps rear = (4 + 1) mod 5 = 0, and enqueuing 7 moves rear = (0 + 1) mod 5 = 1. Answering 6 forgets to take mod 5; answering 0 stops after only one wrap step.",
+      "tags": ["modulo", "rear", "wrap-around", "trace"],
+      "page": "On circular-queue.html: allocate capacity 5, enqueue 1-5, dequeue 1 and 2, enqueue 6 and 7, then press Rear (Last)."
+    },
+    {
+      "id": "circular-queue-007",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "In this visualizer's CircularQueue, one array slot must always stay empty to tell full from empty, so a ring of capacity 5 can hold at most 4 items.",
+      "answer": false,
+      "explanation": "Because CircularQueue uses front = -1 exclusively for the empty state, all 5 slots can be occupied and (rear + 1) mod 5 == front unambiguously signals full. Answering True is very tempting because an alternative ring-buffer convention (using front == rear for empty) does sacrifice one slot—but this implementation uses all capacity slots.",
+      "tags": ["capacity", "full", "empty"],
+      "page": "On circular-queue.html: allocate capacity 5, enqueue 5 values, and click Queue Size and IsFull?."
+    },
+    {
+      "id": "circular-queue-008",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which conditions are always TRUE for a full CircularQueue of capacity n (where n >= 2)? Select all that apply.",
+      "choices": [
+        "front != -1",
+        "(rear + 1) mod n == front",
+        "size == n",
+        "front == rear",
+        "rear == n - 1"
+      ],
+      "answer": [
+        "front != -1",
+        "(rear + 1) mod n == front",
+        "size == n"
+      ],
+      "explanation": "A full ring holds all n elements (size == n), is non-empty (front != -1), and has rear immediately before front around the circle ((rear + 1) mod n == front). front == rear means only 1 element is stored (impossible when full with n >= 2), and rear == n - 1 only holds when front == 0, not after wrap-around.",
+      "tags": ["full", "invariants", "modulo"]
+    },
+    {
+      "id": "circular-queue-009",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "A circular queue has capacity 6, with front = 4 and rear = 1. How many elements are currently stored in the queue?",
+      "answer": "4",
+      "hint": "Use ((rear - front + n) mod n) + 1, or list the occupied indices starting at 4 and wrapping past 5 to 1.",
+      "explanation": "Walking clockwise from front = 4 to rear = 1 visits indices 4, 5, 0, and 1—4 elements in total, matching ((1 - 4 + 6) mod 6) + 1 = 4. Answering 3 drops the + 1 (off-by-one); answering -2 uses rear - front + 1 without adding capacity n before taking mod 6.",
+      "tags": ["size", "modulo", "formula", "trace"],
+      "page": "On circular-queue.html: allocate capacity 6, enqueue 1-6, dequeue 1-4, enqueue 7 and 8, then press Queue Size."
+    },
+    {
+      "id": "circular-queue-010",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "On circular-queue.html, a ring of capacity 4 holds only one element 77 at index 2 (front = 2, rear = 2). You type 77 in the dequeue box and click Dequeue. What are front and rear afterwards?",
+      "choices": [
+        "front = -1 and rear = -1",
+        "front = 3 and rear = 2",
+        "front = 0 and rear = 0",
+        "front = 0 and rear = -1"
+      ],
+      "answer": "front = -1 and rear = -1",
+      "explanation": "Because front == rear, 77 was the sole remaining element, so CircularQueue.dequeue() resets both pointers to -1 (empty). Choosing front = 3 and rear = 2 is the most tempting mistake: advancing front to (2 + 1) mod 4 = 3 would leave (rear + 1) mod 4 == front, making an empty ring look full! front = 0, rear = -1 is LinearQueue's empty state, not CircularQueue's.",
+      "tags": ["dequeue", "empty", "reset"],
+      "page": "On circular-queue.html: allocate capacity 4, enqueue 1, 2, 77, dequeue 1 and 2 so 77 sits at [2], then dequeue 77."
+    },
+    {
+      "id": "circular-queue-011",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "A circular queue has capacity 4 (indices 0 to 3). You run: enqueue 1, enqueue 2, enqueue 3, enqueue 4, dequeue, dequeue, enqueue 5, dequeue, dequeue. What is the front index afterwards?",
+      "answer": "0",
+      "hint": "Remember that front also wraps around with (front + 1) mod 4 when moving past index 3.",
+      "explanation": "After enqueuing 1-4, front = 0 and rear = 3. Two dequeues advance front to 2, and enqueue 5 wraps rear to 0. Two more dequeues remove 3 (front = 3) and 4 (front = (3 + 1) mod 4 = 0), wrapping front to index 0 where 5 remains. Answering 4 forgets modulo wrap on front; answering -1 wrongly assumes all 5 items were dequeued.",
+      "tags": ["front", "wrap-around", "modulo", "trace"],
+      "page": "On circular-queue.html: allocate capacity 4, enqueue 1-4, dequeue 1 and 2, enqueue 5, dequeue 3 and 4, then press Peek (Front)."
+    },
+    {
+      "id": "circular-queue-012",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "In a circular queue, rear is always greater than or equal to front whenever the queue is non-empty.",
+      "answer": false,
+      "explanation": "As soon as rear wraps past capacity - 1 back to index 0 while front > 0, rear is strictly smaller than front even though the queue is valid and non-empty (for example, capacity 4 with front = 2 and rear = 0). Answering True is tempting because rear >= front is always true in a LinearQueue where indices never wrap.",
+      "tags": ["pointers", "wrap-around", "invariants"],
+      "page": "On circular-queue.html: allocate capacity 4, enqueue 1-4, dequeue 1, enqueue 5, and observe front = 1 while rear = 0."
+    },
+    {
+      "id": "circular-queue-013",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "What is the time complexity of toArray() on CircularQueue to return all n currently stored elements in front-to-rear order?",
+      "choices": ["O(n)", "O(1)", "O(log n)", "O(n²)"],
+      "answer": "O(n)",
+      "explanation": "toArray() starts at front and advances idx = (idx + 1) mod capacity exactly size (= n) times, copying each element once in O(n) time. O(1) is tempting because size, peek, and peekRear are O(1), but enumerating all n items requires visiting every stored element.",
+      "tags": ["complexity", "traversal"]
+    },
+    {
+      "id": "circular-queue-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Starting from an empty CircularQueue of capacity 3, you execute: enqueue 10, enqueue 20, enqueue 30, dequeue, enqueue 40, enqueue 50. Which statements are TRUE afterwards? Select all that apply.",
+      "choices": [
+        "The backing array slots are [40, 20, 30]",
+        "enqueue(50) fails with a queue overflow",
+        "isFull() returns true",
+        "peek() returns 40",
+        "front is 0 and rear is 2"
+      ],
+      "answer": [
+        "The backing array slots are [40, 20, 30]",
+        "enqueue(50) fails with a queue overflow",
+        "isFull() returns true"
+      ],
+      "explanation": "Dequeuing 10 frees index 0 and moves front to 1. Enqueuing 40 wraps rear to (2 + 1) mod 3 = 0, giving slots [40, 20, 30] with front = 1, rear = 0; since (0 + 1) mod 3 == 1 == front, isFull() is true and enqueue(50) overflows. peek() is 20 (at front = 1), not 40 (at index 0 / rear), and front is 1 rather than 0.",
+      "tags": ["overflow", "wrap-around", "peek", "trace"],
+      "page": "On circular-queue.html: allocate capacity 3, enqueue 10, 20, 30, dequeue 10, enqueue 40, then try to enqueue 50."
+    }
+  ]
+}

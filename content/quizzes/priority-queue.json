@@ -1,0 +1,192 @@
+{
+  "id": "priority-queue",
+  "title": "Priority Queue (Binary Max-Heap)",
+  "topic": "priority-queue",
+  "description": "Binary max-heap storage, sift-up and sift-down, FIFO arrival-counter tie-breaking, duplicate handling, and operation complexities on priority-queue.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "priority-queue-001",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On priority-queue.html, you enqueue 10 (normal), then 20 (High Priority P), then 30 (normal), then 40 (High Priority P). Which value is at the front (dequeued first)?",
+      "choices": ["20", "10", "40", "30"],
+      "answer": "20",
+      "explanation": "High-priority items (priority 1) outrank normal items (priority 0), and among equal priorities the earliest arrival wins (#2 before #4), so 20 is at the front. Choosing 40 is tempting if you think larger numeric values always win, and choosing 10 ignores priority like a plain FIFO queue.",
+      "tags": ["priority", "tie-breaking", "fifo"],
+      "page": "On priority-queue.html: allocate max size 5, enqueue 10 (normal), 20 (High Priority), 30 (normal), 40 (High Priority), and check FRONT."
+    },
+    {
+      "id": "priority-queue-002",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "In PriorityQueue, two items with the same priority are served in First-In, First-Out (arrival) order because each item receives an increasing arrival number (#id).",
+      "answer": true,
+      "explanation": "A plain binary heap is not stable, so PriorityQueue assigns every item a unique increasing arrival id (#1, #2, ...) and orders ties by smaller id (a.id < b.id), guaranteeing FIFO among equal priorities. Answering False is tempting if you remember that an unaugmented binary heap can reorder equal keys.",
+      "tags": ["stability", "tie-breaking", "heap"],
+      "page": "On priority-queue.html: enqueue three normal items and read the #1, #2, #3 arrival tags under the Binary Heap Array."
+    },
+    {
+      "id": "priority-queue-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Starting from an empty PriorityQueue (capacity 6), you enqueue (10, priority 0), (25, priority 1), (15, priority 0), and (5, priority 1) in that order. List the values in the order dequeue() will return them.",
+      "format": "list",
+      "answer": "25, 5, 10, 15",
+      "hint": "Serve all priority-1 items first in arrival order, then all priority-0 items in arrival order.",
+      "explanation": "Priority 1 items precede priority 0 items, and ties break by arrival order: 25 (#2) leaves before 5 (#4), followed by 10 (#1) before 15 (#3), giving 25, 5, 10, 15. Answering \"25, 15, 10, 5\" mistakenly orders by numeric value instead of (priority, arrival).",
+      "tags": ["priority", "fifo", "dequeue", "trace"],
+      "page": "On priority-queue.html: allocate size 6, enqueue 10, 25 (P), 15, and 5 (P), then click Display List."
+    },
+    {
+      "id": "priority-queue-004",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the worst-case time complexity of enqueue and dequeue in this binary-heap PriorityQueue of n elements?",
+      "choices": ["O(log n)", "O(1)", "O(n)", "O(n log n)"],
+      "answer": "O(log n)",
+      "explanation": "A complete binary heap with n nodes has height floor(log2 n), so sift-up in enqueue and sift-down in dequeue perform at most O(log n) comparisons and swaps. O(1) is tempting from regular and circular queues, while O(n) is the cost of inserting into a sorted array rather than a heap.",
+      "tags": ["complexity", "heap", "enqueue", "dequeue"]
+    },
+    {
+      "id": "priority-queue-005",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On priority-queue.html, you allocate max size 5, enqueue 12 (normal), and then try to enqueue 12 again with High Priority (P) checked. What happens?",
+      "choices": [
+        "The enqueue is rejected because the page disables duplicate values",
+        "12 is enqueued a second time as a separate high-priority item",
+        "The existing 12 is upgraded in place to High Priority",
+        "The old 12 is removed and replaced by the new high-priority 12"
+      ],
+      "answer": "The enqueue is rejected because the page disables duplicate values",
+      "explanation": "priority-queue-page.js constructs new PriorityQueue(cap, { allowDuplicates: false }), which uses an O(1) valueCounts map to reject any value already in the queue regardless of its new priority. Upgrading the existing item is a tempting guess (like an increase-key operation), but this visualizer rejects duplicates instead.",
+      "tags": ["duplicates", "page", "enqueue"],
+      "page": "On priority-queue.html: allocate size 5, enqueue 12 (normal), check High Priority (P), and try to enqueue 12 again."
+    },
+    {
+      "id": "priority-queue-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "In PriorityQueue's 0-indexed binary heap array (parent(i) = floor((i - 1) / 2), children 2i + 1 and 2i + 2), what is the index of the parent of the node at index 6?",
+      "answer": "2",
+      "hint": "Substitute i = 6 into floor((i - 1) / 2) and verify that 2*parent + 2 equals 6.",
+      "explanation": "For i = 6, parent(6) = floor((6 - 1) / 2) = floor(2.5) = 2 (whose children are 2*2 + 1 = 5 and 2*2 + 2 = 6). Answering 3 uses floor(6 / 2), which is the 1-indexed heap formula rather than the 0-indexed array formula used in PriorityQueue.",
+      "tags": ["heap", "indices", "parent"],
+      "page": "On priority-queue.html: allocate size 7, enqueue 7 values, and step through the 7th enqueue to see index 6 compared with parent index 2."
+    },
+    {
+      "id": "priority-queue-007",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "In PriorityQueue with allowDuplicates: false, if the queue is full AND the value you try to enqueue is already present, the duplicate error is reported before the overflow error.",
+      "answer": false,
+      "explanation": "PriorityQueue.enqueue() checks if (this.isFull()) first and fails with a queue overflow step before checking valueCounts for duplicates. Answering True is tempting if you expect duplicate validation to run ahead of capacity checks.",
+      "tags": ["overflow", "duplicates", "enqueue"],
+      "page": "On priority-queue.html: allocate size 2, enqueue 10 and 20, then try to enqueue 10 again and read the output message."
+    },
+    {
+      "id": "priority-queue-008",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these operations run in O(1) time on PriorityQueue? Select all that apply.",
+      "choices": [
+        "peek (Front)",
+        "isEmpty",
+        "isFull",
+        "size",
+        "peekRear (Rear / Back)",
+        "toArray (Display List)"
+      ],
+      "answer": [
+        "peek (Front)",
+        "isEmpty",
+        "isFull",
+        "size"
+      ],
+      "explanation": "peek() reads heap[0], and isEmpty(), isFull(), and size only inspect heap.length—each is O(1). peekRear() is the tempting trap: in a max-heap the lowest-ranked item can sit at any leaf, so peekRear() scans the heap in O(n) time, and toArray() sorts a copy in O(n log n).",
+      "tags": ["complexity", "operations", "heap"]
+    },
+    {
+      "id": "priority-queue-009",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Starting from an empty PriorityQueue (capacity 6), you enqueue (10, priority 0), (20, priority 0), (30, priority 0), and (40, priority 1) in that order. List the values in the heap array from index 0 to index 3 after sift-up finishes.",
+      "format": "list",
+      "answer": "40, 10, 30, 20",
+      "hint": "Place 40 at index 3, compare with its parent at index 1 (20), swap, then compare with the root at index 0 (10).",
+      "explanation": "After enqueuing 10, 20, and 30 (all priority 0), the heap array is [10, 20, 30]. Inserting 40 (priority 1) at index 3 swaps it with parent 20 (index 1) → [10, 40, 30, 20], then with root 10 (index 0) → [40, 10, 30, 20]. Answering \"40, 10, 20, 30\" gives the service order instead of the heap array, where 30 stayed at index 2 while 20 moved down to index 3.",
+      "tags": ["heap", "sift-up", "trace"],
+      "page": "On priority-queue.html: allocate size 6, enqueue 10, 20, 30 (normal), then 40 (High Priority), and read the Binary Heap Array."
+    },
+    {
+      "id": "priority-queue-010",
+      "type": "mcq",
+      "difficulty": "medium",
+      "prompt": "Why does priority-queue.html show BOTH a \"Priority Order Pipeline\" and a \"Binary Heap Array\"?",
+      "choices": [
+        "Because the binary heap only guarantees each parent outranks its children, so the heap array order is not necessarily sorted in full dequeue (service) order",
+        "Because the pipeline stores high-priority items while the heap array stores only normal items",
+        "Because the heap array is always the exact reverse of the dequeue order",
+        "Because the heap array only updates when Display List is clicked"
+      ],
+      "answer": "Because the binary heap only guarantees each parent outranks its children, so the heap array order is not necessarily sorted in full dequeue (service) order",
+      "explanation": "A binary heap enforces only the partial parent-child heap invariant (guaranteeing heap[0] is the front), so items in different subtrees are not globally sorted; the pipeline displays toArray() (service order) while the heap array shows the true backing storage and sift steps. Thinking the heap holds only normal items or reverses service order misunderstands how all items live in one heap.",
+      "tags": ["heap", "service-order", "page"],
+      "page": "On priority-queue.html: enqueue 10, 20, 30 (normal) and 40 (High Priority), then compare the pipeline order with the Binary Heap Array."
+    },
+    {
+      "id": "priority-queue-011",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Starting from an empty PriorityQueue (capacity 6), you enqueue (10, priority 1), (20, priority 0), (30, priority 1), (40, priority 0), (50, priority 0), and then call dequeue() once. List the values in the heap array from index 0 to index 3 after sift-down completes.",
+      "format": "list",
+      "answer": "30, 20, 50, 40",
+      "hint": "Dequeue removes root 10, moves the last element (50 at index 4) into index 0, and swaps it with whichever child of index 0 ranks higher.",
+      "explanation": "Before dequeue, the heap is [10(P,#1), 20(#2), 30(P,#3), 40(#4), 50(#5)]. Dequeue removes 10 and moves last item 50 into index 0 → [50, 20, 30, 40]. Comparing 50's children 20 (p=0) and 30 (p=1), 30 ranks higher and outranks 50, so indices 0 and 2 swap → [30, 20, 50, 40]; index 2 is now a leaf so sift-down stops. Answering \"30, 20, 40, 50\" gives service order rather than the heap array.",
+      "tags": ["heap", "sift-down", "dequeue", "trace"],
+      "page": "On priority-queue.html: allocate size 6, enqueue 10(P), 20, 30(P), 40, 50, dequeue 10, and inspect the Binary Heap Array."
+    },
+    {
+      "id": "priority-queue-012",
+      "type": "truefalse",
+      "difficulty": "hard",
+      "prompt": "In PriorityQueue, peekRear() always returns the last element of the backing heap array (heap[heap.length - 1]).",
+      "answer": false,
+      "explanation": "A max-heap guarantees only that the highest-ranked item is at index 0; the lowest-ranked item can sit at any leaf, not necessarily the last slot. For example, in heap [30(p1,#3), 20(p0,#2), 50(p0,#5), 40(p0,#4)], index 3 holds 40 (#4), whereas peekRear() scans the heap and returns 50 (#5) at index 2. Answering True confuses a max-heap with a sorted array.",
+      "tags": ["heap", "peek-rear", "invariants"],
+      "page": "On priority-queue.html: enqueue 10(P), 20, 30(P), 40, 50, dequeue 10, then click Rear (Back) and compare with the last slot of the Binary Heap Array."
+    },
+    {
+      "id": "priority-queue-013",
+      "type": "complexity",
+      "difficulty": "hard",
+      "prompt": "What is the time complexity of toArray() (used by Display List on priority-queue.html) on a PriorityQueue holding n items?",
+      "choices": ["O(n log n)", "O(1)", "O(log n)", "O(n)"],
+      "answer": "O(n log n)",
+      "explanation": "Because the heap array is only partially ordered, toArray() copies all n items and sorts them by PriorityQueue.outranks, which takes O(n log n) time. O(n) is the tempting wrong choice: heapArray() copies raw heap order in O(n), but producing full dequeue order from a binary heap takes O(n log n).",
+      "tags": ["complexity", "service-order", "heap"]
+    },
+    {
+      "id": "priority-queue-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "Which statements are TRUE about PriorityQueue in src/structures/queue.js? Select all that apply.",
+      "choices": [
+        "Priorities may be any finite number, including negative numbers, even though priority-queue.html only uses 0 and 1",
+        "clear() empties the heap and valueCounts without resetting nextId back to 1",
+        "dequeue() removes the root, moves the last heap element into index 0, and sifts it down",
+        "allowDuplicates defaults to false in the PriorityQueue constructor",
+        "A valid heap array is always sorted in descending priority order from index 0 to size - 1"
+      ],
+      "answer": [
+        "Priorities may be any finite number, including negative numbers, even though priority-queue.html only uses 0 and 1",
+        "clear() empties the heap and valueCounts without resetting nextId back to 1",
+        "dequeue() removes the root, moves the last heap element into index 0, and sifts it down"
+      ],
+      "explanation": "PriorityQueue accepts any finite numeric priority (the page simply maps High Priority to 1 and normal to 0), clear() resets heap and valueCounts while keeping nextId increasing, and dequeue() moves the last element into the root to preserve tree completeness before sifting down. allowDuplicates actually defaults to true in the constructor (the page opts into false), and a heap is only partially ordered, not fully sorted.",
+      "tags": ["heap", "api", "clear", "duplicates"]
+    }
+  ]
+}

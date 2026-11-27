@@ -1,0 +1,263 @@
+{
+  "id": "searching",
+  "title": "Searching Algorithms",
+  "topic": "searching",
+  "description": "Linear search, iterative binary search, and interpolation search — pointer traces, comparison counts, auto-sorting, and edge cases on searching.html.",
+  "version": 1,
+  "reviewed": null,
+  "questions": [
+    {
+      "id": "searching-001",
+      "type": "truefalse",
+      "difficulty": "easy",
+      "prompt": "Linear Search requires the input array to be sorted in ascending order before it can find a target.",
+      "answer": false,
+      "explanation": "Linear Search inspects every element from index 0 to n − 1 one by one, so it works on completely unsorted data with no preprocessing (requiresSorted is false). Binary Search and Interpolation Search are the ones that rely on sorted order to discard regions of the array.",
+      "tags": [
+        "linear",
+        "preconditions"
+      ],
+      "page": "On searching.html: choose Linear Search, enter an unsorted list like 9, 2, 7, 4 with target 7, and run it."
+    },
+    {
+      "id": "searching-002",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the worst-case time complexity of Binary Search on a sorted array of n elements?",
+      "choices": [
+        "O(log n)",
+        "O(1)",
+        "O(n)",
+        "O(n log n)"
+      ],
+      "answer": "O(log n)",
+      "explanation": "Every comparison checks the midpoint and discards at least half of the remaining [low..high] window, so even when the target is missing Binary Search makes at most ⌊log₂ n⌋ + 1 comparisons, which is O(log n). O(n) is the worst case of Linear Search (and Interpolation Search on skewed data), not Binary Search.",
+      "tags": [
+        "binary",
+        "complexity"
+      ],
+      "page": "On searching.html: read the Binary Search row in the Compare the Algorithms table."
+    },
+    {
+      "id": "searching-003",
+      "type": "predict",
+      "difficulty": "easy",
+      "prompt": "Linear Search looks for target 25 in [42, 11, 25, 7, 25, 90]. How many comparisons does it make before stopping?",
+      "answer": "3",
+      "hint": "Count each element checked starting at index 0 until the first match.",
+      "explanation": "Linear Search compares A[0] = 42 (1), A[1] = 11 (2), and A[2] = 25 (3, match!) and returns immediately. Answering 2 confuses the 0-based index of the match with the number of comparisons; answering 5 continues past the first match to the second 25.",
+      "tags": [
+        "linear",
+        "comparisons",
+        "trace"
+      ],
+      "page": "On searching.html: choose Linear Search, enter 42, 11, 25, 7, 25, 90 with target 25, and read Comparisons."
+    },
+    {
+      "id": "searching-004",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "On searching.html, you choose Binary Search and enter the unsorted array [30, 10, 50, 20, 40] with target 20. What does the visualizer do?",
+      "choices": [
+        "It sorts a copy ascending to [10, 20, 30, 40, 50] first, notes this in step 1, and finds 20 at index 1",
+        "It refuses to run and displays an unsorted-input error",
+        "It runs binary search directly on [30, 10, 50, 20, 40] and reports 20 as not found",
+        "It automatically switches the algorithm dropdown to Linear Search"
+      ],
+      "answer": "It sorts a copy ascending to [10, 20, 30, 40, 50] first, notes this in step 1, and finds 20 at index 1",
+      "explanation": "In searching.js, both Binary Search and Interpolation Search auto-sort a copy of unsorted input into ascending order before searching and state this explicitly in the opening step, so 20 is found at index 1 of [10, 20, 30, 40, 50] (not index 3). Refusing unsorted input or returning a wrong result is what a non-sorting implementation would do, not searching.html.",
+      "tags": [
+        "binary",
+        "auto-sort",
+        "page"
+      ],
+      "page": "On searching.html: choose Binary Search, enter 30, 10, 50, 20, 40 with target 20, and read Step 1 and the final step."
+    },
+    {
+      "id": "searching-005",
+      "type": "complexity",
+      "difficulty": "easy",
+      "prompt": "What is the best-case time complexity of Linear Search, Binary Search, and Interpolation Search?",
+      "choices": [
+        "O(1)",
+        "O(log log n)",
+        "O(log n)",
+        "O(n)"
+      ],
+      "answer": "O(1)",
+      "explanation": "All three algorithms can hit the target on their very first probe—index 0 for Linear Search, the initial midpoint ⌊(n − 1) / 2⌋ for Binary Search, and the first interpolated pos for Interpolation Search—taking a single O(1) comparison. O(log n) and O(log log n) describe average-case behavior, not the best case.",
+      "tags": [
+        "best-case",
+        "complexity"
+      ],
+      "page": "On searching.html: check the Best column for all three algorithms in the comparison table."
+    },
+    {
+      "id": "searching-006",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Iterative Binary Search (using mid = ⌊(low + high) / 2⌋) searches for target 56 in [4, 11, 18, 25, 34, 42, 56, 63, 78, 91] (the default case on searching.html). List the sequence of mid indices checked, in order.",
+      "format": "list",
+      "answer": "4, 7, 5, 6",
+      "hint": "Start with low = 0, high = 9. Remember that integer division rounds down (floor).",
+      "explanation": "low = 0, high = 9 → mid = ⌊9 / 2⌋ = 4 (A[4] = 34 < 56 → low = 5). low = 5, high = 9 → mid = ⌊14 / 2⌋ = 7 (A[7] = 63 > 56 → high = 6). low = 5, high = 6 → mid = ⌊11 / 2⌋ = 5 (A[5] = 42 < 56 → low = 6). low = 6, high = 6 → mid = 6 (A[6] = 56, match!). Answering 5, 8, 7, 6 rounds mid UP (⌈(low + high) / 2⌉) instead of taking the floor.",
+      "tags": [
+        "binary",
+        "trace"
+      ],
+      "page": "On searching.html: keep the default Binary Search input and target 56, and step through each compare frame."
+    },
+    {
+      "id": "searching-007",
+      "type": "predict",
+      "difficulty": "medium",
+      "prompt": "Interpolation Search searches for target 70 in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] (indices 0 through 9). What index pos does it probe first?",
+      "answer": "6",
+      "hint": "Compute pos = low + ⌊((target − A[low]) × (high − low)) / (A[high] − A[low])⌋ with low = 0 and high = 9.",
+      "explanation": "pos = 0 + ⌊((70 − 10) × (9 − 0)) / (100 − 10)⌋ = ⌊540 / 90⌋ = 6, landing directly on A[6] = 70 in a single comparison. Answering 4 is what Binary Search probes first (⌊(0 + 9) / 2⌋ = 4) because Binary Search ignores how close 70 is to A[high] = 100.",
+      "tags": [
+        "interpolation",
+        "formula",
+        "trace"
+      ],
+      "page": "On searching.html: select Interpolation Search, enter 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 with target 70, and check Step 2."
+    },
+    {
+      "id": "searching-008",
+      "type": "multi",
+      "difficulty": "medium",
+      "prompt": "Which of these statements are true for BOTH Binary Search and Interpolation Search as implemented in searching.js? Select all that apply.",
+      "choices": [
+        "They require the array to be sorted in ascending order",
+        "They use O(1) extra space during the search loop (iterative pointers low and high)",
+        "They guarantee O(log n) worst-case running time on every sorted array",
+        "They always enter the search loop and record at least one probe comparison (A[mid] or A[pos] vs target), even when target < A[0]"
+      ],
+      "answer": [
+        "They require the array to be sorted in ascending order",
+        "They use O(1) extra space during the search loop (iterative pointers low and high)"
+      ],
+      "explanation": "Both algorithms have requiresSorted: true and run iteratively with O(1) extra space (just low, high, and mid/pos). The third choice is false because Interpolation Search degrades to O(n) worst-case on skewed data; the fourth is false because Interpolation Search checks A[low] ≤ target ≤ A[high] in its loop guard and exits before entering the loop with 0 recorded probe comparisons when target < A[0].",
+      "tags": [
+        "binary",
+        "interpolation",
+        "properties"
+      ],
+      "page": "On searching.html: compare the Binary Search and Interpolation Search rows in the comparison table."
+    },
+    {
+      "id": "searching-009",
+      "type": "complexity",
+      "difficulty": "medium",
+      "prompt": "What is the average-case time complexity of Interpolation Search on a sorted array of uniformly distributed values?",
+      "choices": [
+        "O(log log n)",
+        "O(log n)",
+        "O(1)",
+        "O(n)"
+      ],
+      "answer": "O(log log n)",
+      "explanation": "When values are uniformly distributed, each interpolated probe narrows a window of size n down to roughly √n, so the number of probes grows doubly logarithmically: O(log log n). O(log n) is tempting because it is Binary Search's average case (halving each step), while O(n) is Interpolation Search's worst case on skewed distributions.",
+      "tags": [
+        "interpolation",
+        "complexity"
+      ],
+      "page": "On searching.html: read the Average column for Interpolation Search."
+    },
+    {
+      "id": "searching-010",
+      "type": "truefalse",
+      "difficulty": "medium",
+      "prompt": "In iterative Binary Search, when A[mid] < target, setting low = mid instead of low = mid + 1 can cause an infinite loop.",
+      "answer": true,
+      "explanation": "Because mid = ⌊(low + high) / 2⌋ rounds down, whenever high = low + 1 we get mid = low. Setting low = mid leaves both low and high unchanged, looping forever when target > A[low]. Since A[mid] was already tested and ruled out, low must move to mid + 1 (and high to mid − 1 when A[mid] > target). Answering False misses the two-element case (high = low + 1) where floor division keeps mid equal to low.",
+      "tags": [
+        "binary",
+        "loop-invariant"
+      ]
+    },
+    {
+      "id": "searching-011",
+      "type": "predict",
+      "difficulty": "hard",
+      "prompt": "Interpolation Search runs on [10, 20, 30, 40, 50, 60] searching for target 5. How many element comparisons (A[pos] vs target) does it record in searching.js?",
+      "answer": "0",
+      "hint": "Check the while-loop condition in Interpolation Search's pseudocode before the first probe happens.",
+      "explanation": "The loop condition is while (low ≤ high and A[low] ≤ target ≤ A[high]). Because target 5 is strictly smaller than A[0] = 10, the loop body never runs and searching.js records 0 element comparisons before reporting \"Target 5 is outside the remaining sorted bounds [10..60]\". Answering 1 or 2 assumes it probes the array first the way Binary Search does (Binary Search makes 2 comparisons here).",
+      "tags": [
+        "interpolation",
+        "early-exit",
+        "comparisons",
+        "trace"
+      ],
+      "page": "On searching.html: select Interpolation Search, enter 10, 20, 30, 40, 50, 60 with target 5, and read Comparisons."
+    },
+    {
+      "id": "searching-012",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "Interpolation Search runs on the all-equal array [7, 7, 7, 7, 7] searching for target 7. Why does it NOT crash with division by zero in searching.js?",
+      "choices": [
+        "It checks if A[high] === A[low] first and probes pos = low without dividing",
+        "It adds 1 to the denominator (A[high] − A[low] + 1)",
+        "It falls back to Binary Search's midpoint ⌊(low + high) / 2⌋ whenever duplicates exist",
+        "It rejects arrays containing duplicate values before starting"
+      ],
+      "answer": "It checks if A[high] === A[low] first and probes pos = low without dividing",
+      "explanation": "Before dividing by span = A[high] − A[low], interpolationSearch() checks if span === 0 and sets pos = low (pseudocode line 3), finding 7 at index 0 in 1 comparison. Falling back to the midpoint or adding 1 to the denominator are plausible alternatives, but searching.js explicitly probes pos = low and announces \"(avoid ÷ 0)\".",
+      "tags": [
+        "interpolation",
+        "edge-case",
+        "div-by-zero"
+      ],
+      "page": "On searching.html: select Interpolation Search, enter 7, 7, 7, 7, 7 with target 7, and read Step 2."
+    },
+    {
+      "id": "searching-013",
+      "type": "mcq",
+      "difficulty": "hard",
+      "prompt": "Both Binary Search and Interpolation Search look for target 9 in the skewed sorted array [1, 2, 3, 4, 5, 6, 7, 8, 9, 900]. Which statement accurately compares their performance here?",
+      "choices": [
+        "Interpolation Search takes 9 comparisons (degrading linearly), while Binary Search takes only 3",
+        "Interpolation Search takes 1 comparison because 9 is near the end, beating Binary Search's 3",
+        "Both algorithms take the same number of comparisons because the array is sorted",
+        "Binary Search takes 9 comparisons because of the outlier 900, while Interpolation Search takes 3"
+      ],
+      "answer": "Interpolation Search takes 9 comparisons (degrading linearly), while Binary Search takes only 3",
+      "explanation": "The outlier 900 makes A[high] − A[low] huge, so the interpolation formula repeatedly rounds pos down to low (0, 1, 2, …, 8), taking 9 comparisons—its O(n) worst case. Binary Search ignores value magnitudes and halves the index window every step (mid = 4, 7, 8), finding 9 in just 3 comparisons. Thinking Interpolation Search is always faster on sorted data misses its uniform-distribution assumption.",
+      "tags": [
+        "interpolation",
+        "binary",
+        "worst-case",
+        "skewed"
+      ],
+      "page": "On searching.html: enter 1, 2, 3, 4, 5, 6, 7, 8, 9, 900 with target 9 and compare Interpolation Search versus Binary Search."
+    },
+    {
+      "id": "searching-014",
+      "type": "multi",
+      "difficulty": "hard",
+      "prompt": "On the sorted array [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], which of the following searches finish in exactly 1 comparison? Select all that apply.",
+      "choices": [
+        "Linear Search for target 10",
+        "Binary Search for target 50",
+        "Interpolation Search for target 90",
+        "Binary Search for target 60",
+        "Interpolation Search for target 5"
+      ],
+      "answer": [
+        "Linear Search for target 10",
+        "Binary Search for target 50",
+        "Interpolation Search for target 90"
+      ],
+      "explanation": "Linear Search hits 10 at index 0 (1 comparison); Binary Search checks mid = ⌊(0 + 9) / 2⌋ = 4 and hits A[4] = 50 (1 comparison); Interpolation Search computes pos = 0 + ⌊(80 × 9) / 90⌋ = 8 and hits A[8] = 90 (1 comparison). Binary Search for 60 is tempting because 60 is the upper median, but floor division probes index 4 first and needs 3 comparisons (mids 4, 7, 5); Interpolation Search for 5 exits before the loop with 0 comparisons, not 1.",
+      "tags": [
+        "linear",
+        "binary",
+        "interpolation",
+        "comparisons"
+      ],
+      "page": "On searching.html: enter 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 and run each algorithm/target pair to check Comparisons."
+    }
+  ]
+}
